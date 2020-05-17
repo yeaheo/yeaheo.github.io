@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Https on Aeric Blog</title>
+    <link>https://aeric.io/tags/https/</link>
+    <description>Recent content in Https on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 14 Jan 2019 20:30:33 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/https/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>mkcert:本地有效的https证书</title>
+      <link>https://aeric.io/post/mkcert-valid-https-certificates-for-localhost/</link>
+      <pubDate>Mon, 14 Jan 2019 20:30:33 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/mkcert-valid-https-certificates-for-localhost/</guid>
+      <description>随着 HTTPS 的越来越普及，现在绝大数的 WEB 网站已经支持了全站 HTTPS，来防止网络攻击者观察或注入页面内容等，这里介绍一种在本地生成 TLS 证书的工具: mkcert</description>
+    </item>
+    
+  </channel>
+</rss>

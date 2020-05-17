@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Nginx Ingress 配置 HTTPS" />
+    <meta property="og:title" content="Nginx Ingress 配置 HTTPS" />
+    <meta property="twitter:title" content="Nginx Ingress 配置 HTTPS" />
+    
+
+    
+    <meta name="description" content="Nginx Ingress 默认并没有启用 https，如果我们需要实现 Ingress 的 https 方式访问，还需要我们配置 annotation 或者 configmap，这里主要说明一下 Ingress 如何通过 annotation 配置 https">
+    <meta property="og:description" content="Nginx Ingress 默认并没有启用 https，如果我们需要实现 Ingress 的 https 方式访问，还需要我们配置 annotation 或者 configmap，这里主要说明一下 Ingress 如何通过 annotation 配置 https" />
+    <meta property="twitter:description" content="Nginx Ingress 默认并没有启用 https，如果我们需要实现 Ingress 的 https 方式访问，还需要我们配置 annotation 或者 configmap，这里主要说明一下 Ingress 如何通过 annotation 配置 https" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Nginx Ingress 配置 HTTPS-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/nginx-ingress-https-redirect/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/gdd40dqv.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        <a class="tag" href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                    </div>
+                    <h1>Nginx Ingress 配置 HTTPS</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Monday, May 6, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#创建证书">创建证书</a></li>
+<li><a href="#创建-secret">创建 secret</a></li>
+<li><a href="#配置-ingress-开启-tls">配置 Ingress 开启 TLS</a></li>
+<li><a href="#测试">测试</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>对于 Nginx Ingress 的 TLS 配置，<a href="https://kubernetes.github.io/ingress-nginx/user-guide/tls/">官方文档</a>已经写得很清楚了，只是有的地方只是点了一下，并没有做出详细的说明，可以说还是有点坑的，哈哈。这里我实际从头开始操作一下，希望可以帮到大家，少走弯路。</p>
+
+<p>Nginx Ingress 的安装部署，可以参照<a href="https://kubernetes.github.io/ingress-nginx/deploy/">官方文档</a>进行安装，安装其实很简单，按照官方文档一步步安装就行了。这里我就不搞了，本次 Kubernetes 集群我用的是阿里云的集群，Nginx Ingress 已经安装完成了。</p>
+
+<p>Nginx Ingress 配置 TLS 支持 HTTPS 方式访问一般就分为三个步骤：<strong>1.制作证书；2.创建证书的 secret；3.在 Ingress 开启证书</strong></p>
+
+<blockquote>
+<p>证书这一块我们可以自签证书（不受信任），也可以使用正规机构颁发的证书</p>
+</blockquote>
+
+<h3 id="创建证书">创建证书</h3>
+
+<p>首先我们使用我们自签的证书：</p>
+
+<pre><code class="language-bash"># 生成 CA 自签证书
+mkdir cert &amp;&amp; cd cert
+openssl genrsa -out ca-key.pem 2048
+openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj &quot;/CN=kube-ca&quot;
+
+# 编辑 openssl 配置
+cp /etc/pki/tls/openssl.cnf .
+vim openssl.cnf
+
+# 主要修改如下
+[req]
+req_extensions = v3_req # 这行默认注释关着的 把注释删掉
+# 下面配置是新增的
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = saas-delta.xx.com
+
+# 生成证书
+openssl genrsa -out ingress-key.pem 2048
+openssl req -new -key ingress-key.pem -out ingress.csr -subj &quot;/CN=kube-ingress&quot; -config openssl.cnf
+openssl x509 -req -in ingress.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out ingress.pem -days 365 -extensions v3_req -extfile openssl.cnf
+</code></pre>
+
+<p>自签证书生成后就可以用证书和证书密钥创建 secret 了，这里为了方便，我用的是正规机构颁发的证书，如下所示：</p>
+
+<pre><code class="language-bash">👍 ls
+1_xx.cn_bundle.crt 2_xx.cn.key
+</code></pre>
+
+<h3 id="创建-secret">创建 secret</h3>
+
+<p>创建 secret 用如下命令创建即可：</p>
+
+<pre><code class="language-bash">kubectl create secret tls ${CERT_NAME} --key ${KEY_FILE} --cert ${CERT_FILE}
+</code></pre>
+
+<p>我实际操作的指令：</p>
+
+<pre><code class="language-bash">kubectl create secret tls ingress-secret --key 2_xx.cn.key --cert 1_xx.cn_bundle.crt -n saas-delta
+</code></pre>
+
+<blockquote>
+<p>创建 secret 时尽量要和 ingress 实例在一个 namespace，这里我的是 saas-delta 命名空间</p>
+</blockquote>
+
+<p>创建 secret 后可以通过集群查看：</p>
+
+<pre><code class="language-bash">👍 kubectl get secrets -n saas-delta
+NAME                  TYPE                                  DATA   AGE
+default-token-dppr2   kubernetes.io/service-account-token   3      27h
+ingress-secret        kubernetes.io/tls                     2      83m
+</code></pre>
+
+<h3 id="配置-ingress-开启-tls">配置 Ingress 开启 TLS</h3>
+
+<p>创建 secret 后，我们需要修改 ingress 的定义文件，添加 <code>tls</code> 相关内容：</p>
+
+<pre><code>apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: saas-app-nginx
+  namespace: saas-delta
+  annotations:
+    kubernetes.io/ingress.class: &quot;nginx&quot;
+    nginx.ingress.kubernetes.io/ssl-redirect: &quot;true&quot;
+spec:
+  tls:
+  - hosts:
+    - saas-delta.xx.cn
+    secretName: ingress-secret
+  rules:
+  - host: saas-delta.xx.cn
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: saas-app-nginx
+          servicePort: 80
+</code></pre>
+
+<p>这里有个小问题，http 跳转到 https 官方文档上是这样写的：“By default the controller redirects HTTP clients to the HTTPS port 443 using a 308 Permanent Redirect response if TLS is enabled for that Ingress.” 大概意思就是 “默认情况下，如果为该Ingress启用了TLS，则控制器会使用308永久重定向响应将HTTP客户端重定向到HTTPS端口443。” 但是在我这个阿里云的集群上好像并不好使，需要将<code>nginx.ingress.kubernetes.io/ssl-redirect</code>设置为 <code>true</code>才可以。</p>
+
+<p>修改完 ingress 配置文件后直接使用即可：</p>
+
+<pre><code class="language-bash">kubectl apply -f app-ingress.yaml
+</code></pre>
+
+<p>一个 Ingress 只能使用一个 secret，也就是说只能用一个证书,或者说如果你在一个 Ingress 中配置了多个域名，那么使用 TLS 的话必须保证证书支持该 Ingress 下所有域名；并且这个 secretName 一定要放在上面域名列表最后位置，否则会报错 <code>did not find expected key</code> 无法创建；同时上面的 hosts 段下域名必须跟下面的 rules 中完全匹配</p>
+
+<p>Kubernetes Ingress 默认情况下，当不配置证书时，会默认提供一个 TLS 证书，也就是说你 Ingress 中配置错了，比如写了 2 个 <code>secretName</code>、或者 <code>hosts</code> 段中缺了某个域名，那么对于写了多个 <code>secretName</code> 的情况，所有域名全会走默认证书，对于 <code>hosts</code> 缺了某个域名的情况，缺失的域名将会走默认证书，部署时一定要验证一下证，更新 Ingress 证书可能需要等一段时间才会生效</p>
+
+<h3 id="测试">测试</h3>
+
+<p>配置完成后就可以进行测试了，这里我用的是 DNS 解析的方式将 hosts 解析到了 ingress 的公网IP上：</p>
+
+<pre><code class="language-bash">👍 curl -I http://saas-delta.xx.cn
+HTTP/1.1 308 Permanent Redirect
+Date: Mon, 06 May 2019 10:49:13 GMT
+Content-Type: text/html
+Content-Length: 164
+Connection: keep-alive
+Location: https://saas-delta.xx.cn/
+</code></pre>
+
+<p>由上述结果可知该配置生效。</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/kubernetes-1-14-release-changelog/" data-toggle="tooltip" data-placement="top" title="Kubernetes 1.14 更新日志">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/kubernetes-affinity/" data-toggle="tooltip" data-placement="top" title="探究 Kubernetes 的亲和性调度">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

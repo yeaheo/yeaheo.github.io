@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Kubernetes集群安装Metrics Server" />
+    <meta property="og:title" content="Kubernetes集群安装Metrics Server" />
+    <meta property="twitter:title" content="Kubernetes集群安装Metrics Server" />
+    
+
+    
+    <meta name="description" content="Kubernetes 1.8关于资源使用情况的 metrics，可以通过 Metrics API 获取到 Kubernetes 1.11 已经废弃 heapster。这里我们基于 Kubernetes 1.12 版本安装 Metrics Server">
+    <meta property="og:description" content="Kubernetes 1.8关于资源使用情况的 metrics，可以通过 Metrics API 获取到 Kubernetes 1.11 已经废弃 heapster。这里我们基于 Kubernetes 1.12 版本安装 Metrics Server" />
+    <meta property="twitter:description" content="Kubernetes 1.8关于资源使用情况的 metrics，可以通过 Metrics API 获取到 Kubernetes 1.11 已经废弃 heapster。这里我们基于 Kubernetes 1.12 版本安装 Metrics Server" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Kubernetes集群安装Metrics Server-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/k8s-metrics-server-installation/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/Uuid4d.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        <a class="tag" href="/tags/metrics" title="Metrics">
+                            Metrics
+                        </a>
+                        
+                        <a class="tag" href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                    </div>
+                    <h1>Kubernetes集群安装Metrics Server</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Friday, January 4, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#metrics-server-的安装">Metrics Server 的安装</a></li>
+<li><a href="#metrics-api">Metrics API</a></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>Kubernetes 1.8 关于资源使用情况的 metrics，可以通过 Metrics API 获取到 Kubernetes 1.11 已经废弃 heapster。这里我们基于 Kubernetes 1.12 版本安装 Metrics Server。</p>
+
+<h2 id="metrics-server-的安装">Metrics Server 的安装</h2>
+
+<p>首先，先说明下集群环境：</p>
+
+<pre><code class="language-bash">👍 ~ kubectl get nodes
+NAME        STATUS   ROLES    AGE   VERSION
+k8s-m1      Ready    master   36d   v1.12.3
+k8s-node1   Ready    &lt;none&gt;   36d   v1.12.3
+k8s-node2   Ready    &lt;none&gt;   36d   v1.12.3
+</code></pre>
+
+<p>当整个集群部署完成后，<code>kubectl top</code> 命令不会返回任何内容，因为 <code>Heapster</code> 和 <code>metrics - server</code> 都没有安装，但是自 <code>Kubernetes 1.11</code>版本后 <code>heapster</code>已经被废弃了，取而代之的是更丰富的 <code>metrics-server</code>。这里基于 <code>Kubernetes 1.12</code> 版本安装 Metrics Server。</p>
+
+<p>Metrics API 的  URI 是<code>/apis/metrics.k8s.io/</code>，扩展了 Kubernetes 的核心 API。</p>
+
+<p>Metrics Server 详细信息可以参考：<a href="https://github.com/kubernetes-incubator/metrics-server">https://github.com/kubernetes-incubator/metrics-server</a></p>
+
+<p>准备部署 Metrics Server 的 <code>yaml</code>文件（配置清单文件）:</p>
+
+<pre><code class="language-bash">👍 ~ git clone https://github.com/kubernetes-incubator/metrics-server
+</code></pre>
+
+<p>下载完成后还需要对 <code>metrics-server/deploy/1.8+/resource-reader.yaml</code>文件进行修改，需要修改的内容如下：</p>
+
+<pre><code class="language-yaml">---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:metrics-server
+rules:
+- apiGroups:
+  - &quot;&quot;
+  resources:
+  - pods
+  - nodes
+  - namespaces      # 增加此行
+  - nodes/stats
+  verbs:
+  - get
+  - list
+  - watch
+---
+...
+</code></pre>
+
+<p>修改 <code>metrics-server/deploy/1.8+/metrics-server-deployment.yaml</code>文件：</p>
+
+<pre><code class="language-yaml">---
+(变更前)
+containers:
+- name: metrics-server
+  image: k8s.gcr.io/metrics-server-amd64:v0.3.1
+  imagePullPolicy: Always
+
+---
+(变更后)
+containers:
+- name: metrics-server
+  image: k8s.gcr.io/metrics-server-amd64:v0.3.1
+  command:
+  - /metrics-server
+  - --kubelet-insecure-tls
+</code></pre>
+
+<p>修改完成就可以正式部署了：</p>
+
+<pre><code class="language-bash">👍 ~ cd metrics-server/deploy/1.8+
+👍 ~ kubectl apply -f .
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+serviceaccount/metrics-server created
+deployment.extensions/metrics-server created
+service/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+</code></pre>
+
+<p>Metrics Server 相关 pod 、service 默认部署在 <code>kube-system</code>的 NAMESPACE 下：</p>
+
+<pre><code class="language-bash">👍 ~ kubectl get pods -n kube-system | grep metrics
+metrics-server-6bbbb8f8f5-ngr9c               1/1     Running   0          115s
+---
+👍 ~ kubectl get svc -n kube-system | grep metrics
+metrics-server            ClusterIP   10.104.82.243    &lt;none&gt;        443/TCP       2m46s
+</code></pre>
+
+<p>部署完成后使用如下命令查看node相关指标：</p>
+
+<pre><code class="language-bash">👍 ~ kubectl get --raw &quot;/apis/metrics.k8s.io/v1beta1/nodes&quot;
+{&quot;kind&quot;:&quot;NodeMetricsList&quot;,&quot;apiVersion&quot;:&quot;metrics.k8s.io/v1beta1&quot;,&quot;metadata&quot;:{&quot;selfLink&quot;:&quot;/apis/metrics.k8s.io/v1beta1/nodes&quot;},&quot;items&quot;:[]}
+</code></pre>
+
+<p>没有获取到信息，此时查看 metric-server 容器的日志，有下面的错误：</p>
+
+<pre><code class="language-bash">👍 ~ kubectl logs -f -n kube-system metrics-server-6bbbb8f8f5-ngr9c
+---
+E1003 05:46:13.757009       1 manager.go:102] unable to fully collect metrics: [unable to fully scrape metrics from source kubelet_summary:node1: unable to fetch metrics from Kubelet node1 (node1): Get https://k8s-node1:10250/stats/summary/: dial tcp: lookup k8s-node1 on 10.96.0.10:53: no such host, unable to fully scrape metrics from source kubelet_summary:k8s-node2: unable to fetch metrics from Kubelet node2 (node2): Get https://k8s-node2:10250/stats/summary/: dial tcp: lookup node2 on 10.96.0.10:53: read udp 10.244.1.6:45288-&gt;10.96.0.10:53: i/o timeout]
+</code></pre>
+
+<p>可以看到 metrics-server 在从 kubelet 的 10250 端口获取信息时，使用的是 hostname，而因为 node1 和 node2 是一个独立的 Kubernetes 演示环境，只是修改了这两个节点系统的 <code>/etc/hosts</code> 文件，而并没有内网的 DNS 服务器，所以 metrics-server 中不认识 k8s-node1 和 k8s-node1 的名字。这里我们可以直接修改 Kubernetes 集群中的 coredns的 configmap，修改 Corefile 加入 hostnames 插件，将 Kubernetes 的各个节点的主机名加入到 hostnames 中，这样Kubernetes 集群中的所有 Pod 都可以从 CoreDNS 中解析各个节点的名字。</p>
+
+<pre><code class="language-bash">👍 ~ kubectl edit configmap coredns -n kube-system
+---
+apiVersion: v1
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        hosts {                        # 增加此字段
+          10.200.100.216  k8s-m1           
+          10.200.100.215  k8s-node1
+          10.200.100.214  k8s-node2
+          fallthrough
+        }
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           upstream
+           fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        proxy . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2018-11-28T10:50:05Z
+  name: coredns
+  namespace: kube-system
+  resourceVersion: &quot;4454220&quot;
+  selfLink: /api/v1/namespaces/kube-system/configmaps/coredns
+  uid: 5da15457-f2fb-11e8-affd-080027adebb7
+</code></pre>
+
+<blockquote>
+<p>其实除了上述方法外还有一种方法可以解决此问题，就是需要按照上面的方法修改<code>metrics-server-deployment.yaml</code>文件，添加<code>--kubelet-preferred-address-types=InternalIP</code>参数，修改后的内容如下：</p>
+</blockquote>
+
+<pre><code class="language-yaml">---
+(变更前)
+containers:
+- name: metrics-server
+  image: k8s.gcr.io/metrics-server-amd64:v0.3.1
+  imagePullPolicy: Always
+
+---
+(变更后)
+containers:
+- name: metrics-server
+  image: k8s.gcr.io/metrics-server-amd64:v0.3.1
+  command:
+  - /metrics-server
+  - --kubelet-insecure-tls
+  - --kubelet-preferred-address-types=InternalIP
+</code></pre>
+
+<p>配置修改完毕后重启集群中 coredns 和 metrics-server，确认 metrics-server 不再有错误日志。</p>
+
+<pre><code class="language-bash">👍 ~ kubectl get --raw &quot;/apis/metrics.k8s.io/v1beta1/nodes&quot;
+{&quot;kind&quot;:&quot;NodeMetricsList&quot;,&quot;apiVersion&quot;:&quot;metrics.k8s.io/v1beta1&quot;,&quot;metadata&quot;:{&quot;selfLink&quot;:&quot;/apis/metrics.k8s.io/v1beta1/nodes&quot;},&quot;items&quot;:[{&quot;metadata&quot;:{&quot;name&quot;:&quot;k8s-m1&quot;,&quot;selfLink&quot;:&quot;/apis/metrics.k8s.io/v1beta1/nodes/k8s-m1&quot;,&quot;creationTimestamp&quot;:&quot;2019-01-04T09:54:27Z&quot;},&quot;timestamp&quot;:&quot;2019-01-04T09:53:46Z&quot;,&quot;window&quot;:&quot;30s&quot;,&quot;usage&quot;:{&quot;cpu&quot;:&quot;93706104n&quot;,&quot;memory&quot;:&quot;2580432Ki&quot;}},{&quot;metadata&quot;:{&quot;name&quot;:&quot;k8s-node1&quot;,&quot;selfLink&quot;:&quot;/apis/metrics.k8s.io/v1beta1/nodes/k8s-node1&quot;,&quot;creationTimestamp&quot;:&quot;2019-01-04T09:54:27Z&quot;},&quot;timestamp&quot;:&quot;2019-01-04T09:53:42Z&quot;,&quot;window&quot;:&quot;30s&quot;,&quot;usage&quot;:{&quot;cpu&quot;:&quot;310715486n&quot;,&quot;memory&quot;:&quot;2369228Ki&quot;}},{&quot;metadata&quot;:{&quot;name&quot;:&quot;k8s-node2&quot;,&quot;selfLink&quot;:&quot;/apis/metrics.k8s.io/v1beta1/nodes/k8s-node2&quot;,&quot;creationTimestamp&quot;:&quot;2019-01-04T09:54:27Z&quot;},&quot;timestamp&quot;:&quot;2019-01-04T09:53:46Z&quot;,&quot;window&quot;:&quot;30s&quot;,&quot;usage&quot;:{&quot;cpu&quot;:&quot;304256739n&quot;,&quot;memory&quot;:&quot;2433132Ki&quot;}}]}
+</code></pre>
+
+<p>可以看到此时可以正常获取到数据，说明 Metrics Server 现在可以正常工作了。</p>
+
+<h2 id="metrics-api">Metrics API</h2>
+
+<p>Metrics Server 从 Kubernetes 集群中每个 Node 上 kubelet 的 API 收集 metrics 数据。通过 Metrics API 可以获取Kubernetes 资源的 Metrics 指标，Metrics API 挂载<code>/apis/metrics.k8s.io/</code>下。 可以使用<code>kubectl top</code>命令访问 Metrics API，例如:</p>
+
+<pre><code class="language-bash">👍 ~ kubectl top nodes
+NAME        CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+k8s-m1      91m          9%     2469Mi          66%
+k8s-node1   308m         30%    2309Mi          62%
+k8s-node2   326m         32%    2382Mi          64%
+</code></pre>
+
+<pre><code class="language-bash">👍 ~ kubectl top pods -n kube-system
+NAME                                          CPU(cores)   MEMORY(bytes)
+coredns-576cbf47c7-bc9jb                      1m           17Mi
+coredns-576cbf47c7-k2hpc                      2m           14Mi
+etcd-k8s-m1                                   10m          308Mi
+kube-apiserver-k8s-m1                         18m          597Mi
+kube-controller-manager-k8s-m1                17m          68Mi
+kube-flannel-ds-amd64-f56vj                   2m           15Mi
+kube-flannel-ds-amd64-mwwgq                   2m           13Mi
+kube-flannel-ds-amd64-qlkwh                   1m           11Mi
+kube-proxy-926mk                              2m           18Mi
+kube-proxy-c68mb                              2m           15Mi
+kube-proxy-f8xg4                              1m           15Mi
+kube-scheduler-k8s-m1                         7m           20Mi
+kubernetes-dashboard-77fd78f978-cx5bn         1m           17Mi
+kubernetes-dashboard-77fd78f978-jqzhq         1m           27Mi
+metrics-server-6bbbb8f8f5-ngr9c               1m           14Mi
+traefik-ingress-controller-5bc6d75c76-q4m5n   2m           29Mi
+</code></pre>
+
+<p>至此，Kubernetes 集群中的 Metrics Server 就配置完成了。</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/mesos-container-cluster-installation/" data-toggle="tooltip" data-placement="top" title="容器化部署 Mesos 集群">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/harbor-installation/" data-toggle="tooltip" data-placement="top" title="Harbor 私有镜像仓库安装配置">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

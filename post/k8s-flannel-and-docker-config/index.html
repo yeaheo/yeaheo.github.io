@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Kubernetes集群配置Flannel服务" />
+    <meta property="og:title" content="Kubernetes集群配置Flannel服务" />
+    <meta property="twitter:title" content="Kubernetes集群配置Flannel服务" />
+    
+
+    
+    <meta name="description" content="在kubernetes集群中所有的node节点都需要安装网络插件才能让所有的Pod加入到同一个局域网中，本文是安装flannel网络插件的参考文档，具体操作可以参考正文">
+    <meta property="og:description" content="在kubernetes集群中所有的node节点都需要安装网络插件才能让所有的Pod加入到同一个局域网中，本文是安装flannel网络插件的参考文档，具体操作可以参考正文" />
+    <meta property="twitter:description" content="在kubernetes集群中所有的node节点都需要安装网络插件才能让所有的Pod加入到同一个局域网中，本文是安装flannel网络插件的参考文档，具体操作可以参考正文" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Kubernetes集群配置Flannel服务-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/k8s-flannel-and-docker-config/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/DC3z47.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        <a class="tag" href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                    </div>
+                    <h1>Kubernetes集群配置Flannel服务</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Friday, November 30, 2018
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#配置-flannel-服务">配置 Flannel 服务</a></li>
+<li><a href="#配置-docker-服务">配置 docker 服务</a></li>
+<li><a href="#查询-etcd-中的内容">查询 etcd 中的内容</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p><strong>检查 TLS 证书</strong></p>
+
+<pre><code class="language-bash">[root@ceph-node1 ~]# ls /etc/kubernetes/ssl/
+admin-key.pem  admin.pem  ca-key.pem  ca.pem  kube-proxy-key.pem  kube-proxy.pem  kubernetes-key.pem  kubernetes.pem
+</code></pre>
+
+<h3 id="配置-flannel-服务">配置 Flannel 服务</h3>
+
+<p>建议直接使用 yum 安装 flanneld，除非对版本有特殊需求，默认安装的是 <code>v0.7.1</code> 版本的 flannel。</p>
+
+<p>安装 flanneld 服务，具体参考如下：</p>
+
+<pre><code class="language-bash">yum -y install flannel
+systemctl start flanneld.service
+</code></pre>
+
+<blockquote>
+<p>在起 flanneld 服务之前，我们需要修改 flanneld服务的 Systemd Unit 文件和对应的配置文件</p>
+</blockquote>
+
+<p><strong>修改 flannel 服务的 systemd unit 文件</strong></p>
+
+<pre><code class="language-bash">cat /usr/lib/systemd/system/flanneld.service
+</code></pre>
+
+<p>具体内容如下：</p>
+
+<pre><code class="language-bash">[Unit]
+Description=Flanneld overlay address etcd agent
+After=network.target
+After=network-online.target
+Wants=network-online.target
+After=etcd.service
+Before=docker.service
+
+[Service]
+Type=notify
+EnvironmentFile=/etc/sysconfig/flanneld
+EnvironmentFile=-/etc/sysconfig/docker-network
+ExecStart=/usr/bin/flanneld-start \
+    $FLANNEL_OPTIONS \
+    -etcd-endpoints=${FLANNEL_ETCD_ENDPOINTS} \
+    -etcd-prefix=${FLANNEL_ETCD_PREFIX}
+ExecStartPost=/usr/libexec/flannel/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+RequiredBy=docker.service
+</code></pre>
+
+<p>完整 flanneld systemd unit 参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/flanneld.service">flanneld.service</a></p>
+
+<p><strong>修改 flannel 服务配置文件</strong></p>
+
+<p>flannel 服务配置文件: <code>/etc/sysconfig/flanneld</code></p>
+
+<pre><code class="language-bash"># Flanneld configuration options  
+
+# etcd url location.  Point this to the server where etcd runs
+#FLANNEL_ETCD_ENDPOINTS=&quot;http://127.0.0.1:2379&quot;
+FLANNEL_ETCD_ENDPOINTS=&quot;https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379&quot;
+
+# etcd config key.  This is the configuration key that flannel queries
+# For address range assignment
+#FLANNEL_ETCD_PREFIX=&quot;/atomic.io/network&quot;
+FLANNEL_ETCD_PREFIX=&quot;/kube-centos/network&quot;
+
+# Any additional options that you want to pass
+#FLANNEL_OPTIONS=&quot;&quot;
+FLANNEL_OPTIONS=&quot;-etcd-cafile=/etc/kubernetes/ssl/ca.pem -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem&quot;
+</code></pre>
+
+<p>完整 flannel 服务配置文件参见： <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/flanneld">flanneld</a></p>
+
+<blockquote>
+<p>flannel 服务的 systemd unit 文件及配置文件修改完成后，就可以启动 flanneld 服务了。</p>
+</blockquote>
+
+<pre><code class="language-bash">systemctl daemon-reload
+systemctl start flanneld.service
+</code></pre>
+
+<p><strong>在 etcd 中创建网络配置</strong></p>
+
+<p>执行下面的命令为docker分配IP地址段:</p>
+
+<pre><code class="language-bash">etcdctl --endpoints=https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379 \
+  --ca-file=/etc/kubernetes/ssl/ca.pem \
+  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
+  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  mkdir /kube-centos/network
+
+etcdctl --endpoints=https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379 \
+  --ca-file=/etc/kubernetes/ssl/ca.pem \
+  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
+  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  mk /kube-centos/network/config '{&quot;Network&quot;:&quot;172.30.0.0/16&quot;,&quot;SubnetLen&quot;:24,&quot;Backend&quot;:{&quot;Type&quot;:&quot;vxlan&quot;}}'
+</code></pre>
+
+<h3 id="配置-docker-服务">配置 docker 服务</h3>
+
+<p>docker 需要和 flannel 服务在同一个网段内，这样后期才能互通。</p>
+
+<p>docker 服务的安装直接用 yum 包管理工具直接安装即可：</p>
+
+<pre><code class="language-bash">yum -y install docker
+</code></pre>
+
+<p>配置 docker 服务如下：</p>
+
+<pre><code class="language-bash">systemctl stop docker.service
+source  /run/flannel/subnet.env 
+docker  daemon  --bip=${FLANNEL_SUBNET}  --mtu=${FLANNEL_MTU} &amp;
+ifconfig docker0 $FLANNEL_SUBNET
+</code></pre>
+
+<p>修改docker服务文件增加如下内容：</p>
+
+<pre><code class="language-bash">EnvironmentFile=-/run/flannel/docker 
+EnvironmentFile=-/run/docker_opts.env 
+EnvironmentFile=-/run/flannel/subnet.env
+</code></pre>
+
+<p>配置完成后需要重启 docker 及 flannel 服务。</p>
+
+<pre><code class="language-bash">systemctl daemon-reload
+systemctl restart docker.service
+systemctl restart flanneld.service
+</code></pre>
+
+<blockquote>
+<p>我们在重启 docker 服务的时候可能重启失败，原因一般是 docker 进程还存在，将其杀死再重启既可，可以参考：<code>ps axf | grep docker | grep -v grep | awk '{print &quot;kill -9 &quot; $1}' | sudo sh</code></p>
+</blockquote>
+
+<h3 id="查询-etcd-中的内容">查询 etcd 中的内容</h3>
+
+<p>docker 和 flannel 服务启动正常后，我们可以参照下面的方式查看 etcd 的内容：</p>
+
+<pre><code class="language-bash">[root@k8s-master ~]# etcdctl --endpoints=${ETCD_ENDPOINTS} \
+    --ca-file=/etc/kubernetes/ssl/ca.pem \
+    --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
+    --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+    ls /kube-centos/network/subnets
+/kube-centos/network/subnets/172.30.78.0-24
+/kube-centos/network/subnets/172.30.79.0-24
+/kube-centos/network/subnets/172.30.41.0-24
+</code></pre>
+
+<blockquote>
+<p>其实 flanneld 和 docker 服务在 master 节点上是非必需的，但是我们建议在 master 节点上同样配置 flanneld 和 docker 服务，因为这样可以很方便的通过 master 节点访问 node 上的服务，例如插件 dashboard 的访问，我们可以通过 api-server 来访问：<a href="http://master-ip:8080/ui">http://master-ip:8080/ui</a>。</p>
+</blockquote>
+
+<p>master 节点的 flanneld 和 docker 服务安装好后，我们在 master 节点可以 ping 通 nodes 节点的 flanneld 地址，例如：</p>
+
+<pre><code class="language-bash">[root@k8s-master ~]# ping 172.30.41.0
+PING 172.30.41.0 (172.30.41.0) 56(84) bytes of data.
+64 bytes from 172.30.41.0: icmp_seq=1 ttl=64 time=0.081 ms
+^C
+--- 172.30.41.0 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.081/0.081/0.081/0.000 ms
+
+[root@k8s-master ~]# ping 172.30.78.0
+PING 172.30.78.0 (172.30.78.0) 56(84) bytes of data.
+64 bytes from 172.30.78.0: icmp_seq=1 ttl=64 time=0.648 ms
+^C
+--- 172.30.78.0 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.648/0.648/0.648/0.000 ms
+[root@k8s-master ~]# ping 172.30.79.0
+PING 172.30.79.0 (172.30.79.0) 56(84) bytes of data.
+64 bytes from 172.30.79.0: icmp_seq=1 ttl=64 time=0.658 ms
+</code></pre>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/k8s-master-installation/" data-toggle="tooltip" data-placement="top" title="Kubernetes集群部署Master节点服务">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/k8s-nodes-installation/" data-toggle="tooltip" data-placement="top" title="Kubernetes集群部署Node节点服务">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

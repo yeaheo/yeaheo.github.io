@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Prometheus 安装和基本配置" />
+    <meta property="og:title" content="Prometheus 安装和基本配置" />
+    <meta property="twitter:title" content="Prometheus 安装和基本配置" />
+    
+
+    
+    <meta name="description" content="之前简单介绍了 Prometheus 的工作模式和工作原理，本次主要是通过部署 Prometheus Server 和 node_exporter 并集成 grafana 可视化来更进一步了解 Prometheus 是怎样获取节点监控指标">
+    <meta property="og:description" content="之前简单介绍了 Prometheus 的工作模式和工作原理，本次主要是通过部署 Prometheus Server 和 node_exporter 并集成 grafana 可视化来更进一步了解 Prometheus 是怎样获取节点监控指标" />
+    <meta property="twitter:description" content="之前简单介绍了 Prometheus 的工作模式和工作原理，本次主要是通过部署 Prometheus Server 和 node_exporter 并集成 grafana 可视化来更进一步了解 Prometheus 是怎样获取节点监控指标" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Prometheus 安装和基本配置-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/prometheus-addons-installation/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/9yDVEp.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                    </div>
+                    <h1>Prometheus 安装和基本配置</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Friday, March 1, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#安装配置-prometheus-server">安装配置 Prometheus Server</a></li>
+<li><a href="#安装配置-node-exporter">安装配置 node_exporter</a></li>
+<li><a href="#安装-grafana-展示工具">安装 Grafana 展示工具</a></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>Prometheus 是一个开放性的监控解决方案，用户可以非常方便的安装和使用 Prometheus 并且能够非常方便的对其进行扩展。为了能够更加直观的了解 Prometheus Server，接下来我们将在本地部署并运行一个 Prometheus Server实例，通过 Node Exporter 采集当前主机的系统资源使用情况。 并通过 Grafana 创建一个简单的可视化仪表盘。</p>
+
+<p>Prometheus 基于 Golang 编写，编译后的软件包，不依赖于任何的第三方依赖。用户只需要下载对应平台的二进制包，解压并且添加基本的配置即可正常启动 Prometheus Server。具体安装过程可以参考如下内容。</p>
+
+<h2 id="安装配置-prometheus-server">安装配置 Prometheus Server</h2>
+
+<p>本次我们选择在 CentOS7 上安装 prometheus ,其他系统安装过程类似，这里不再一一赘述。</p>
+
+<p>系统环境如下：</p>
+
+<pre><code class="language-bash">$ cat /etc/redhat-release
+CentOS Linux release 7.5.1804 (Core)
+$ uname -r
+3.10.0-862.el7.x86_64
+</code></pre>
+
+<p>为了安全，我们这里不用 root 用户启动相关服务，而是用我们自建的 prometheus 用户启动服务，首先需要创建一个用户:</p>
+
+<pre><code class="language-bash">$ groupadd prometheus
+$ useradd -g prometheus -M -s /sbin/nologin prometheus
+</code></pre>
+
+<p>我们需要从 <a href="https://github.com/prometheus/prometheus/releases">prometheus下载页</a> 下载我们需要安装的版本，这里我们选择则安装的 prometheus 版本是 v2.7.1 的最新版本。</p>
+
+<pre><code class="language-bash">$ wget https://github.com/prometheus/prometheus/releases/download/v2.7.1/prometheus-2.7.1.linux-amd64.tar.gz
+</code></pre>
+
+<p>解压并安装 prometheus 服务：</p>
+
+<pre><code class="language-bash">$ tar xf prometheus-2.7.1.linux-amd64.tar.gz -C /srv/
+$ cd /srv/
+$ mv prometheus-2.7.1.linux-amd64/ prometheus
+$ mkdir -pv /srv/prometheus/data
+$ chown -R prometheus.prometheus /srv/prometheus
+</code></pre>
+
+<p>创建 prometheus 系统服务启动文件 <code>/usr/lib/systemd/system/prometheus.service</code>：</p>
+
+<pre><code class="language-bash">[Unit]
+Description=Prometheus Server
+Documentation=https://prometheus.io/docs/introduction/overview/
+After=network-online.target
+
+[Service]
+User=prometheus
+Restart=on-failure
+ExecStart=/srv/prometheus/prometheus \
+  --config.file=/srv/prometheus/prometheus.yml \
+  --storage.tsdb.path=/srv/prometheus/data
+ExecReload=/bin/kill -HUP $MAINPID
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+<p>完整 prometheus 系统服务启动文件参见：<a href="https://github.com/yeaheo/prometheus-huang/blob/master/service/prometheus.service">prometheus.service</a></p>
+
+<p>修改 prometheus 配置文件 <code>/srv/prometheus/prometheus.yml</code>：</p>
+
+<pre><code class="language-bash">[root@node01 ~]# grep -v '^#' /srv/prometheus/prometheus.yml
+global:
+  scrape_interval:     15s 
+  evaluation_interval: 15s 
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: [&quot;localhost:9093&quot;]
+
+rule_files:
+  #- &quot;alert.rules&quot;
+  
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval:     5s
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node'
+    scrape_interval:     10s
+    static_configs:
+      - targets: ['localhost:9100']
+</code></pre>
+
+<blockquote>
+<p>该配置文件比较完整，该节点安装了 node_exporter 以及 alertmanager 服务，可以先按照此配置文件做配置，不影响服务的启动过程</p>
+</blockquote>
+
+<p>完整 prometheus 配置文件可以参见：<a href="https://github.com/yeaheo/prometheus-huang/blob/master/config/prometheus/prometheus.yml">prometheus.yml</a></p>
+
+<p>启动服务：</p>
+
+<pre><code class="language-bash">$ systemctl daemon-reload
+$ systemctl start prometheus.service
+$ systemctl enable prometheus.service
+$ systemctl status prometheus.service
+</code></pre>
+
+<p>Prometheus 服务支持热加载配置：</p>
+
+<pre><code class="language-bash">$ systemctl reload prometheus.service
+</code></pre>
+
+<p>Prometheus 服务启动完成后，可以通过<a href="http://localhost:9090/">http://localhost:9090</a>访问 Prometheus 的 UI 界面。</p>
+
+<h2 id="安装配置-node-exporter">安装配置 node_exporter</h2>
+
+<p>为监控服务器 CPU , 内存 , 磁盘 , I/O 等信息，需要在被监控机器上安装 node_exporter 服务。</p>
+
+<p>首先我们需要从 <a href="https://github.com/prometheus/node_exporter/releases">node_exporter下载页</a> 下载我们需要安装的版本，这里我们选择则安装的 node_exporter 版本是v0.17.0 的最新版本。</p>
+
+<pre><code class="language-bash">$ wget https://github.com/prometheus/node_exporter/releases/download/v0.17.0/node_exporter-0.17.0.linux-amd64.tar.gz
+</code></pre>
+
+<p>解压并安装 node_exporter 服务：</p>
+
+<pre><code class="language-bash">$ tar xf /opt/soft/node_exporter-0.17.0.linux-amd64.tar.gz -C /srv/
+$ cd /srv/
+$ mv node_exporter-0.17.0.linux-amd64/ node_exporter
+$ chown -R prometheus.prometheus /srv/node_exporter
+</code></pre>
+
+<p>创建 node_exporter 系统服务启动文件 <code>/usr/lib/systemd/system/node_exporter.service</code></p>
+
+<pre><code class="language-bash">#Prometheus Node Exporter Upstart script
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+ExecStart=/srv/node_exporter/node_exporter
+
+[Install]
+WantedBy=default.target
+</code></pre>
+
+<p>完整 node_exporter 系统服务启动文件参见：<a href="https://github.com/yeaheo/prometheus-huang/blob/master/service/node_exporter.service">node_exporter.service</a></p>
+
+<p>启动 node_exporter 服务：</p>
+
+<pre><code class="language-bash">$ systemctl daemon-reload
+$ systemctl enable node_exporter
+$ systemctl start node_exporter
+$ systemctl status node_exporter
+</code></pre>
+
+<p>服务启动后可以用 <a href="http://localhost:9100/metrics">http://localhost:9100/metrics</a> 测试 node_exporter 是否获取到节点的监控指标。</p>
+
+<p>如果可以正常获取到节点的指标后，我们可以将 node_exporter 整合到 prometheus 中，具体如下：</p>
+
+<p>修改 prometheus 的配置文件<code>/srv/prometheus/prometheus.yml</code>，增加如下内容：</p>
+
+<pre><code class="language-bash">scrape_configs:
+...
+- job_name: 'node'
+    scrape_interval:     10s
+    static_configs:
+      - targets: ['localhost:9100']
+</code></pre>
+
+<blockquote>
+<p>之前的 prometheus 配置文件已经做过修改了，这里只是提及一下</p>
+</blockquote>
+
+<p>重启 Prometheus 服务：</p>
+
+<pre><code class="language-bash">$ systemctl reload prometheus.service
+</code></pre>
+
+<p>之后就可以通过 Prometheus 服务获取该主机的相关资源了</p>
+
+<h2 id="安装-grafana-展示工具">安装 Grafana 展示工具</h2>
+
+<p>Grafana 我们主要用它来展示 Prometheus 的监控指标的，这样可以直观查看各节点或者服务的状态，本次安装 grafana 我们直接用 yum 安装即可，具体操作也可以参考<a href="http://docs.grafana.org/installation/rpm/">官方文档</a></p>
+
+<p>首先，需要准备 grafana 的 repo 源，手动添加 <code>/etc/yum.repos.d/grafana.repo</code>文件：</p>
+
+<pre><code class="language-bash">[grafana]
+name=grafana
+baseurl=https://packages.grafana.com/oss/rpm
+repo_gpgcheck=1
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.grafana.com/gpg.key
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+</code></pre>
+
+<p>然后就可以用 yum 安装 grafana 了：</p>
+
+<pre><code class="language-bash">$ yum makecache
+$ yum -y install grafana
+</code></pre>
+
+<p>等待安装完成后就可以启动服务了：</p>
+
+<pre><code class="language-bash">$ service grafana-server start
+</code></pre>
+
+<p>服务启动后 grafana 默认监听在 3000 端口 ，可以通过 <code>http://localhost:3000</code> 访问 grafana 的 ui 界面，默认登录账号密码为 <code>admin/admin</code> ，第一次登录需要我们重置密码。</p>
+
+<p>当 grafana 的页面可以正常访问后，我们就可以添加数据源了，具体操作流程如下：</p>
+
+<p>&ldquo;Configration&rdquo;&mdash;&ldquo;Data Sources&rdquo; 然后可以按照下图所示进行配置，需要注意的是 prometheus 的地址需要根据实际情况做修改。</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/dPlPs4.jpg" alt="grafana 设置数据源" /></p>
+
+<p>grafana 的数据源配置完成后，可以导入一个 dashboard 模板文件，建议节点模板使用 <a href="https://grafana.com/dashboards/8919">node_exporter 展示面板模板</a></p>
+
+<p>导入成功后完整的监控面板如下所示：</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/gx31mv.jpg" alt="node_exporter 监控面板" /></p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/prometheus-introduction/" data-toggle="tooltip" data-placement="top" title="Prometheus 监控入门介绍">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/prometheus-alertmanager-config/" data-toggle="tooltip" data-placement="top" title="Prometheus Alertmanager 基本配置">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

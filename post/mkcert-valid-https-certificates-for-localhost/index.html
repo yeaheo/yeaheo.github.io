@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="mkcert:本地有效的https证书" />
+    <meta property="og:title" content="mkcert:本地有效的https证书" />
+    <meta property="twitter:title" content="mkcert:本地有效的https证书" />
+    
+
+    
+    <meta name="description" content="随着HTTPS的越来越普及，现在绝大数的WEB网站已经支持了全站HTTPS，来防止网络攻击者观察或注入页面内容等，这里介绍一种在本地生成TLS证书的工具:mkcert">
+    <meta property="og:description" content="随着HTTPS的越来越普及，现在绝大数的WEB网站已经支持了全站HTTPS，来防止网络攻击者观察或注入页面内容等，这里介绍一种在本地生成TLS证书的工具:mkcert" />
+    <meta property="twitter:description" content="随着HTTPS的越来越普及，现在绝大数的WEB网站已经支持了全站HTTPS，来防止网络攻击者观察或注入页面内容等，这里介绍一种在本地生成TLS证书的工具:mkcert" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>mkcert:本地有效的https证书-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/mkcert-valid-https-certificates-for-localhost/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/sS9zSY.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/mkcert" title="Mkcert">
+                            Mkcert
+                        </a>
+                        
+                        <a class="tag" href="/tags/https" title="Https">
+                            Https
+                        </a>
+                        
+                    </div>
+                    <h1>mkcert:本地有效的https证书</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Monday, January 14, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#安装-mkcert-工具">安装 mkcert 工具</a></li>
+<li><a href="#生成证书">生成证书</a>
+<ul>
+<li><a href="#检查生成的证书">检查生成的证书</a></li>
+</ul></li>
+<li><a href="#测试证书可用性">测试证书可用性</a></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>随着 HTTPS 的越来越普及，现在绝大数的 WEB 网站已经支持了全站 HTTPS，来防止网络攻击者观察或注入页面内容等，这里介绍一种在本地生成 TLS 证书的工具: <strong>mkcert</strong></p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/PSaLVO.jpg" alt="mkcert" /></p>
+
+<p>现在开发者只用 HTTP 协议进行相关开发工作就会暴露一个问题：<strong><em>more and more browser features are being made available only to secure origins, and testing with HTTP hides any mixed content issues that can break a production HTTPS website</em></strong></p>
+
+<p>而 mkcert 就是这样一种工具，它可以在本地生成浏览器信任的本地 https 证书，这样开发人员完全可以按照 https 的方式进行相关开发工作，而且它不需要单独配置，只需几个命令就可以搞定本地 https。</p>
+
+<p>需要说明的是：</p>
+
+<blockquote>
+<p>Mkcert 不会生成自签名证书，而是由我们自己机器上在运行 <code>mkcert -install</code>时自动配置为信任的证书签署的，因此，当浏览器加载由 mkcert 实例生成的证书时，它将显示为安全受信的。</p>
+</blockquote>
+
+<h2 id="安装-mkcert-工具">安装 mkcert 工具</h2>
+
+<p>安装 mkcert 需要根据我们自己的机器的实际情况选择适合我们的安装方式。例如，本次用来演示的机器是 MAC，所以这里我选择用 <a href="https://brew.sh/">homebrew</a> 工具进行安装，其他安装方式可以参考: <a href="https://github.com/FiloSottile/mkcert">mkcert installation</a>文档内容。</p>
+
+<pre><code class="language-bash">$ brew install mkcert
+$ brew install nss   # if you use Firefox
+</code></pre>
+
+<h2 id="生成证书">生成证书</h2>
+
+<p>Mkcert 安装完成后，就可以生成相关证书及密钥了，具体过程如下：</p>
+
+<pre><code class="language-bash">$ mkcert -install
+Created a new local CA at &quot;/Users/filippo/Library/Application Support/mkcert&quot; 💥
+The local CA is now installed in the system trust store! ⚡️
+The local CA is now installed in the Firefox trust store (requires restart)! 🦊
+</code></pre>
+
+<p>为了便于管理，建议在单独目录下生成本地证书及密钥：</p>
+
+<pre><code class="language-bash">$ mkdir /opt/certs
+$ mkcert localhost 127.0.0.1
+Using the local CA at &quot;/Users/qingclass/Library/Application Support/mkcert&quot; ✨
+
+Created a new certificate valid for the following names 📜
+ - &quot;localhost&quot;
+ - &quot;127.0.0.1&quot;
+
+The certificate is at &quot;./localhost+1.pem&quot; and the key at &quot;./localhost+1-key.pem&quot; ✅
+</code></pre>
+
+<blockquote>
+<p>这里为了方便只生成针对 <code>localhost</code>及 <code>127.0.0.1</code>的证书，其他域名证书类似，可以参考下面的内容生成其他证书</p>
+</blockquote>
+
+<pre><code class="language-bash">$ mkcert example.com &quot;*.example.org&quot; myapp.dev localhost 127.0.0.1 ::1
+</code></pre>
+
+<h3 id="检查生成的证书">检查生成的证书</h3>
+
+<p>证书生成后，需要确认一下证书的生成情况：</p>
+
+<pre><code class="language-bash">$ cd /opt/certs
+$ ls
+localhost+1-key.pem localhost+1.pem
+</code></pre>
+
+<p>可以看到，生成了证书及密钥，现在我们只需要将生成的证书及密钥配置到我们的 web 应用中就可以实现本地受信的 https 了</p>
+
+<h2 id="测试证书可用性">测试证书可用性</h2>
+
+<p>为了方便测试，这里使用 docker 启动一个 nginx 的容器进行 https 配置。</p>
+
+<p>首先，需要准备一个 nginx 开启 https 的配置文件 <code>default.conf</code>:</p>
+
+<pre><code class="language-bash">server {
+    listen       80;
+    listen       443 ssl;
+    ssl on;
+    server_name  localhost;
+    access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    ssl_certificate   /root/localhost+1.pem;
+    ssl_certificate_key /root/localhost+1-key.pem;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+</code></pre>
+
+<p>启动容器的时候将此配置文件挂载到容器的 <code>/etc/nginx/conf.d/default.conf</code>即可，上述的 <code>80</code>端口可能在访问时报错，可以忽略，我们这里只是讨论 https</p>
+
+<p>同时启动容器的时候还需要将上述生成的本地 https 证书及密钥挂载到容器的指定位置，我这里容器内配置的路径是:</p>
+
+<pre><code class="language-bash">ssl_certificate   /root/localhost+1.pem;
+ssl_certificate_key /root/localhost+1-key.pem;
+</code></pre>
+
+<p>梳理完成后就可以启动 nginx 容器了，具体命令如下：</p>
+
+<pre><code class="language-bash">$ docker run -d -p 8080:80 -p 8443:443 \
+-v ~/office/conf/default.conf:/etc/nginx/conf.d/default.conf \
+-v ~/office/mkcert/localhost+1-key.pem:/root/localhost+1-key.pem \
+-v ~/office/mkcert/localhost+1.pem:/root/localhost+1.pem \
+nginx:alpine
+</code></pre>
+
+<p>容器启动后就可以通过浏览器访问 <code>https://localhost:8443</code>来测试刚才生成的 https 证书是否可以被浏览器信任。</p>
+
+<p>测试结果如下图所示：</p>
+
+<p>chrome浏览器：</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/qi1Grr.jpg" alt="chrome浏览器测试" /></p>
+
+<p>Fire fox浏览器：</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/n0KOT1.jpg" alt="Fire fox浏览器测试" /></p>
+
+<p>经过测试可以看到之前我们生成的 https 证书及密钥起作用了，之后我们就可以愉快的玩耍了，哈哈。</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/mesos-cluster-installation-b/" data-toggle="tooltip" data-placement="top" title="Mesos集群二进制方式部署二 ">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/k8s-helm-introduction/" data-toggle="tooltip" data-placement="top" title="K8S 包管理工具 Helm - 介绍">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

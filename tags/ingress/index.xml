@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ingress on Aeric Blog</title>
+    <link>https://aeric.io/tags/ingress/</link>
+    <description>Recent content in Ingress on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 05 Oct 2019 18:12:53 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/ingress/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Kubernetes 集群部署 Traefik 2.0</title>
+      <link>https://aeric.io/post/traefik2.0-install-and-config/</link>
+      <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/traefik2.0-install-and-config/</guid>
+      <description>以前简单介绍了一下 Traefik 2.0 的新特性，这里我试着在已经存在的 Kubernetes 集群中部署 Traefik 2.0 ,需要注意的是新版本的 Traefik 在配置 Ingress 的路由规则的时候是通过自定义的 CRD 对象来</description>
+    </item>
+    
+    <item>
+      <title>云原生边缘路由器 Traefik 2.0</title>
+      <link>https://aeric.io/post/traefik2.0-acquaintance/</link>
+      <pubDate>Thu, 03 Oct 2019 12:01:34 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/traefik2.0-acquaintance/</guid>
+      <description>Traefik 是一个开源的反向代理和负载均衡工具，现在官方介绍中将其定位为云原生的边缘路由器，且用了一堆修饰词：简单、自动、高速、全面、开源、产品级、内</description>
+    </item>
+    
+    <item>
+      <title>Nginx Ingress 配置 HTTPS</title>
+      <link>https://aeric.io/post/nginx-ingress-https-redirect/</link>
+      <pubDate>Mon, 06 May 2019 17:35:43 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/nginx-ingress-https-redirect/</guid>
+      <description>对于 Nginx Ingress 的 TLS 配置，官方文档已经写得很清楚了，只是有的地方只是点了一下，并没有做出详细的说明，可以说还是有点坑的，哈哈。这里我实际从头开始操作</description>
+    </item>
+    
+  </channel>
+</rss>

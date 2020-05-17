@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Mesos集群二进制方式部署二 " />
+    <meta property="og:title" content="Mesos集群二进制方式部署二 " />
+    <meta property="twitter:title" content="Mesos集群二进制方式部署二 " />
+    
+
+    
+    <meta name="description" content="本次 Mesos 集群部署主要基于Zookeeper&#43;Mesos&#43;Marathon&#43;Docker，各个组件均需单独部署并配置，具体安装配置过程可以参考如下过程，">
+    <meta property="og:description" content="本次 Mesos 集群部署主要基于Zookeeper&#43;Mesos&#43;Marathon&#43;Docker，各个组件均需单独部署并配置，具体安装配置过程可以参考如下过程，" />
+    <meta property="twitter:description" content="本次 Mesos 集群部署主要基于Zookeeper&#43;Mesos&#43;Marathon&#43;Docker，各个组件均需单独部署并配置，具体安装配置过程可以参考如下过程，" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Mesos集群二进制方式部署二 -吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/mesos-cluster-installation-b/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/zRmwCh.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        <a class="tag" href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        <a class="tag" href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                    </div>
+                    <h1>Mesos集群二进制方式部署二 </h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Saturday, January 12, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#安装并配置-zookeeper">安装并配置 Zookeeper</a>
+<ul>
+<li><a href="#下载-zookeeper">下载 zookeeper</a></li>
+<li><a href="#配置-zookeeper">配置 Zookeeper</a></li>
+</ul></li>
+<li><a href="#安装配置-mesos-master-节点">安装配置 Mesos-Master 节点</a></li>
+<li><a href="#配置-marathon">配置 Marathon</a></li>
+<li><a href="#配置-mesos-slave-节点">配置 Mesos-Slave 节点</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>本次部署基于 Zookeeper+Mesos+Marathon+Docker，具体部署环境如下：</p>
+
+<pre><code class="language-bash">mesos-master1   172.16.8.120   mesos+zookeeper+marathon
+mesos-master2   172.16.8.121   mesos+zookeeper+marathon
+mesos-master3   172.16.8.122   mesos+zookeeper+marathon
+mesos-slave1    172.16.8.110   mesos+docker
+</code></pre>
+
+<p>上述所有机器系统版本如下：</p>
+
+<pre><code class="language-bash">[root@mesos-master1 ~]# java -version
+openjdk version &quot;1.8.0_191&quot;
+OpenJDK Runtime Environment (build 1.8.0_191-b12)
+OpenJDK 64-Bit Server VM (build 25.191-b12, mixed mode)
+</code></pre>
+
+<pre><code class="language-bash">[root@mesos-master1 ~]# uname -r
+4.19.0-1.el7.elrepo.x86_64
+[root@mesos-master1 ~]# cat /etc/redhat-release 
+CentOS Linux release 7.5.1804 (Core) 
+</code></pre>
+
+<blockquote>
+<p>在部署基本组件之前需要先配置好各个机器上的 Java 环境，这里不再赘述</p>
+</blockquote>
+
+<p>所有主机上的 <code>hosts</code> 文件如下所示：</p>
+
+<pre><code class="language-bash">127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+172.16.8.110 mesos-slave1
+172.16.8.120 mesos-master1
+172.16.8.121 mesos-master2
+172.16.8.122 mesos-master3
+</code></pre>
+
+<h3 id="安装并配置-zookeeper">安装并配置 Zookeeper</h3>
+
+<p>Zookeeper 的安装方式有多种，常用的一般是用源码二进制的方式（tar包）安装，另一种是直接用 yum 安装。</p>
+
+<p>二进制方式安装可以参考：<a href="https://www.jianshu.com/p/950fb55ea53a">https://www.jianshu.com/p/950fb55ea53a</a></p>
+
+<p>为了可以安装较新版本的 zookeeper 本次安装使用二进制方式安装，具体内容如下：</p>
+
+<p>Zookeeper 的官方站点：<a href="https://zookeeper.apache.org/">https://zookeeper.apache.org/</a></p>
+
+<p>Zookeeper 的官方下载地址：<a href="https://zookeeper.apache.org/releases.html">https://zookeeper.apache.org/releases.html</a> 我们可以在官方站点下载我们需要的版本即可。</p>
+
+<h4 id="下载-zookeeper">下载 zookeeper</h4>
+
+<pre><code class="language-bash">$ wget http://apache.01link.hk/zookeeper/zookeeper-3.4.13/zookeeper-3.4.13.tar.gz
+$ tar xf zookeeper-3.4.13.tar.gz -C /srv/
+</code></pre>
+
+<h4 id="配置-zookeeper">配置 Zookeeper</h4>
+
+<p>我们需要在所有 master 节点上手动创建 zookeeper 的数据及日志存放目录：</p>
+
+<pre><code class="language-bash">$ mkdir -pv /data/zookeeper/{data,logs}
+</code></pre>
+
+<p>准备 zookeeper 的配置文件：</p>
+
+<pre><code class="language-bash">$ cp /srv/zookeeper-3.4.13/conf/zoo_sample.cfg /srv/zookeeper-3.4.13/conf/zoo.cfg
+
+# 修改配置文件内容如下：
+$ cat /srv/zookeeper/conf/zoo.cfg | grep -v '^#' | grep -v '^$'
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/data/zookeeper/data
+dataLogDir=/data/zookeeper/logs
+clientPort=2181
+server.1=mesos-master1:2888:3888
+server.2=mesos-master2:2888:3888
+server.3=mesos-master3:2888:3888
+</code></pre>
+
+<blockquote>
+<p>所有节点上的配置文件一致</p>
+</blockquote>
+
+<p>准备 myid 文件：</p>
+
+<pre><code class="language-bash"># mesos-master1上执行
+echo '1' &gt; /data/zookeeper/data/myid
+
+# mesos-master2上执行
+echo '2' &gt; /data/zookeeper/data/myid
+
+# mesos-master3上执行
+echo '3' &gt; /data/zookeeper/data/myid
+</code></pre>
+
+<p>配置完成后就可以启动 zookeeper 服务了：</p>
+
+<pre><code class="language-bash">$ systemctl start zookeeper.service
+</code></pre>
+
+<blockquote>
+<p>三台机器上均需要启动 zookeeper 服务</p>
+</blockquote>
+
+<h3 id="安装配置-mesos-master-节点">安装配置 Mesos-Master 节点</h3>
+
+<p>在所有 master 机器上执行如下命令安装 mesos 和 marathon：</p>
+
+<pre><code class="language-bash">$ rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-3.noarch.rpm
+$ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mesosphere
+$ yum -y install mesos marathon
+</code></pre>
+
+<blockquote>
+<p>有时候安装的 marathon 软件包不是我们需要的，这个是因为我们的 yum 源不对，只需将对应的 yum 源禁用,重新安装即可</p>
+</blockquote>
+
+<p>安装完成的相关软件包如下所示：</p>
+
+<pre><code class="language-bash">$ rpm -qa | grep -E 'mesos|marathon'
+mesos-1.7.0-2.0.3.x86_64
+mesosphere-el-repo-7-3.noarch
+marathon-1.4.13-1.0.683.el7.x86_64
+</code></pre>
+
+<p>安装完成后需要我们配置 mesos ，mesos 的高可用配置是由 zookeeper 实现的，所以需要配置 zookeeper，具体操作如下：</p>
+
+<pre><code class="language-bash"># 在所有 master 上执行
+$ vim /etc/mesos/zk
+zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/mesos
+</code></pre>
+
+<p>设置文件<code>/etc/master-/quorum</code>内容为一个大于（master节点数除以2）的整数。即采用四舍五入，比如这里有3个master节点，那么3/2=1.5，四舍五入为2</p>
+
+<pre><code class="language-bash"># 在所有 master 上执行
+$ echo 2 &gt; /etc/mesos-master/quorum
+</code></pre>
+
+<p>设置 mesos 集群 <code>hostname</code> 和集群名称</p>
+
+<pre><code class="language-bash"># 在 mesos-master1 上执行
+$ echo 172.16.8.120 &gt; /etc/mesos-master/hostname
+$ echo Mesos-Cluster &gt; /etc/mesos-master/cluster
+
+# 在 mesos-master2 上执行
+$ echo 172.16.8.121 &gt; /etc/mesos-master/hostname
+$ echo Mesos-Cluster &gt; /etc/mesos-master/cluster
+
+# 在 mesos-master3 上执行
+$ echo 172.16.8.122 &gt; /etc/mesos-master/hostname
+$ echo Mesos-Cluster &gt; /etc/mesos-master/cluster
+</code></pre>
+
+<p>配置完成后就可以启动 mesos-master 服务了：</p>
+
+<pre><code class="language-bash">$ systemctl start mesos-master
+</code></pre>
+
+<p>服务启动后可以通过浏览器访问 mesos 的界面：<a href="http://172.16.8.120:5050">http://172.16.8.120:5050</a></p>
+
+<h3 id="配置-marathon">配置 Marathon</h3>
+
+<p>在上述安装 mesos 的时候已经安装了 marathon，这里只需配置即可（所有 mesos-master 机器均执行）。</p>
+
+<p>创建 marathon 配置文件目录：</p>
+
+<pre><code class="language-bash"># 在所有master上执行
+$ mkdir -pv /etc/marathon/conf
+
+# 在mesos-master1上执行
+$ echo 172.16.8.120 &gt; /etc/marathon/conf/hostname
+$ cp  /etc/mesos/zk   /etc/marathon/conf/master
+$ cp  /etc/mesos/zk   /etc/marathon/conf/zk
+
+# 修改相关文件
+$ vim /etc/marathon/conf/zk
+zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/marathon
+
+# 在mesos-master2上执行
+$ echo 172.16.8.121 &gt; /etc/marathon/conf/hostname
+$ cp  /etc/mesos/zk   /etc/marathon/conf/master
+$ cp  /etc/mesos/zk   /etc/marathon/conf/zk
+
+# 修改相关文件
+$ vim /etc/marathon/conf/zk
+zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/marathon
+
+# 在mesos-master3上执行
+$ echo 172.16.8.122 &gt; /etc/marathon/conf/hostname
+$ cp  /etc/mesos/zk   /etc/marathon/conf/master
+$ cp  /etc/mesos/zk   /etc/marathon/conf/zk
+
+# 修改相关文件
+$ vim /etc/marathon/conf/zk
+zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/marathon
+</code></pre>
+
+<p>配置完成后就可以起相应的服务了：</p>
+
+<pre><code class="language-bash">$ systemctl start marathon.service
+</code></pre>
+
+<p>marathon 默认监听 8080 端口，也可以通过浏览器访问其界面：<a href="http://172.16.8.120:8080">http://172.16.8.120:8080</a></p>
+
+<h3 id="配置-mesos-slave-节点">配置 Mesos-Slave 节点</h3>
+
+<p>mesos-slave 也需要安装 mesos，不需要安装 marathon，首先引入 mesos 的 yum 源：</p>
+
+<pre><code class="language-bash">$ rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-3.noarch.rpm
+$ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mesosphere
+</code></pre>
+
+<p>安装 mesos 软件包：</p>
+
+<pre><code class="language-bash">$ yum -y install mesos
+</code></pre>
+
+<p>安装完成后 mesos-slave 的配置文件默认在 <code>/etc/mesos-slave</code> 目录下，需要自定义配置：</p>
+
+<pre><code class="language-bash">$ echo 172.16.8.110 &gt; /etc/mesos-slave/hostname
+</code></pre>
+
+<p>配置 mesos-master 信息：</p>
+
+<pre><code class="language-bash">$ vim /etc/mesos/zk
+zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/mesos
+</code></pre>
+
+<p>配置 marathon 调用 mesos 运行 docker 容器:</p>
+
+<pre><code class="language-bash">$ echo 'docker,mesos' &gt; /etc/mesos-slave/containerizers
+</code></pre>
+
+<p>配置完成后，启动 mesos-slave 服务</p>
+
+<pre><code class="language-bash">$ systemctl start mesos-slave
+</code></pre>
+
+<p>至此，一个 mesos 集群创建完成，全部安装完成后就可以在 mesos 界面看到加入到的 slave 节点。</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/mesos-cluster-installation-a/" data-toggle="tooltip" data-placement="top" title="Mesos集群二进制方式部署一">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/mkcert-valid-https-certificates-for-localhost/" data-toggle="tooltip" data-placement="top" title="mkcert:本地有效的https证书">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

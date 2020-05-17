@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="K8S 包管理工具 Helm - 应用" />
+    <meta property="og:title" content="K8S 包管理工具 Helm - 应用" />
+    <meta property="twitter:title" content="K8S 包管理工具 Helm - 应用" />
+    
+
+    
+    <meta name="description" content="之前已经在 kubernetes 集群中安装了 Helm 和 Tiller，那么接下来需要熟悉一下 Helm 的基本应用，主要包括利用 Helm 创建、打包、分发到本地仓库等等基本操作。">
+    <meta property="og:description" content="之前已经在 kubernetes 集群中安装了 Helm 和 Tiller，那么接下来需要熟悉一下 Helm 的基本应用，主要包括利用 Helm 创建、打包、分发到本地仓库等等基本操作。" />
+    <meta property="twitter:description" content="之前已经在 kubernetes 集群中安装了 Helm 和 Tiller，那么接下来需要熟悉一下 Helm 的基本应用，主要包括利用 Helm 创建、打包、分发到本地仓库等等基本操作。" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>K8S 包管理工具 Helm - 应用-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/k8s-helm-application/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/DoMTwF.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                    </div>
+                    <h1>K8S 包管理工具 Helm - 应用</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Tuesday, January 15, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#创建-helm-chart">创建 Helm Chart</a></li>
+<li><a href="#完善应用的基本信息">完善应用的基本信息</a>
+<ul>
+<li><a href="#完善应用具体部署信息">完善应用具体部署信息</a></li>
+</ul></li>
+<li><a href="#打包应用">打包应用</a></li>
+<li><a href="#将打包应用发布到-repository">将打包应用发布到 Repository</a></li>
+<li><a href="#检查配置和模板是否有效">检查配置和模板是否有效</a></li>
+<li><a href="#部署应用到-kubernetes-集群">部署应用到 Kubernetes 集群</a></li>
+<li><a href="#管理部署的-release">管理部署的 Release</a>
+<ul>
+<li><a href="#升级-release">升级 Release</a></li>
+<li><a href="#回滚-release">回滚 Release</a></li>
+<li><a href="#删除-release">删除 Release</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>之前在 kubernetes 集群中已经安装了 Helm 和 Tiller，那么接下来我们需要熟悉一下 Helm 的基本应用，主要包括利用 Helm 创建、打包、分发、安装、升级及回滚 kubernetes 应用。</p>
+
+<h2 id="创建-helm-chart">创建 Helm Chart</h2>
+
+<p>首先我们需要创建一个 Chart，以后的基本操作都基于这个 Chart ：</p>
+
+<pre><code class="language-bash">$ helm create mychart
+Creating mychart
+</code></pre>
+
+<p>当执行上述命令创建了 Chart 后，会在当前目录下生成相应的 <code>mychart</code> 目录，该目录结构如下所示：</p>
+
+<pre><code class="language-bash">$ tree mychart/
+mychart/
+├── charts
+├── Chart.yaml
+├── templates
+│   ├── deployment.yaml
+│   ├── _helpers.tpl
+│   ├── ingress.yaml
+│   ├── NOTES.txt
+│   └── service.yaml
+└── values.yaml
+
+2 directories, 7 files
+</code></pre>
+
+<blockquote>
+<p>对于上述目录下的文件，我们主要关注的是 <code>Chart.yaml</code> 、<code>values.yaml</code> 、<code>NOTES.txt</code>  以及 <code>templates</code> 目录</p>
+</blockquote>
+
+<p>这几个文件的主要用途如下描述：</p>
+
+<pre><code class="language-bash">Chart.yaml   # 用于描述这个 Chart 的相关信息，包括名字、描述信息以及版本等;
+values.yaml  # 用于存储 templates 目录中模板文件中用到变量的值;
+NOTES.txt    # 用于说明 Chart 部署后的一些信息，例如：如何使用这个 Chart、列出缺省的设置等;
+Templates    # 目录下是 YAML 文件的模板，该模板文件遵循 Go template 语法;
+</code></pre>
+
+<p>我们需要注意的是：</p>
+
+<blockquote>
+<p>templates 目录下 YAML 文件模板的值默认都是在 <code>values.yaml</code> 里定义的，例如，在 <code>deployment.yaml</code> 中定义的容器镜像 <code>image: &quot;{{ .Values.image.repository }}:{{ .Values.image.tag }}&quot;</code> 其中的 <code>.Values.image.repository</code> 的值就是在  <code>values.yaml</code> 里定义的 nginx，<code>.Values.image.tag</code> 的值就是 stable</p>
+</blockquote>
+
+<p>YAML 文件内容如下：</p>
+
+<pre><code class="language-bash">$ cat values.yaml | grep -E &quot;repository|tag&quot;
+repository: nginx
+tag: stable
+</code></pre>
+
+<p>以上两个变量值是在 <code>create chart</code> 的时候自动生成的默认值，我们可以根据实际情况进行修改。</p>
+
+<h2 id="完善应用的基本信息">完善应用的基本信息</h2>
+
+<p>由上述内容我们可以知道 <code>Chart.yaml</code> 文件是用来描述应用的相关信息的，所以我们需要修改这个文件的内容，该文件缺省内容如下：</p>
+
+<pre><code class="language-bash">$ cat Chart.yaml 
+apiVersion: v1
+appVersion: &quot;1.0&quot;
+description: A Helm chart for Kubernetes
+name: mychart
+version: 0.1.0
+</code></pre>
+
+<p>官方还有比较完整的文件示例：</p>
+
+<pre><code>apiVersion: The chart API version, always &quot;v1&quot; (required)
+name: The name of the chart (required)
+version: A SemVer 2 version (required)
+kubeVersion: A SemVer range of compatible Kubernetes versions (optional)
+description: A single-sentence description of this project (optional)
+keywords:
+  - A list of keywords about this project (optional)
+home: The URL of this project's home page (optional)
+sources:
+  - A list of URLs to source code for this project (optional)
+maintainers: # (optional)
+  - name: The maintainer's name (required for each maintainer)
+    email: The maintainer's email (optional for each maintainer)
+    url: A URL for the maintainer (optional for each maintainer)
+engine: gotpl # The name of the template engine (optional, defaults to gotpl)
+icon: A URL to an SVG or PNG image to be used as an icon (optional).
+appVersion: The version of the app that this contains (optional). This needn't be SemVer.
+deprecated: Whether this chart is deprecated (optional, boolean)
+tillerVersion: The version of Tiller that this chart requires. This should be expressed as a SemVer range: &quot;&gt;2.0.0&quot; (optional)
+</code></pre>
+
+<p>我们只需要根据我们的需求对其进行相关更改即可。</p>
+
+<h3 id="完善应用具体部署信息">完善应用具体部署信息</h3>
+
+<p>编辑 <code>values.yaml</code>，当 Chart 创建后默认会在 Kubernetes 部署一个 Nginx。 mychart 应用的 <code>values.yaml</code> 文件的具体内容如下：</p>
+
+<pre><code>$ cat values.yaml 
+# Default values for mychart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: &quot;true&quot;
+  path: /
+  hosts:
+    - chart-example.local
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+</code></pre>
+
+<p>当我们修改好 <code>valuse.yaml</code> 文件后，我们可以用如下命令检查依赖和模板配置是否正确：</p>
+
+<pre><code class="language-bash">$ helm lint mychart/
+==&gt; Linting mychart/
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, no failures
+</code></pre>
+
+<blockquote>
+<p>如果文件格式错误，可以根据提示进行修改</p>
+</blockquote>
+
+<p>我们也可以使用<code>helm install --dry-run --debug &lt;chart_dir&gt;</code>命令来验证chart配置。该输出中包含了模板的变量配置与最终渲染的 yaml 文件。</p>
+
+<pre><code class="language-bash">$ helm install --dry-run --debug mychart
+[debug] Created tunnel using local port: '36589'
+
+[debug] SERVER: &quot;127.0.0.1:36589&quot;
+
+[debug] Original chart version: &quot;&quot;
+[debug] CHART PATH: /opt/workspace/mychart
+
+NAME:   youngling-flee
+REVISION: 1
+RELEASED: Mon Aug 27 10:56:07 2018
+CHART: mychart-0.1.0
+USER-SUPPLIED VALUES:
+{}
+
+COMPUTED VALUES:
+affinity: {}
+image:
+  pullPolicy: IfNotPresent
+  repository: nginx
+  tag: stable
+ingress:
+  annotations: {}
+  enabled: false
+  hosts:
+  - chart-example.local
+  path: /
+  tls: []
+nodeSelector: {}
+replicaCount: 1
+resources: {}
+service:
+  port: 80
+  type: ClusterIP
+tolerations: []
+
+HOOKS:
+MANIFEST:
+
+---
+# Source: mychart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: youngling-flee-mychart
+  labels:
+    app: mychart
+    chart: mychart-0.1.0
+    release: youngling-flee
+    heritage: Tiller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: mychart
+    release: youngling-flee
+---
+# Source: mychart/templates/deployment.yaml
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: youngling-flee-mychart
+  labels:
+    app: mychart
+    chart: mychart-0.1.0
+    release: youngling-flee
+    heritage: Tiller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mychart
+      release: youngling-flee
+  template:
+    metadata:
+      labels:
+        app: mychart
+        release: youngling-flee
+    spec:
+      containers:
+        - name: mychart
+          image: &quot;nginx:stable&quot;
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+
+</code></pre>
+
+<p>我们可以看到 Deployment 和 Service 的名字前半截由两个随机的单词组成，最后才是我们在<code>values.yaml</code>中配置的值。</p>
+
+<h2 id="打包应用">打包应用</h2>
+
+<p>当我们修改完相关 YAML 文件的相关配置项后，下一步就是将该应用打包，具体打包操作如下所示：</p>
+
+<pre><code class="language-bash">$ helm package mychart/
+Successfully packaged chart and saved it to: /opt/workspace/mychart-0.1.0.tgz
+</code></pre>
+
+<p>mychart 目录会被打包为一个 <code>mychart-0.1.0.tgz</code>  格式的压缩包，该压缩包默认会被放到当前目录下，并同时被保存到了 Helm 的本地缺省仓库目录中。</p>
+
+<p>如果打包时需要自定义压缩包的存放位置可以在打包时增加 <code>-d</code>参数，例如：</p>
+
+<pre><code class="language-bash">$ helm package -d /opt/ mychart/
+Successfully packaged chart and saved it to: /opt/mychart-0.1.0.tgz
+</code></pre>
+
+<p>如果需要查看已打包的应用的具体地址，可以在打包的时候加上 <code>--debug</code> 参数，具体输出内容如下：</p>
+
+<pre><code class="language-bash">$ helm package mychart/ --debug
+Successfully packaged chart and saved it to: /opt/workspace/mychart-0.1.0.tgz
+[debug] Successfully saved /opt/workspace/mychart-0.1.0.tgz to /root/.helm/repository/local
+</code></pre>
+
+<h2 id="将打包应用发布到-repository">将打包应用发布到 Repository</h2>
+
+<p>我们已经打包了 Chart 并发布到了 Helm 的本地目录中，但通过 <code>helm search</code> 命令查找，并不能找不到刚才生成的 mychart 包:</p>
+
+<pre><code class="language-bash">$ helm search mychart
+No results found
+</code></pre>
+
+<p>这是因为 Repository 目录中的 Chart 包还没有被 Helm 管理。通过 <code>helm repo list</code>命令可以看到目前 Helm 中已配置的 Repository 的信息。</p>
+
+<pre><code class="language-bash">$ helm repo list
+NAME    URL
+stable  https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+</code></pre>
+
+<p>在比较新的版本上，当我们安装 Tiller 的时候会自动创建一个名为 <code>local</code> 本地仓库,但是有时候我们在搜索 Chart 的时候会报错，这个是因为没有启动本地仓库而已，我们需要手动启动本地仓库：</p>
+
+<pre><code class="language-bash">$ helm serve &amp;
+Now serving you on 127.0.0.1:8879
+</code></pre>
+
+<p>当启动本地仓库后我们再次搜索 chart 就会显示出来，例如：</p>
+
+<pre><code class="language-bash">$ helm search mychart -l
+NAME         	CHART VERSION	APP VERSION	DESCRIPTION                
+local/mychart	0.2.0        	1.0        	A Helm chart for Kubernetes
+local/mychart	0.1.0        	1.0        	A Helm chart for Kubernetes
+# -l 参数是显示所有历史版本，默认只显示最新版本
+$ helm search mychart
+NAME         	CHART VERSION	APP VERSION	DESCRIPTION                
+local/mychart	0.2.0        	1.0        	A Helm chart for Kubernetes
+</code></pre>
+
+<p>其实我们还可以将我们自己打包的 Charts 文件上传至我们的私有 helm 仓库，helm 私有仓库可以用 harbor 实现，具体用 harbor 怎样来管理 helm charts 可以参考：<a href="https://aeric.io/post/harbor-manage-helm-charts">用 Harbor 管理 Helm Charts</a></p>
+
+<p>当我们设置完 Chart 配置并将其发布到 Repositry 后就可以使用 <code>helm install</code> 命令将应用发布到 Kubernetes 集群中，发布完成后还可以用 Helm 管理对应的 Kubernetes 应用，可以进行版本的升级和回滚等操作。</p>
+
+<h2 id="检查配置和模板是否有效">检查配置和模板是否有效</h2>
+
+<p>当使用 <code>helm install</code> 命令部署应用时，实际上就是将 templates 目录下的模板文件渲染成 Kubernetes 能够识别的 YAML 格式。</p>
+
+<p>当我们修改好 Chart 文件后，可以用如下命令检查配置和模板是否有效：</p>
+
+<pre><code class="language-bash">helm install --dry-run --debug &lt;chart_dir&gt; --name &lt;release_name&gt;
+</code></pre>
+
+<p>上述命令输出中包含了模板的变量配置与最终渲染的 YAML 文件，例如:</p>
+
+<pre><code>$ helm install --dry-run --debug mychart
+
+[debug] Created tunnel using local port: '36589'
+
+[debug] SERVER: &quot;127.0.0.1:36589&quot;
+
+[debug] Original chart version: &quot;&quot;
+[debug] CHART PATH: /opt/workspace/mychart
+
+NAME:   youngling-flee
+REVISION: 1
+RELEASED: Mon Aug 27 10:56:07 2018
+CHART: mychart-0.1.0
+USER-SUPPLIED VALUES:
+{}
+
+COMPUTED VALUES:
+affinity: {}
+image:
+  pullPolicy: IfNotPresent
+  repository: nginx
+  tag: stable
+ingress:
+  annotations: {}
+  enabled: false
+  hosts:
+  - chart-example.local
+  path: /
+  tls: []
+nodeSelector: {}
+replicaCount: 1
+resources: {}
+service:
+  port: 80
+  type: ClusterIP
+tolerations: []
+
+HOOKS:
+MANIFEST:
+
+---
+# Source: mychart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: youngling-flee-mychart
+  labels:
+    app: mychart
+    chart: mychart-0.1.0
+    release: youngling-flee
+    heritage: Tiller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: mychart
+    release: youngling-flee
+---
+# Source: mychart/templates/deployment.yaml
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: youngling-flee-mychart
+  labels:
+    app: mychart
+    chart: mychart-0.1.0
+    release: youngling-flee
+    heritage: Tiller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mychart
+      release: youngling-flee
+  template:
+    metadata:
+      labels:
+        app: mychart
+        release: youngling-flee
+    spec:
+      containers:
+        - name: mychart
+          image: &quot;nginx:stable&quot;
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+</code></pre>
+
+<h2 id="部署应用到-kubernetes-集群">部署应用到 Kubernetes 集群</h2>
+
+<p>验证完成没有问题后，我们就可以使用以下命令将其部署到 Kubernetes 上了:</p>
+
+<pre><code class="language-bash"># 部署时需指定 Chart 名及 Release（部署的实例）名。
+$ helm install local/mychart --name helm-test
+NAME:   helm-test
+LAST DEPLOYED: Mon Aug 27 11:28:28 2018
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==&gt; v1/Service
+NAME               TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)  AGE
+helm-test-mychart  ClusterIP  10.254.128.14  &lt;none&gt;       80/TCP   3s
+
+==&gt; v1beta2/Deployment
+NAME               DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
+helm-test-mychart  1        0        0           0          3s
+
+
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l &quot;app=mychart,release=helm-test&quot; -o jsonpath=&quot;{.items[0].metadata.name}&quot;)
+  echo &quot;Visit http://127.0.0.1:8080 to use your application&quot;
+  kubectl port-forward $POD_NAME 8080:80
+</code></pre>
+
+<blockquote>
+<p>上述命令也可以在<code>mychart</code>目录下执行 <code>helm install .</code>将 nginx 部署到 kubernetes 集群上</p>
+</blockquote>
+
+<p>现在 nginx 已经部署到 kubernetes 集群上，本地执行提示中的命令在本地主机上访问到 nginx 实例：</p>
+
+<pre><code class="language-bash">$ export POD_NAME=$(kubectl get pods --namespace default -l &quot;app=mychart,release=helm-test&quot; -o jsonpath=&quot;{.items[0].metadata.name}&quot;)
+$ echo &quot;Visit http://127.0.0.1:8080 to use your application&quot;
+$ kubectl port-forward $POD_NAME 8080:80
+</code></pre>
+
+<p>具体访问效果如下图所示：</p>
+
+<pre><code class="language-html">$ curl -s http://127.0.0.1:8090
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Welcome to nginx!&lt;/title&gt;
+&lt;style&gt;
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
+&lt;p&gt;If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.&lt;/p&gt;
+
+&lt;p&gt;For online documentation and support please refer to
+&lt;a href=&quot;http://nginx.org/&quot;&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;
+Commercial support is available at
+&lt;a href=&quot;http://nginx.com/&quot;&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<h2 id="管理部署的-release">管理部署的 Release</h2>
+
+<p>当部署 Release 到 Kubernetes 集群后，可以使用下面的命令列出的所有已部署的 Release 以及其对应的 Chart：</p>
+
+<pre><code class="language-bash">$ helm list
+NAME     	REVISION	UPDATED                 	STATUS  	CHART        	NAMESPACE
+helm-test	1       	Mon Aug 27 11:28:28 2018	DEPLOYED	mychart-0.2.0	default  
+</code></pre>
+
+<p>不仅如此，我们还可以用下面命令查看某个 Release 的具体状态：</p>
+
+<pre><code class="language-bash">$ helm status helm-test
+LAST DEPLOYED: Mon Aug 27 11:28:28 2018
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==&gt; v1/Service
+NAME               TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)  AGE
+helm-test-mychart  ClusterIP  10.254.128.14  &lt;none&gt;       80/TCP   11m
+
+==&gt; v1beta2/Deployment
+NAME               DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
+helm-test-mychart  1        1        1           1          11m
+
+==&gt; v1/Pod(related)
+NAME                                READY  STATUS   RESTARTS  AGE
+helm-test-mychart-6cdfc4d97c-vbwx5  1/1    Running  0         11m
+
+
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l &quot;app=mychart,release=helm-test&quot; -o jsonpath=&quot;{.items[0].metadata.name}&quot;)
+  echo &quot;Visit http://127.0.0.1:8080 to use your application&quot;
+  kubectl port-forward $POD_NAME 8080:80
+</code></pre>
+
+<p>也可以用如下命令查看已部署应用的详细信息：</p>
+
+<pre><code class="language-bash">$ helm get helm-test
+</code></pre>
+
+<h3 id="升级-release">升级 Release</h3>
+
+<p>从上面 <code>helm list</code> 输出的结果中我们可以看到有一个 Revision（更改历史）字段，该字段用于表示某一个 Release 被更新的次数，我们可以用该特性对已部署的 Release 进行更新。</p>
+
+<p><strong>模拟应用升级</strong></p>
+
+<p>首先，需要修改 <code>Chart.yaml</code> 文件，将应用版本从 <code>0.2.0</code> 修改为 <code>0.3.0</code> ，然后使用 <code>helm package</code> 命令打包并发布到本地仓库：</p>
+
+<pre><code class="language-bash">$ cd mychart/
+$ cat Chart.yaml 
+apiVersion: v1
+appVersion: &quot;1.0&quot;
+description: A Helm chart for Kubernetes
+name: mychart
+version: 0.3.0
+
+$ helm package mychart
+Successfully packaged chart and saved it to: /opt/workspace/mychart-0.3.0.tgz
+</code></pre>
+
+<p>查询本地仓库版本：</p>
+
+<pre><code class="language-bash">$ helm search mychart -l
+NAME         	CHART VERSION	APP VERSION	DESCRIPTION                
+local/mychart	0.3.0        	1.0        	A Helm chart for Kubernetes
+local/mychart	0.2.0        	1.0        	A Helm chart for Kubernetes
+local/mychart	0.1.0        	1.0        	A Helm chart for Kubernetes
+</code></pre>
+
+<p>升级应用</p>
+
+<p>用 <code>helm upgrade</code> 命令将已部署的 helm-test 升级到新版本:</p>
+
+<pre><code class="language-bash">$ helm upgrade helm-test local/mychart
+Release &quot;helm-test&quot; has been upgraded. Happy Helming!
+</code></pre>
+
+<blockquote>
+<p>你可以通过 <code>--version</code> 参数指定需要升级的版本号，如果没有指定版本号，则默认使用最新版本</p>
+</blockquote>
+
+<p>升级完成后再次查看，注意观察 <code>Revision</code> 字段：</p>
+
+<pre><code class="language-bash">$ helm list
+NAME     	REVISION	UPDATED                 	STATUS  	CHART        	NAMESPACE
+helm-test	2       	Mon Aug 27 11:58:10 2018	DEPLOYED	mychart-0.3.0	default  
+</code></pre>
+
+<p>可以看到 <code>Revision</code> 字段由原来的 1 变成了 2，<code>Chart</code> 字段也由 <code>mychart-0.2.0</code> 升级到了 <code>mychart-0.3.0</code> ,表示升级完成。</p>
+
+<h3 id="回滚-release">回滚 Release</h3>
+
+<p>如果更新后的程序运行有问题，需要回退到旧版本的应用。当遇到这种问题后我们可以使用 <code>helm history</code> 命令查看一个 Release 的所有变更记录：</p>
+
+<pre><code class="language-bash">$ helm history helm-test
+REVISION	UPDATED                 	STATUS    	CHART        	DESCRIPTION     
+1       	Mon Aug 27 11:28:28 2018	SUPERSEDED	mychart-0.2.0	Install complete
+2       	Mon Aug 27 11:58:10 2018	DEPLOYED  	mychart-0.3.0	Upgrade complete
+</code></pre>
+
+<p>当我们知道了应用的变更记录后，我们可以选择回退应用到指定版本：</p>
+
+<pre><code class="language-bash">$ helm rollback helm-test 1
+Rollback was a success! Happy Helming!
+</code></pre>
+
+<blockquote>
+<p>其中的参数 1 是 helm history 查看到 Release 的历史记录中 REVISION 对应的值</p>
+</blockquote>
+
+<p>再次查看 Release 的变更记录：</p>
+
+<pre><code class="language-bash">$ helm history helm-test
+REVISION	UPDATED                 	STATUS    	CHART        	DESCRIPTION     
+1       	Mon Aug 27 11:28:28 2018	SUPERSEDED	mychart-0.2.0	Install complete
+2       	Mon Aug 27 11:58:10 2018	SUPERSEDED	mychart-0.3.0	Upgrade complete
+3       	Mon Aug 27 12:06:26 2018	DEPLOYED  	mychart-0.2.0	Rollback to 1   
+</code></pre>
+
+<p>再次查看现有 Release ：</p>
+
+<pre><code class="language-bash">$ helm list
+NAME     	REVISION	UPDATED                 	STATUS  	CHART        	NAMESPACE
+helm-test	3       	Mon Aug 27 12:06:26 2018	DEPLOYED	mychart-0.2.0	default  
+</code></pre>
+
+<p>可以看到 <code>Revision</code> 字段由原来的 2 变成了 3，<code>Chart</code> 字段也由 <code>mychart-0.3.0</code> 回退到了 <code>mychart-0.2.0</code> ,表示回退应用完成。</p>
+
+<h3 id="删除-release">删除 Release</h3>
+
+<p>删除应用比较方便，如果需要删除一个已部署的 Release，可以利用 <code>helm delete</code> 命令来完成删除：</p>
+
+<pre><code class="language-bash">$ helm delete helm-test
+release &quot;helm-test&quot; deleted
+$ helm list
+</code></pre>
+
+<p>当我们删除应用后我们可以使用如下命令查看被删除应用的状态：</p>
+
+<pre><code class="language-bash">$ helm list -a
+NAME     	REVISION	UPDATED                 	STATUS 	CHART        	NAMESPACE
+helm-test	3       	Mon Aug 27 12:06:26 2018	DELETED	mychart-0.2.0	default  
+</code></pre>
+
+<p>由上述内容可知被删除的应用已经被标记为 <code>DELETED</code> 状态。</p>
+
+<p>也可以使用 <code>--deleted</code> 参数来列出已经删除的 Release ：</p>
+
+<pre><code class="language-bash">$ helm list --deleted 
+NAME     	REVISION	UPDATED                 	STATUS 	CHART        	NAMESPACE
+helm-test	3       	Mon Aug 27 12:06:26 2018	DELETED	mychart-0.2.0	default  
+</code></pre>
+
+<p>查看被删除应用的历史变更记录：</p>
+
+<pre><code class="language-bash">$ helm history helm-test
+REVISION	UPDATED                 	STATUS    	CHART        	DESCRIPTION      
+1       	Mon Aug 27 11:28:28 2018	SUPERSEDED	mychart-0.2.0	Install complete 
+2       	Mon Aug 27 11:58:10 2018	SUPERSEDED	mychart-0.3.0	Upgrade complete 
+3       	Mon Aug 27 12:06:26 2018	DELETED   	mychart-0.2.0	Deletion complete
+</code></pre>
+
+<p>有时候我们需要移除指定 Release 所有相关的 Kubernetes 资源和 Release 的历史记录，我们可以利用如下命令：</p>
+
+<pre><code class="language-bash">$ helm delete --purge helm-test
+release &quot;helm-test&quot; deleted
+
+$ helm history helm-test
+Error: release: &quot;helm-test&quot; not found
+</code></pre>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/k8s-helm-installation/" data-toggle="tooltip" data-placement="top" title="K8S 包管理工具 Helm - 安装">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/harbor-manage-helm-charts/" data-toggle="tooltip" data-placement="top" title="用 Harbor 管理 Helm Charts">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

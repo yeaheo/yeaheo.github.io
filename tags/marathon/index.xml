@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Marathon on Aeric Blog</title>
+    <link>https://aeric.io/tags/marathon/</link>
+    <description>Recent content in Marathon on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 12 Jan 2019 20:44:13 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/marathon/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Mesos集群二进制方式部署二 </title>
+      <link>https://aeric.io/post/mesos-cluster-installation-b/</link>
+      <pubDate>Sat, 12 Jan 2019 20:44:13 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/mesos-cluster-installation-b/</guid>
+      <description>本次部署基于 Zookeeper+Mesos+Marathon+Docker，具体部署环境如下： mesos-master1 172.16.8.120 mesos+zookeeper+marathon mesos-master2 172.16.8.121 mesos+zookeeper+marathon mesos-master3 172.16.8.122 mesos+zookeeper+marathon mesos-slave1 172.16.8.110 mesos+docker 上述所有机器系统版本如</description>
+    </item>
+    
+    <item>
+      <title>Mesos集群二进制方式部署一</title>
+      <link>https://aeric.io/post/mesos-cluster-installation-a/</link>
+      <pubDate>Sat, 12 Jan 2019 20:43:44 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/mesos-cluster-installation-a/</guid>
+      <description>私有化 PaaS 平台主要由 Zookeeper、Mesos、Marathon 和 Docker 几个组件构成，各组件用途及扮演的角色信息如下所示： Zookeeper: Zookeeper 是一个分布式的，</description>
+    </item>
+    
+    <item>
+      <title>容器化部署 Mesos 集群</title>
+      <link>https://aeric.io/post/mesos-container-cluster-installation/</link>
+      <pubDate>Thu, 06 Dec 2018 16:34:08 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/mesos-container-cluster-installation/</guid>
+      <description>整个 mesos 集群主要由 Zookeeper、Mesos、Marathon 和 Docker 几个组件构成，各组件用途及扮演的角色信息如下所示： Zookeeper: Zookeeper 是一个分布式的，开</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,14 @@
+---
+layout:      post
+title:       "Traefik 2.0 暴露 TCP 服务"
+subtitle:    ""
+description: ""
+excerpt:     ""
+date:        2019-10-15T22:15:48+08:00
+author:      Aeric
+image:       "https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/lauterbrunnen.jpg"
+published:   true
+tags:        ["Traefik","Kubernetes","Ingress"]
+categories:  [ "TECH" ]
+---
+

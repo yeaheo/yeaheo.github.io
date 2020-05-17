@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pass on Aeric Blog</title>
+    <link>https://aeric.io/tags/pass/</link>
+    <description>Recent content in Pass on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 29 Jul 2018 14:59:56 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/pass/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>使用PASS密码管理器管理密码</title>
+      <link>https://aeric.io/post/pass-tool-guide/</link>
+      <pubDate>Sun, 29 Jul 2018 14:59:56 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/pass-tool-guide/</guid>
+      <description>关于 PASS 工具 PASS 是 Linux 上的一个简单的命令行密码管理器，它将密码存储在一个 gpg 加密后的文件里。这些加密后的文件很好地组织按目录结构存放，现在密码管理器</description>
+    </item>
+    
+  </channel>
+</rss>

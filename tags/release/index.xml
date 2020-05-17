@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Release on Aeric Blog</title>
+    <link>https://aeric.io/tags/release/</link>
+    <description>Recent content in Release on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 27 Mar 2019 10:49:54 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/release/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Kubernetes 1.14 更新日志</title>
+      <link>https://aeric.io/post/kubernetes-1-14-release-changelog/</link>
+      <pubDate>Wed, 27 Mar 2019 10:49:54 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/kubernetes-1-14-release-changelog/</guid>
+      <description>总的来说，本次发布的版本主要有以下几大显著特性： 对于管理 Windows node 的生产级支持； Kubectl 的说明文档经过完全重写，并启用新域名:https://kubec</description>
+    </item>
+    
+  </channel>
+</rss>

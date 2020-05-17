@@ -1,0 +1,15 @@
+---
+layout:      post
+title:       "Traefik 2.0 暴露 HTTP 服务"
+subtitle:    ""
+description: ""
+excerpt:     ""
+date:        2019-10-09T12:15:18+08:00
+author:      Aeric
+image:       "https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/iczi.jpg"
+published:   true
+tags:        ["Traefik","Kubernetes","Ingress"]
+categories:  [ "TECH" ]
+---
+
+之前我是在 Kubernetes 的测试集群中已经安装了 Traefik 2.0 ，现在我们尝试用 Traefik 来暴露 HTTP 类型的服务，需要注意的是早期版本的 Traefik 是通过各种注解的方式来实现 Ingress 的服务暴露，而 Traefik 2.0 是通过新特性中的 CRD 来实现 Ingress 的服务暴露。

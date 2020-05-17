@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Erlang on Aeric Blog</title>
+    <link>https://aeric.io/tags/erlang/</link>
+    <description>Recent content in Erlang on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 02 Dec 2018 16:48:15 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/erlang/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Linux 配置 RabbitMQ 集群</title>
+      <link>https://aeric.io/post/rabbitmq-cluster-installation/</link>
+      <pubDate>Sun, 02 Dec 2018 16:48:15 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/rabbitmq-cluster-installation/</guid>
+      <description>一般情况下，如果只是为了探究 RabbitMQ 或者验证业务工程的正确性那么在本地环境或者测试环境上使用其单实例部署就可以了，但是出于 MQ 中间件本身的可靠性、并</description>
+    </item>
+    
+    <item>
+      <title>Linux 配置 RabbitMQ 服务</title>
+      <link>https://aeric.io/post/rabbitmq-single-installation/</link>
+      <pubDate>Sun, 02 Dec 2018 16:47:46 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/rabbitmq-single-installation/</guid>
+      <description>RabbitMQ 是由 LShift 提供的一个 Advanced Message Queuing Protocol (AMQP) 的开源实现，由以高性能、健壮以及可伸缩性出名的 Erlang 开发设计，因此也是继承了这些优点。 本文档旨在基于 Erlang 环境在 CentOS 7 系统</description>
+    </item>
+    
+    <item>
+      <title>RabbitMQ Erlang 环境配置</title>
+      <link>https://aeric.io/post/rabbitmq-erlang-installation/</link>
+      <pubDate>Sun, 02 Dec 2018 16:46:51 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/rabbitmq-erlang-installation/</guid>
+      <description>Erlang 是一种多用途编程语言，主要用于开发并发和分布式系统。它最初是一种专有的编程语言，Ericsson 使用它来开发电话和通信应用程序。 本文档旨在</description>
+    </item>
+    
+  </channel>
+</rss>

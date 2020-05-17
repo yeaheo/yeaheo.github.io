@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Kubernetes 1.14 更新日志" />
+    <meta property="og:title" content="Kubernetes 1.14 更新日志" />
+    <meta property="twitter:title" content="Kubernetes 1.14 更新日志" />
+    
+
+    
+    <meta name="description" content="2019年3月26日 Kubernetes1.14 版本正式发布，这是2019年发布的第一个版本，距离上个版本发布刚好又是三个月的时间。今天把该版本的主要特性说明一下">
+    <meta property="og:description" content="2019年3月26日 Kubernetes1.14 版本正式发布，这是2019年发布的第一个版本，距离上个版本发布刚好又是三个月的时间。今天把该版本的主要特性说明一下" />
+    <meta property="twitter:description" content="2019年3月26日 Kubernetes1.14 版本正式发布，这是2019年发布的第一个版本，距离上个版本发布刚好又是三个月的时间。今天把该版本的主要特性说明一下" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Kubernetes 1.14 更新日志-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/kubernetes-1-14-release-changelog/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/dXi0WT.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        <a class="tag" href="/tags/release" title="Release">
+                            Release
+                        </a>
+                        
+                    </div>
+                    <h1>Kubernetes 1.14 更新日志</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Wednesday, March 27, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#对windows节点的生产级支持">对Windows节点的生产级支持</a></li>
+<li><a href="#新的kubectl说明文档与徽标">新的Kubectl说明文档与徽标</a></li>
+<li><a href="#kubectl-与-kustomize集成">Kubectl 与 Kustomize集成</a></li>
+<li><a href="#kubectl-插件机制发布稳定版本">Kubectl 插件机制发布稳定版本</a></li>
+<li><a href="#持久本地卷迎来通用版本">持久本地卷迎来通用版本</a></li>
+<li><a href="#pid-限制正转向-beta-测试版本">PID 限制正转向 beta 测试版本</a></li>
+<li><a href="#其他值得注意的功能">其他值得注意的功能</a></li>
+<li><a href="#参考链接">参考链接</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>总的来说，本次发布的版本主要有以下几大显著特性：</p>
+
+<ul>
+<li>对于管理 Windows node 的生产级支持；</li>
+<li>Kubectl 的说明文档经过完全重写，并启用新域名:<a href="https://kubectl.docs.kubernetes.io">https://kubectl.docs.kubernetes.io</a>，还有了自己的 logo 和吉祥物 kubee-cuddle；</li>
+<li>Kubectl 与 Kustomize集成；</li>
+<li>Kubectl 插件机制发布稳定版本；</li>
+<li>持久本地卷迎来通用版本；</li>
+<li>PID 限制正转向 beta 测试版本；</li>
+</ul>
+
+<p>当然还有其他比较受关注的增强功能，具体功能可以参考<a href="https://kubernetes.io/blog/2019/03/25/kubernetes-1-14-release-announcement/">官方文档</a></p>
+
+<h3 id="对windows节点的生产级支持">对Windows节点的生产级支持</h3>
+
+<p>在此之前，Kubernetes 当中的 Windows 节点一直处于 beta 测试阶段，旨在允许众多用户以实验性方式体验Kubernetes for Windows 容器的实际价值。如今，Kubernetes 开始正式支持将 Windows 节点添加为工作节点并部署Windows 容器，从而确保庞大的 Windows 应用程序生态系统得以利用我们平台提供的强大功能。这意味着以往在Windows 应用程序与 Linux 应用程序层面投入大量资金的企业不必再寻求独立的协调器管理自身工作负载，而能够不再受到具体操作系统类型的影响提升整体部署的运营效率。</p>
+
+<p>本次 Kubernetes 为 Windows 容器带来的核心功能特性包括：</p>
+
+<ul>
+<li>支持将 Windows Server 2019 引入工作节点与容器；</li>
+<li>支持采用 Azure-CNI、 OVN- Kubernetes 以及 Flannel 的树外网络；</li>
+<li>改进了对 Pod、服务类型、工作负载控制器以及指标/配额的支持能力，以便与 Linux 容器的自有功能实现更为紧密的匹配；</li>
+</ul>
+
+<h3 id="新的kubectl说明文档与徽标">新的Kubectl说明文档与徽标</h3>
+
+<p>Kubectl 工具的说明文档经过完全重写，其重点在于利用声明性 Resource Config 实现资源管理。这份文档目前以独立站点的形式发布，采用 Gitbook 风格，在新的文档站点中看到新的 kubectl 徽标与吉祥物 kubee-cuddle 的外观，具体可以访问 <a href="https://kubectl.docs.kubernetes.io">https://kubectl.docs.kubernetes.io</a> 查看。</p>
+
+<h3 id="kubectl-与-kustomize集成">Kubectl 与 Kustomize集成</h3>
+
+<p>Kustomize 的声明性 Resource Config 创作功能现在可以通过 <code>-k</code> 标记，适用于 apply 及 get 等命令，同时 Kustomize 子命令可以在 kubectl 中获取。</p>
+
+<p>Kustomize 旨在帮助用户创作及复用包含 Kubernetes 各原生概念的 Resource Config。用户现在能够利用 <code>kubectl apply -k dir/</code> 将拥有 <code>kustomization.yaml</code> 的目录适用于集群。此外，用户也可以将定制化 Resource Config 发送至stdout，而无需通过 <code>kubectl kustomize dir/</code> 加以应用。这些新的功能被记录在新的说明文档当中，具体请参阅<a href="https://kubectl.docs.kubernetes.io">https://kubectl.docs.kubernetes.io</a></p>
+
+<p>继续通过 Kubernetes 的 kustomize repo 对 Kustomize 子命令进行开发。最新的 Kustomize 功能将以独立的Kustomize 二进制文件（发布至 kustomize repo）的形式更为频率地发布，且在每一轮 Kubernetes 发布之前在kubectl 中得以更新。</p>
+
+<h3 id="kubectl-插件机制发布稳定版本">Kubectl 插件机制发布稳定版本</h3>
+
+<p>kubectl 插件机制允许开发人员将自己的定制化 kubectl 子命令以独立二进制文件的形式发布出来。这些成果将可帮助 kubectl 与附加 porcelain（例如添加 set-ns 命令）实现更多新的高级功能。</p>
+
+<p>各插件必须采用 <code>kubectl-</code> 作为命名前缀，并保存在用户的 <code>$PATH</code> 当中。在通用版本中，插件机制已经迎来大幅简化，目前其整体效果类似于 Git 插件系统。</p>
+
+<h3 id="持久本地卷迎来通用版本">持久本地卷迎来通用版本</h3>
+
+<p>这项功能正逐渐稳定，允许用户将本地连接存储作为持久卷来源。</p>
+
+<p>考虑到实际性能与成本要求，分布式文件系统与数据库往往成为持久性本地存储的主要用例。与云服务供应商相比较，本地 SSD 一般可提供超越远程磁盘的性能水平。而与裸机方案相比，除了性能之外，本地存储通常成本更低，亦是配置分布式文件系统的一项必要条件。</p>
+
+<h3 id="pid-限制正转向-beta-测试版本">PID 限制正转向 beta 测试版本</h3>
+
+<p>进程 ID（PID）属于 Linux 主机上的一种基本资源。毫无疑问，我们无法接受在未出现任何其它资源限制的情况下，因为进程 ID 不足而影响任务运行，甚至导致主机稳定性降低。管理员需要相关机制以确保用户 Pod 中的 PID 不会被耗尽，否则各类主机守护程序（包括运行时与 kubelet 等）都将受到影响。此外，管理员还需要确保在各Pod 之间限制 PID，从而保证其不致影响到运行在节点上的其它工作负载。</p>
+
+<p>作为 beta 功能，管理员可以通过将每个 Pod 的 PID 数量设定默认值，以提供 pod-to-pod PID隔离。此外，作为alpha 功能，管理员可以通过节点可分配的方式，为用户 pod 保留大量可分配的 PID，从而启用节点到 pod 的 PID隔离。该社区希望在下一版本中将此功能转为测试版。</p>
+
+<h3 id="其他值得注意的功能">其他值得注意的功能</h3>
+
+<p>Pod 优先级和抢占使 Kubernetes 调度程序能够首先调度更重要的 Pod，当集群资源不足时，它会删除不太重要的pod，以便为更重要的 Pod 创建空间。重要性由优先级指定。具体可以参考<a href="https://github.com/kubernetes/enhancements/issues/564">[1]</a></p>
+
+<p>Pod Readiness Gates 为 pod 准备就绪提供了外部反馈的扩展点。具体可以参考<a href="https://github.com/kubernetes/enhancements/issues/580">[2]</a></p>
+
+<p>强化默认的 RBAC 的 <code>clusterrolebingdings</code> 发现能力，其移除了原本默认可通过未授权访问的 API 集发现功能，旨在提升 CRD 隐私性以及默认集群的总体安全水平。具体可以参考<a href="https://github.com/kubernetes/enhancements/issues/789">[3]</a></p>
+
+<p>目前 Kubernetes 1.14 已可通过 GitHub 进行下载。要开始使用 Kubernetes，建议首先查看各交互式教程。同时也可以利用 kubeadm 轻松安装本次发布的 1.14 版本。</p>
+
+<h3 id="参考链接">参考链接</h3>
+
+<ul>
+<li><p><a href="https://github.com/kubernetes/kubernetes/releases/tag/v1.14.0">https://github.com/kubernetes/kubernetes/releases/tag/v1.14.0</a></p></li>
+
+<li><p><a href="https://kubernetes.io/docs/tutorials/">https://kubernetes.io/docs/tutorials/</a></p></li>
+
+<li><p><a href="https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/">https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/</a></p></li>
+
+<li><p><a href="https://mp.weixin.qq.com/s/eQRpRfMVs9G2lfdk5rdAEg">https://mp.weixin.qq.com/s/eQRpRfMVs9G2lfdk5rdAEg</a></p></li>
+
+<li><p><a href="https://kubernetes.io/blog/2019/03/25/kubernetes-1-14-release-announcement/">https://kubernetes.io/blog/2019/03/25/kubernetes-1-14-release-announcement/</a></p></li>
+</ul>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/prometheus-alertmanager-config/" data-toggle="tooltip" data-placement="top" title="Prometheus Alertmanager 基本配置">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/nginx-ingress-https-redirect/" data-toggle="tooltip" data-placement="top" title="Nginx Ingress 配置 HTTPS">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

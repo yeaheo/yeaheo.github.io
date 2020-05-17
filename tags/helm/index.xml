@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Helm on Aeric Blog</title>
+    <link>https://aeric.io/tags/helm/</link>
+    <description>Recent content in Helm on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 18 Jan 2019 10:42:37 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/helm/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>用 Harbor 管理 Helm Charts</title>
+      <link>https://aeric.io/post/harbor-manage-helm-charts/</link>
+      <pubDate>Fri, 18 Jan 2019 10:42:37 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/harbor-manage-helm-charts/</guid>
+      <description>在 v1.6 版本的 harbor 中新增加了 helm charts 的管理功能,这样就可以利用 harbor 同时管理镜像和 helm charts 了，在部署 kubernetes 相关应用时就比较方便，本次尝试用 harbor 来管理 helm charts。</description>
+    </item>
+    
+    <item>
+      <title>K8S 包管理工具 Helm - 应用</title>
+      <link>https://aeric.io/post/k8s-helm-application/</link>
+      <pubDate>Tue, 15 Jan 2019 17:43:22 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/k8s-helm-application/</guid>
+      <description>之前在 kubernetes 集群中已经安装了 Helm 和 Tiller，那么接下来我们需要熟悉一下 Helm 的基本应用，主要包括利用 Helm 创建、打包、分发、安装、升级及回滚 kubernetes 应用。 创</description>
+    </item>
+    
+    <item>
+      <title>K8S 包管理工具 Helm - 安装</title>
+      <link>https://aeric.io/post/k8s-helm-installation/</link>
+      <pubDate>Tue, 15 Jan 2019 17:41:54 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/k8s-helm-installation/</guid>
+      <description>前期在 Kubernetes 集群中部署应用多少有点不适应，因为我们需要维护的资源配置清单 yaml 文件随着应用的增加，对应的文件也越来越多，这就在一定程度上导致了以下几</description>
+    </item>
+    
+    <item>
+      <title>K8S 包管理工具 Helm - 介绍</title>
+      <link>https://aeric.io/post/k8s-helm-introduction/</link>
+      <pubDate>Tue, 15 Jan 2019 17:41:40 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/k8s-helm-introduction/</guid>
+      <description>Helm 是 Kubernetes 生态系统中的一个软件包管理工具，Helm 是由 Deis 发起的一个开源工具，有助于简化部署和管理 Kubernetes 应用。 它有点类似于 Ubuntu 中的 APT 或 CentOS 中的 YUM Helm 官方网站</description>
+    </item>
+    
+  </channel>
+</rss>

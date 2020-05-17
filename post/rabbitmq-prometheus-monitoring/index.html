@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Prometheus 监控 RabbitMQ 集群" />
+    <meta property="og:title" content="Prometheus 监控 RabbitMQ 集群" />
+    <meta property="twitter:title" content="Prometheus 监控 RabbitMQ 集群" />
+    
+
+    
+    <meta name="description" content="对于 RabbitMQ 集群，虽然官方提供了 RabbitMQ 管理 UI 来监控集群状态，但是从设计上来说这种方式并不是特别方便，这里我是借助 Prometheus 并配合 Grafana 来整体监控 RabbitMQ 集群">
+    <meta property="og:description" content="对于 RabbitMQ 集群，虽然官方提供了 RabbitMQ 管理 UI 来监控集群状态，但是从设计上来说这种方式并不是特别方便，这里我是借助 Prometheus 并配合 Grafana 来整体监控 RabbitMQ 集群" />
+    <meta property="twitter:description" content="对于 RabbitMQ 集群，虽然官方提供了 RabbitMQ 管理 UI 来监控集群状态，但是从设计上来说这种方式并不是特别方便，这里我是借助 Prometheus 并配合 Grafana 来整体监控 RabbitMQ 集群" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Prometheus 监控 RabbitMQ 集群-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/rabbitmq-prometheus-monitoring/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        <a class="tag" href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                    </div>
+                    <h1>Prometheus 监控 RabbitMQ 集群</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Tuesday, December 10, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#rabbitmq-集群配置">RabbitMQ 集群配置</a>
+<ul>
+<li><a href="#修改集群名称">修改集群名称</a></li>
+<li><a href="#启用-rabbitmq-prometheus-插件">启用 rabbitmq_prometheus 插件</a></li>
+<li><a href="#指标校验">指标校验</a></li>
+</ul></li>
+<li><a href="#prometheus-监控配置">Prometheus 监控配置</a></li>
+<li><a href="#grafana-仪表盘设置">Grafana 仪表盘设置</a></li>
+<li><a href="#参考链接">参考链接</a></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>对于 RabbitMQ 集群，虽然官方提供了 RabbitMQ 管理 UI 来监控集群状态，但是从设计上来说这种方式并不是特别方便，这里我是借助 Prometheus 并配合 Grafana 来整体监控 RabbitMQ 集群。</p>
+
+<p>对于 RabbitMQ，从 <code>3.8.0</code> 版本开始，RabbitMQ 就内置了对 Prometheus 和 Grafana 的支持。但实质上是通过 <code>rabbitmq_prometheus</code> 这个插件来获取对 Prometheus 度量标准的支持，该插件是通过专用的 TCP 端口来暴露相关 RabbitMQ 指标的，默认端口是 <code>15692</code>。这些度量标准提供了对 RabbitMQ 节点状态和<a href="https://www.rabbitmq.com/runtime.html">运行时</a>的状态的支持。</p>
+
+<p>这里我用的是之前已经安装并配置完成的 Prometheus 和 RabbitMQ 集群，具体信息如下:</p>
+
+<pre><code class="language-bash"># Prometheus 监控
+host_ip: 10.10.2.192
+
+# RabbitMQ 集群
+rabbit@rabbitmq-node-1: 10.10.2.193    3.8.0
+rabbit@rabbitmq-node-2: 10.10.2.194    3.8.0
+rabbit@rabbitmq-node-3: 10.10.2.195    3.8.0
+</code></pre>
+
+<p>具有三个节点的 RabbitMQ 集群的安装配置可以参考: <a href="https://www.rabbitmq.com/cluster-formation.html">3-node RabbitMQ 3.8 cluster</a></p>
+
+<h2 id="rabbitmq-集群配置">RabbitMQ 集群配置</h2>
+
+<h3 id="修改集群名称">修改集群名称</h3>
+
+<p>RabbitMQ 集群都有一个描述性的名称，这个名称一般具有某些意义，这里有一些针对集群名称的一些操作,具体如下：</p>
+
+<p><strong>查看集群名称</strong>:</p>
+
+<pre><code class="language-bash">$ rabbitmq-diagnostics -q cluster_status | grep &quot;Cluster name&quot;
+Cluster name: rabbit@rabbitmq-node-1
+</code></pre>
+
+<p>这里的 <code>rabbit@rabbitmq-node-1</code> 就是我这个集群的名称，比较草率哈</p>
+
+<p><strong>修改集群名称:</strong></p>
+
+<pre><code class="language-bash">$ rabbitmqctl -q set_cluster_name &lt;cluster_new_name&gt;
+</code></pre>
+
+<p>这里为了简单就不修改了，不影响具体的功能，只是一个名称而已。</p>
+
+<h3 id="启用-rabbitmq-prometheus-插件">启用 rabbitmq_prometheus 插件</h3>
+
+<p>接下来我们需要在集群所有节点上均启用 <code>rabbitmq_prometheus</code>插件，具体操作如下:</p>
+
+<pre><code class="language-bash">$ rabbitmq-plugins enable rabbitmq_prometheus
+</code></pre>
+
+<p>具体输出内容如下，也表示该插件启用<code>成功</code>:</p>
+
+<pre><code class="language-bash">rabbitmq-plugins enable rabbitmq_prometheus
+
+Enabling plugins on node rabbit@rabbitmq-node-1:
+rabbitmq_prometheus
+The following plugins have been configured:
+  rabbitmq_management_agent
+  rabbitmq_prometheus
+  rabbitmq_web_dispatch
+Applying plugin configuration to rabbit@rabbitmq-node-1...
+The following plugins have been enabled:
+  rabbitmq_management_agent
+  rabbitmq_prometheus
+  rabbitmq_web_dispatch
+
+started 3 plugins.
+</code></pre>
+
+<h3 id="指标校验">指标校验</h3>
+
+<p>当 <code>rabbitmq_prometheus</code> 插件启用成功后，可以通过 <code>curl</code> 工具测试是否输出 Prometheus 需要的指标，如下所示：</p>
+
+<pre><code class="language-bash">$ curl -s localhost:15692/metrics | head -n 6
+# TYPE erlang_mnesia_held_locks gauge
+# HELP erlang_mnesia_held_locks Number of held locks.
+erlang_mnesia_held_locks 0
+</code></pre>
+
+<p>如上所示表示该插件可以正常暴露 RabbitMQ 集群相关指标</p>
+
+<h2 id="prometheus-监控配置">Prometheus 监控配置</h2>
+
+<p>上述过程成功输出了 Prometheus 指标数据后，接下来需要配置 Prometheus 让其监控上 RabbitMQ 集群，修改 Prometheus 配置文件，增加如下内容:</p>
+
+<pre><code class="language-bash">scrape_configs:
+  ...
+  - job_name: 'rabbitmq_nodes'
+    static_configs:
+    - targets: ['10.10.2.193:15692','10.10.2.194:15692','10.10.2.195:15692']
+  ...
+</code></pre>
+
+<p>修改完成后重启 Prometheus 服务即可。</p>
+
+<p>可以看到此时 Prometheus 已经将 MQ 集群节点纳入监控：</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/prometheus-mq.png" alt="Prometheus-RabbitMQ" /></p>
+
+<p>默认情况下 Prometheus 每 60s 拉取一次指标，RabbitMQ 也会定期更新相关指标，默认为 <code>5000ms</code>，相关参数是 <code>collect_statistics_interval</code> 可以根据需要对其进行更改。</p>
+
+<p>对于生产环境建议 Prometheus 拉取时间设置为 <code>15s</code>， RabbitMQ 更新指标的时间间隔最小值设置为 <code>10000</code>（10s）即 <code>collect_statistics_interval</code> 参数设置为 <code>10000</code>。</p>
+
+<h2 id="grafana-仪表盘设置">Grafana 仪表盘设置</h2>
+
+<p>Prometheus 监控配置完成后，我们就可以导入 Grafana 的仪表盘了，RabbitMQ 官方有提供相关仪表盘文件，我们直接导入即可，具体项目地址<a href="https://github.com/rabbitmq/rabbitmq-prometheus/tree/master/docker/grafana/dashboards">rabbitmq-prometheus</a>这里为了方便我只是导入了 <code>RabbitMQ-Overview.json</code>,其他正常导入即可。</p>
+
+<p>导入成功后就可以通过 Grafana 查看该 RabbitMQ 集群的相关信息了，具体信息可以参考下图:</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/grafana-mq.png" alt="Granafa" /></p>
+
+<blockquote>
+<p>需要注意的是某些仪表盘可能导入后没有数据展示，这个时候我们可以根据具体报错信息对相关仪表盘做相应修改。</p>
+</blockquote>
+
+<p>上述内容都是基于 <code>3.8</code> 版本及其以后的版本，对于 <code>3.8</code> 版本之前的版本可以使用单独的插件 <a href="https://github.com/deadtrickster/prometheus_rabbitmq_exporter">prometheus_rabbitmq_exporter</a>来暴露指标数据。该插件借助的是 <code>RabbitMQ HTTP API</code>来实现的。</p>
+
+<h2 id="参考链接">参考链接</h2>
+
+<ul>
+<li><a href="https://www.rabbitmq.com/monitoring.html">Monitoring — RabbitMQ</a></li>
+<li><a href="https://www.rabbitmq.com/cluster-formation.html"> Cluster Formation and Peer Discovery — RabbitMQ</a></li>
+<li><a href="https://www.rabbitmq.com/prometheus.html">Monitoring with Prometheus &amp; Grafana — RabbitMQ</a></li>
+</ul>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/traefik2.0-install-and-config/" data-toggle="tooltip" data-placement="top" title="Kubernetes 集群部署 Traefik 2.0">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

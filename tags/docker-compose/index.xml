@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Docker-compose on Aeric Blog</title>
+    <link>https://aeric.io/tags/docker-compose/</link>
+    <description>Recent content in Docker-compose on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 10 Jan 2019 14:37:01 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/docker-compose/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>记一次harbor的升级之旅</title>
+      <link>https://aeric.io/post/harbor-upgrade-guide/</link>
+      <pubDate>Thu, 10 Jan 2019 14:37:01 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/harbor-upgrade-guide/</guid>
+      <description>之前安装的 harbor版本是 v1.6的版本，由于在 v1.7版本中新增加了对 helm的支持，所以为了更充分的利用 harbor 镜像仓库，我们将进行一次升级</description>
+    </item>
+    
+    <item>
+      <title>Harbor 私有镜像仓库安装配置</title>
+      <link>https://aeric.io/post/harbor-installation/</link>
+      <pubDate>Thu, 10 Jan 2019 11:37:01 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/harbor-installation/</guid>
+      <description>在一个企业里，企业自有的私有仓库是必须的，配置私有 docker 镜像仓库 harbor，为的是将自己构建的镜像 push 到私有镜像仓库中，方便以后拉取。 Harbor 的官方站</description>
+    </item>
+    
+  </channel>
+</rss>

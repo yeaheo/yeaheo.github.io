@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Zookeeper on Aeric Blog</title>
+    <link>https://aeric.io/tags/zookeeper/</link>
+    <description>Recent content in Zookeeper on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 06 Dec 2018 16:34:08 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/zookeeper/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>容器化部署 Mesos 集群</title>
+      <link>https://aeric.io/post/mesos-container-cluster-installation/</link>
+      <pubDate>Thu, 06 Dec 2018 16:34:08 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/mesos-container-cluster-installation/</guid>
+      <description>整个 mesos 集群主要由 Zookeeper、Mesos、Marathon 和 Docker 几个组件构成，各组件用途及扮演的角色信息如下所示： Zookeeper: Zookeeper 是一个分布式的，开</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Prometheus on Aeric Blog</title>
+    <link>https://aeric.io/tags/prometheus/</link>
+    <description>Recent content in Prometheus on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 10 Dec 2019 12:26:28 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/prometheus/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Prometheus 监控 RabbitMQ 集群</title>
+      <link>https://aeric.io/post/rabbitmq-prometheus-monitoring/</link>
+      <pubDate>Tue, 10 Dec 2019 12:26:28 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/rabbitmq-prometheus-monitoring/</guid>
+      <description>对于 RabbitMQ 集群，虽然官方提供了 RabbitMQ 管理 UI 来监控集群状态，但是从设计上来说这种方式并不是特别方便，这里我是借助 Prometheus 并配合 Grafana 来整体监控 RabbitMQ 集群。 对于 Rab</description>
+    </item>
+    
+    <item>
+      <title>Prometheus Alertmanager 基本配置</title>
+      <link>https://aeric.io/post/prometheus-alertmanager-config/</link>
+      <pubDate>Fri, 01 Mar 2019 18:06:59 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/prometheus-alertmanager-config/</guid>
+      <description>在 Prometheus Server 中支持基于 PromQL 创建告警规则，如果满足 PromQL 定义的规则，则会产生一条告警，而告警的后续处理流程则由 AlertManager 进行管理。在 AlertManager 中我们可以与邮件，Slack</description>
+    </item>
+    
+    <item>
+      <title>Prometheus 安装和基本配置</title>
+      <link>https://aeric.io/post/prometheus-addons-installation/</link>
+      <pubDate>Fri, 01 Mar 2019 10:12:14 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/prometheus-addons-installation/</guid>
+      <description>Prometheus 是一个开放性的监控解决方案，用户可以非常方便的安装和使用 Prometheus 并且能够非常方便的对其进行扩展。为了能够更加直观的了解 Prometheus Server，接下来我们</description>
+    </item>
+    
+    <item>
+      <title>Prometheus 监控入门介绍</title>
+      <link>https://aeric.io/post/prometheus-introduction/</link>
+      <pubDate>Wed, 27 Feb 2019 18:59:07 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/prometheus-introduction/</guid>
+      <description>Prometheus 系统简介 首先，Prometheus 受启发于 Google 的 Brogmon 监控系统，相似的 Kubernetes 是从 Google 的 Brog 系统演变而来，从 2012 年开始由前 Google 工程师在 Soundcloud 以开源软件的形式进行研</description>
+    </item>
+    
+  </channel>
+</rss>

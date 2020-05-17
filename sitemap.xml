@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://aeric.io/post/rabbitmq-prometheus-monitoring/</loc>
+    <lastmod>2019-12-10T12:26:28+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/traefik2.0-install-and-config/</loc>
+    <lastmod>2019-10-05T18:12:53+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/traefik2.0-acquaintance/</loc>
+    <lastmod>2019-10-03T12:01:34+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/kubernetes-dashboard-2.0/</loc>
+    <lastmod>2019-09-26T12:25:56+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/kubernetes-affinity/</loc>
+    <lastmod>2019-05-23T21:23:59+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/nginx-ingress-https-redirect/</loc>
+    <lastmod>2019-05-06T17:35:43+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/kubernetes-1-14-release-changelog/</loc>
+    <lastmod>2019-03-27T10:49:54+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/prometheus-alertmanager-config/</loc>
+    <lastmod>2019-03-01T18:06:59+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/prometheus-addons-installation/</loc>
+    <lastmod>2019-03-01T10:12:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/prometheus-introduction/</loc>
+    <lastmod>2019-02-27T18:59:07+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/consul-cluster-installation-with-containers/</loc>
+    <lastmod>2019-01-27T21:09:35+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/harbor-manage-helm-charts/</loc>
+    <lastmod>2019-01-18T10:42:37+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-helm-application/</loc>
+    <lastmod>2019-01-15T17:43:22+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-helm-installation/</loc>
+    <lastmod>2019-01-15T17:41:54+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-helm-introduction/</loc>
+    <lastmod>2019-01-15T17:41:40+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/mkcert-valid-https-certificates-for-localhost/</loc>
+    <lastmod>2019-01-14T20:30:33+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/mesos-cluster-installation-b/</loc>
+    <lastmod>2019-01-12T20:44:13+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/mesos-cluster-installation-a/</loc>
+    <lastmod>2019-01-12T20:43:44+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/harbor-upgrade-guide/</loc>
+    <lastmod>2019-01-10T14:37:01+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/harbor-installation/</loc>
+    <lastmod>2019-01-10T11:37:01+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-metrics-server-installation/</loc>
+    <lastmod>2019-01-04T12:23:36+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/mesos-container-cluster-installation/</loc>
+    <lastmod>2018-12-06T16:34:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/rabbitmq-cluster-installation/</loc>
+    <lastmod>2018-12-02T16:48:15+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/rabbitmq-single-installation/</loc>
+    <lastmod>2018-12-02T16:47:46+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/rabbitmq-erlang-installation/</loc>
+    <lastmod>2018-12-02T16:46:51+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-installation-with-binary/</loc>
+    <lastmod>2018-12-01T15:35:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-dns-addons-installation/</loc>
+    <lastmod>2018-12-01T14:35:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-nodes-installation/</loc>
+    <lastmod>2018-11-30T18:35:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-flannel-and-docker-config/</loc>
+    <lastmod>2018-11-30T16:35:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-master-installation/</loc>
+    <lastmod>2018-11-30T15:35:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-etcd-cluster-installation/</loc>
+    <lastmod>2018-11-30T14:35:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-kubectl-installation/</loc>
+    <lastmod>2018-11-30T14:25:24+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-create-kubeconfig/</loc>
+    <lastmod>2018-11-30T14:25:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/k8s-create-tls-and-keys/</loc>
+    <lastmod>2018-11-30T14:05:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/docker-other-config/</loc>
+    <lastmod>2018-07-29T21:36:09+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/pass-tool-guide/</loc>
+    <lastmod>2018-07-29T14:59:56+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/docker-image-accelerator-installation/</loc>
+    <lastmod>2018-07-28T21:35:35+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/docker-installation-guide/</loc>
+    <lastmod>2018-07-27T21:35:11+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/docker-introduction/</loc>
+    <lastmod>2018-07-26T21:34:07+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/search/placeholder/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/top/about/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/top/books/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/</loc>
+    <lastmod>2019-12-10T12:26:28+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/consul/</loc>
+    <lastmod>2019-01-27T21:09:35+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/docker/</loc>
+    <lastmod>2019-01-27T21:09:35+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/docker-compose/</loc>
+    <lastmod>2019-01-10T14:37:01+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/erlang/</loc>
+    <lastmod>2018-12-02T16:48:15+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/harbor/</loc>
+    <lastmod>2019-01-18T10:42:37+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/helm/</loc>
+    <lastmod>2019-01-18T10:42:37+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/https/</loc>
+    <lastmod>2019-01-14T20:30:33+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/ingress/</loc>
+    <lastmod>2019-10-05T18:12:53+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/kubernetes/</loc>
+    <lastmod>2019-10-05T18:12:53+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/marathon/</loc>
+    <lastmod>2019-01-12T20:44:13+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/mesos/</loc>
+    <lastmod>2019-01-12T20:44:13+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/metrics/</loc>
+    <lastmod>2019-01-04T12:23:36+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/mkcert/</loc>
+    <lastmod>2019-01-14T20:30:33+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/pass/</loc>
+    <lastmod>2018-07-29T14:59:56+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/post/</loc>
+    <lastmod>2019-12-10T12:26:28+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/prometheus/</loc>
+    <lastmod>2019-12-10T12:26:28+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/rabbitmq/</loc>
+    <lastmod>2019-12-10T12:26:28+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/release/</loc>
+    <lastmod>2019-03-27T10:49:54+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/search/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/categories/tech/</loc>
+    <lastmod>2019-12-10T12:26:28+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/categories/tools/</loc>
+    <lastmod>2019-01-14T20:30:33+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/</loc>
+    <lastmod>2019-01-27T21:09:35+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/top/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/traefik/</loc>
+    <lastmod>2019-10-05T18:12:53+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://aeric.io/tags/zookeeper/</loc>
+    <lastmod>2018-12-06T16:34:08+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

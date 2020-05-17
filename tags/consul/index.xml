@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Consul on Aeric Blog</title>
+    <link>https://aeric.io/tags/consul/</link>
+    <description>Recent content in Consul on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 27 Jan 2019 21:09:35 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/consul/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>容器化部署 Consul 集群</title>
+      <link>https://aeric.io/post/consul-cluster-installation-with-containers/</link>
+      <pubDate>Sun, 27 Jan 2019 21:09:35 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/consul-cluster-installation-with-containers/</guid>
+      <description>Consul 是 HashiCorp 公司推出的开源工具，用于实现分布式系统的服务发现与配置。Consul 是分布式的、高可用的、 可横向扩展的。它具备以下特性: 服务发现: Consul 提</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tops on Aeric Blog</title>
+    <link>https://aeric.io/top/</link>
+    <description>Recent content in Tops on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://aeric.io/top/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title></title>
+      <link>https://aeric.io/top/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aeric.io/top/about/</guid>
+      <description>我，一枚北漂青年，为了更好的未来一直在不断努力学习来丰富自己的人生阅历和专业技能。
+乐于分享，云原生狂热分子，长期活跃在 GitHub 上，本网站博文自己看的同时也可以分享给其他人，也算是和其他人分享自己的心得体会吧，在这个过程中可以学到很多，交到许多朋友，也可以不断地充实着自己。
+个人喜欢书法，喜欢音乐，爱打球，爱跑步，爱旅行。
+工作并不是生活的全部，我们也要学会享受生活。</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://aeric.io/top/books/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aeric.io/top/books/</guid>
+      <description>Machine learning学习笔记 Coursera 在线课程 Machine learning 笔记 讲师: 吴恩达(Andrew Ng)  课程地址：https://www.coursera.org/learn/machine-learning</description>
+    </item>
+    
+  </channel>
+</rss>

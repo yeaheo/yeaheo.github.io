@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="云原生边缘路由器 Traefik 2.0" />
+    <meta property="og:title" content="云原生边缘路由器 Traefik 2.0" />
+    <meta property="twitter:title" content="云原生边缘路由器 Traefik 2.0" />
+    
+
+    
+    <meta name="description" content="Traefik 是一个开源的反向代理和负载均衡工具，现在官方介绍中将其定位为云原生的边缘路由器，且用了一堆修饰词：简单、自动、高速、全面、开源、产品级、内置监控指标和主流集群技术集成等等。">
+    <meta property="og:description" content="Traefik 是一个开源的反向代理和负载均衡工具，现在官方介绍中将其定位为云原生的边缘路由器，且用了一堆修饰词：简单、自动、高速、全面、开源、产品级、内置监控指标和主流集群技术集成等等。" />
+    <meta property="twitter:description" content="Traefik 是一个开源的反向代理和负载均衡工具，现在官方介绍中将其定位为云原生的边缘路由器，且用了一堆修饰词：简单、自动、高速、全面、开源、产品级、内置监控指标和主流集群技术集成等等。" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>云原生边缘路由器 Traefik 2.0-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/traefik2.0-acquaintance/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/hallstatt.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        <a class="tag" href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                    </div>
+                    <h1>云原生边缘路由器 Traefik 2.0</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Thursday, October 3, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#支持-sni-路由和多协议端口的-tcp">支持 SNI 路由和多协议端口的 TCP</a></li>
+<li><a href="#使用中间件-middlewares-自定义路由">使用中间件（Middlewares）自定义路由</a></li>
+<li><a href="#traefik-2-0-提供的全新的-dashboard">Traefik 2.0 提供的全新的 Dashboard</a></li>
+<li><a href="#支持金丝雀发布">支持金丝雀发布</a></li>
+<li><a href="#参考链接">参考链接</a></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-architecture.png" alt="Traefik" /></p>
+
+<p>Traefik 是一个开源的反向代理和负载均衡工具，现在官方介绍中将其定位为云原生的边缘路由器，且用了一堆修饰词：简单、自动、高速、全面、开源、产品级、内置监控指标和主流集群技术集成等等。</p>
+
+<p><a href="https://traefik.io">Traefik 2.0</a> 已经发布几天了，我自己也是在测试环境一顿鼓捣，试用了一段时间，今天在这里和大家谈谈 <code>Traefik 2.0</code>，总体而言 <code>Traefik 2.0</code> 给我们的惊喜还是挺大的，因为它终于终于支持了 TCP，哈哈。</p>
+
+<p>总结下来 Traefik 2.0 新增了许多新特性：</p>
+
+<ul>
+<li>开始使用 CRD 来完成相关任务；</li>
+<li>支持 SNI 路由和多协议端口的 TCP；</li>
+<li>使用中间件（Middlewares）自定义路由；</li>
+<li>提供了一种全新的 dashboard；</li>
+<li>支持金丝雀发布；</li>
+<li>流量复制；</li>
+<li>更加详细的特性解释可以参考<a href="https://github.com/containous/traefik/blob/master/CHANGELOG.md.">CHANGELOG.md</a></li>
+</ul>
+
+<p>下面是我根据几位博主的文章针对几个比较常用的特性进行简述。</p>
+
+<h2 id="支持-sni-路由和多协议端口的-tcp">支持 SNI 路由和多协议端口的 TCP</h2>
+
+<p>下面是<a href="https://containo.us/blog/traefik-2-0-6531ec5196c2/">官方博客</a>的一个示例配置，主要用来做下 TCP 的支持：</p>
+
+<pre><code class="language-bash">tcp:
+  routers:
+    to-database:
+      entrypoints:
+      - database-entrypoint
+      rule: HostSNI(`*`)
+      service: database-service
+  services:     
+    database-service:
+      loadBalancer:
+        servers:
+        - address: xx.xx.xx.xx:xx
+</code></pre>
+
+<p>上述配置表示每个以 <code>database-entrypoint</code> 结尾的请求都将被路由到 <code>database-service</code> 这个服务上去。同时 Traefik 还支持通过 TLS，Traefik 还可以根据 SNI 来路由 TCP 请求。在下面示例中，Traefik 就将根据 SNI 将请求路由到两个数据库：</p>
+
+<pre><code class="language-bash">tcp:
+  routers:
+    to-db-1:
+      entrypoints:
+      - web-secure
+      rule: &quot;HostSNI(`db1.domain`)&quot;
+      service: &quot;db1&quot;
+      tls: {} 
+    to-db-2:
+      entrypoints:
+      - web-secure
+      rule: &quot;HostSNI(`db2.domain`)&quot;
+      service: &quot;db2&quot;
+      tls: {}
+</code></pre>
+
+<p>同时 Traefik 还是支持 HTTP 和 TCP 在同一个端口上，如果你希望获得相同的入口的同时获取 HTTP 和 TCP 请求，那么 Traefik 可以很完美的来处理它。</p>
+
+<pre><code class="language-bash">tcp:
+  routers:
+    to-db-1:
+      entrypoints:
+      - web-secure
+      rule: &quot;HostSNI(`db1.domain`)&quot;
+      service: &quot;db-1&quot;
+      tls: {}
+http:
+  routers:
+    to-db1-dashboard:
+      entrypoints:
+      - web-secure
+      rule: &quot;Host(`dashboard.db1.domain`)&quot;
+      service: &quot;db1-dashboard&quot;
+      tls: {}
+</code></pre>
+
+<p>上述示例中<code>dashboard.db1.domain</code> 上的 HTTP 请求将路由到数据库的 Dashboard 服务上，而上面的 <code>db1.domain</code> 上的 TCP 请求将路由到数据库上面去</p>
+
+<h2 id="使用中间件-middlewares-自定义路由">使用中间件（Middlewares）自定义路由</h2>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/image-5.png" alt="Middlewares" /></p>
+
+<p>在 Traefik 2.0 中还引入了中间件的功能，通过中间件可以将请求路由到目的地之前或者之后来调整请求。我们可以声明一个中间件，这个中间件可以复用到我们之后定义的路由上，下面是<a href="https://docs.traefik.io/v2.0/middlewares/overview/">官方文档</a>中中间件的配置方式:</p>
+
+<pre><code class="language-bash"># As YAML Configuration File
+http:
+  routers:
+    router1:
+      service: myService
+      middlewares:
+        - &quot;foo-add-prefix&quot;
+      rule: &quot;Host(`example.com`)&quot;
+
+  middlewares:
+    foo-add-prefix:
+      addPrefix:
+        prefix: &quot;/foo&quot;
+
+  services:
+    service1:
+      loadBalancer:
+        servers:
+          - url: &quot;http://127.0.0.1:80&quot;
+</code></pre>
+
+<p>对于 Kubernetes 用户来说，还可以使用 Traefik 的新 CRD 来进行更加清晰明了的配置，而不需要像 nginx-Ingress 定义好多复杂的注解。</p>
+
+<pre><code class="language-bash"># As a Kubernetes Traefik IngressRoute
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: middlewares.traefik.containo.us
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: Middleware
+    plural: middlewares
+    singular: middleware
+  scope: Namespaced
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /stripit
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressroute
+spec:
+# more fields...
+  routes:
+    # more fields...
+    middlewares:
+      - name: stripprefix
+</code></pre>
+
+<p>例如我们常用的 <code>https</code> 方式就是通过中间件实现的，而且在 Traefik 中内置了<a href="https://docs.traefik.io/v2.0/middlewares/overview/">许多中间件</a>：路径操作、多种身份验证机制、缓冲、断路器、重试、压缩、错误处理、headers、IP 白名单、限速、重定向等。</p>
+
+<h2 id="traefik-2-0-提供的全新的-dashboard">Traefik 2.0 提供的全新的 Dashboard</h2>
+
+<p>Traefik 2.0 提供了一种全新的 WebUI，我们可以通过 dashboard 查看集群上的相关信息。同时还可以看到服务的比较详细的配置信息，如下图所示:</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-dashboard.png" alt="Traefik 2.0 dashboard" /></p>
+
+<p>Traefik 2.0 相关服务的具体信息可以参考下图：</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-middles.png" alt="Traefik2.0-Middles" /></p>
+
+<h2 id="支持金丝雀发布">支持金丝雀发布</h2>
+
+<p>在 Traefik2.0 中还支持了金丝雀发布，还有 A/B 测试，这些都是 Traefik 通过服务负载均衡的形式实现的。</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-cannay.png" alt="Traefik 金丝雀发布" /></p>
+
+<p>可以将服务负载均衡器看成负责将请求转发到实际服务的虚拟服务，下面让我们来看一个经典的场景，现在有一个路由到一个 API：</p>
+
+<pre><code class="language-bash">http:
+  routers:
+    my-route:
+      rule: &quot;Host(`my.domain`)&quot;
+      service: my-api-v1
+  services:
+    my-api-v1:
+      loadBalancer:
+        servers:
+        - url: &quot;http://private-ip-server-1/&quot;
+</code></pre>
+
+<p>如果需要发布一个新版本，并且希望可以实现逐步部署，比如先部署三分之一，这里需要定义一个新的 ID 来部署一个新服务，例如:</p>
+
+<pre><code class="language-bash">http:
+  services:
+    my-api-v2:
+      loadBalancer:
+        servers:
+        - url: &quot;http://private-ip-server-2/&quot;
+</code></pre>
+
+<p>然后再创建一个服务负载均衡器，并设置相应的权重而不是直接指向新的版本：</p>
+
+<pre><code class="language-bash">http:
+  services:
+    canary-api:
+      weighted:
+        services:
+        - name: my-api-v1
+          weight: 3
+        - name: my-api-v2
+          weight: 1
+</code></pre>
+
+<p>最后，将路由指向这个服务：</p>
+
+<pre><code class="language-bash">http:
+  routers:
+    my-route:
+      rule: &quot;Host(`my.domain`)&quot;
+      service: canary-api
+</code></pre>
+
+<p>之后，我们不需要重新部署真正的服务就可以更新权重，当然还可以对它们进行扩容，这都不会对金丝雀部署本身产生任何的影响。</p>
+
+<p>当然，对于新版的 Traefik 新特性也不止这么点，还有很多新特性，这里不再赘述，只是找几个比较常用的后续做测试，如果需要了解其他新特性可以参考 <a href="https://docs.traefik.io/v2.0/">Traefik 2.0 官方文档</a> 。</p>
+
+<h2 id="参考链接">参考链接</h2>
+
+<ul>
+<li><a href="https://docs.traefik.io/v2.0/">Traefik</a></li>
+<li><a href="https://containo.us/blog/traefik-2-0-6531ec5196c2/">Traefik 2.0 - The Wait is Over!</a></li>
+<li><a href="https://www.qikqiak.com/post/traefik2-ga/">Traefik 2.0 正式版发布-阳明的博客|Kubernetes|Istio|Prometheus|Python|Golang|云原生</a></li>
+</ul>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/kubernetes-dashboard-2.0/" data-toggle="tooltip" data-placement="top" title="Kubernetes Dashboard 2.0 尝鲜">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/traefik2.0-install-and-config/" data-toggle="tooltip" data-placement="top" title="Kubernetes 集群部署 Traefik 2.0">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

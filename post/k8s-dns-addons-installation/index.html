@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Kubernetes集群部署DNS插件" />
+    <meta property="og:title" content="Kubernetes集群部署DNS插件" />
+    <meta property="twitter:title" content="Kubernetes集群部署DNS插件" />
+    
+
+    
+    <meta name="description" content="吕啸腾，运维开发, 开源爱好者，Geeker | 这里是 吕啸腾 的博客，与你一起发现更大的世界。">
+    <meta property="og:description" content="吕啸腾，运维开发, 开源爱好者，Geeker | 这里是 吕啸腾 的博客，与你一起发现更大的世界。" />
+    <meta property="twitter:description" content="吕啸腾，运维开发, 开源爱好者，Geeker | 这里是 吕啸腾 的博客，与你一起发现更大的世界。" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Kubernetes集群部署DNS插件-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/k8s-dns-addons-installation/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/Y35FXX.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        <a class="tag" href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                    </div>
+                    <h1>Kubernetes集群部署DNS插件</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Saturday, December 1, 2018
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#准备-kube-dns-相关镜像">准备 kube-dns 相关镜像</a></li>
+<li><a href="#准备-kube-dns-相关-yaml-文件">准备 kube-dns 相关 yaml 文件</a></li>
+<li><a href="#系统预定义的-rolebinding">系统预定义的 RoleBinding</a></li>
+<li><a href="#配置-kube-dns-相关服务">配置 kube-dns 相关服务</a></li>
+<li><a href="#检查-kube-dns-功能">检查 kube-dns 功能</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p><code>kube-dns</code> 官方的 <code>yaml</code> 文件其实在我们先前下载的 <code>kubernetes server</code> 软件包内，具体路径为：<code>/srv/kubernetes/cluster/addons/dns</code></p>
+
+<blockquote>
+<p>我是把 kuberntes 解压到了 <code>/srv/</code> 目录下</p>
+</blockquote>
+
+<h3 id="准备-kube-dns-相关镜像">准备 kube-dns 相关镜像</h3>
+
+<p><code>kube-dns</code> 插件直接使用 kubernetes 部署，官方的配置文件中包含以下镜像：</p>
+
+<pre><code class="language-bash">[root@k8s-master dns]# cat kube-dns.yaml.base | grep image
+      image: gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.8
+      image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.8
+      image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.8
+[root@k8s-master dns]# pwd
+/srv/kubernetes/cluster/addons/dns
+</code></pre>
+
+<p>因为墙的原因，这些镜像我们需要翻墙下载，很是不方便，我下载了所需要的镜像，并上传到了时速云镜像仓库欢迎大家下载使用：</p>
+
+<pre><code class="language-bash">index.tenxcloud.com/yeaheo/k8s-dns-dnsmasq-nanny-amd64:1.14.8
+index.tenxcloud.com/yeaheo/k8s-dns-kube-dns-amd64:1.14.8
+index.tenxcloud.com/yeaheo/k8s-dns-sidecar-amd64:1.14.8
+</code></pre>
+
+<p>我们 <code>pull</code> 下来相关镜像后建议上传到私有仓库中，这样下载速度会更快，更方便，私有仓库部署参见 <a href="https://yeaheo.com/post/k8s-harbor-installation/">harbor私有镜像仓库部署</a></p>
+
+<h3 id="准备-kube-dns-相关-yaml-文件">准备 kube-dns 相关 yaml 文件</h3>
+
+<p>默认情况下 kube-dns 插件的 <code>yaml</code> 文件在对应目录下已经存在，我们只需复制一份到指定目录下即可：</p>
+
+<pre><code class="language-bash">[root@k8s-master dns]# pwd
+/srv/kubernetes/cluster/addons/dns   
+[root@k8s-master dns]# cp kube-dns.yaml.base /opt/k8s-addons/dns/kube-dns.yaml
+</code></pre>
+
+<p>然后需要我们修改相关 <code>yaml</code> 文件。</p>
+
+<p>这里我们用源文件 <code>kube-dns.yaml.base</code> 做修改，修改后的 <code>kube-dns.yaml</code> 与源文件的区别如下所示，而这些正式我们需要修改的：</p>
+
+<pre><code class="language-bash">[root@k8s-master dns]# diff kube-dns.yaml kube-dns.yaml.base 
+33c33
+&lt;   clusterIP: 10.254.0.2
+---
+&gt;   clusterIP: __PILLAR__DNS__SERVER__
+97c97
+&lt;         image: 192.168.8.69/library/k8s-dns-kube-dns-amd64:1.14.8
+---
+&gt;         image: gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.8
+127c127
+&lt;         - --domain=cluster.local.
+---
+&gt;         - --domain=__PILLAR__DNS__DOMAIN__.
+148c148
+&lt;         image: 192.168.8.69/library/k8s-dns-dnsmasq-nanny-amd64:1.14.8
+---
+&gt;         image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.8
+168c168
+&lt;         - --server=/cluster.local./127.0.0.1#10053
+---
+&gt;         - --server=/__PILLAR__DNS__DOMAIN__/127.0.0.1#10053
+187c187
+&lt;         image: 192.168.8.69/library/k8s-dns-sidecar-amd64:1.14.8
+---
+&gt;         image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.8
+200,201c200,201
+&lt;         - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.cluster.local.,5,SRV
+&lt;         - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.cluster.local.,5,SRV
+---
+&gt;         - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.__PILLAR__DNS__DOMAIN__,5,SRV
+&gt;         - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.__PILLAR__DNS__DOMAIN__,5,SRV
+</code></pre>
+
+<blockquote>
+<p>yaml 配置文件中使用的是私有镜像仓库中的镜像。这些文件都是统一成为一个文件，当然也可以做分离，这样更直观些。</p>
+</blockquote>
+
+<p>修改好的 kube-dns 相关 yaml 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/addons/kube-dns/kube-dns.yaml">kube-dns.yaml</a></p>
+
+<h3 id="系统预定义的-rolebinding">系统预定义的 RoleBinding</h3>
+
+<p>预定义的 <code>RoleBinding system:kube-dns</code> 将 <code>kube-system</code> 命名空间的 <code>kube-dns ServiceAccount</code> 与 <code>ystem:kube-dns Role</code> 绑定， 该 Role 具有访问 <code>kube-apiserver</code> DNS 相关 API 的权限；</p>
+
+<pre><code class="language-bash">[root@k8s-master ~]# kubectl get clusterrolebindings system:kube-dns -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: &quot;true&quot;
+  creationTimestamp: 2018-04-06T09:06:30Z
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:kube-dns
+  resourceVersion: &quot;87&quot;
+  selfLink: /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/system%3Akube-dns
+  uid: cbda2173-3979-11e8-8d8b-525400472b24
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-dns
+subjects:
+- kind: ServiceAccount
+  name: kube-dns
+  namespace: kube-system
+</code></pre>
+
+<p><code>kube-dns.yaml</code> 里定义的 pods 时使用了 <code>kube-dns</code> 的 <code>ServiceAccount</code> 所以具有访问 <code>kube-apiserver</code> DNS 相关 API 的权限。其他不用配置，例如 <code>kube-dns</code> 的 <code>ServiceAccount</code> 我们默认就好。</p>
+
+<h3 id="配置-kube-dns-相关服务">配置 kube-dns 相关服务</h3>
+
+<p>之前我们在修改 <code>kube-dns.yaml</code> 文件的时候，有如下一处修改：</p>
+
+<pre><code class="language-bash">33c33
+&lt;   clusterIP: 10.254.0.2
+---
+&gt;   clusterIP: __PILLAR__DNS__SERVER__
+</code></pre>
+
+<p><code>spec.clusterIP = 10.254.0.2</code>，明确指定了 <code>kube-dns Service IP</code>，这个 IP 需要和 kubelet 的 <code>--cluster-dns</code> 参数值一致，否则启动 <code>kube-dns</code> 的时候会报错；</p>
+
+<p><strong>执行 <code>kube-dns</code> 定义文件:</strong></p>
+
+<pre><code class="language-bash">[root@k8s-master ~]# cd /opt/k8s-addons/dns/
+[root@k8s-master dns]# ll
+total 8
+-rw-r--r-- 1 root root 6051 Apr 26 10:47 kube-dns.yaml
+[root@k8s-master dns]# kubectl create -f kube-dns.yaml
+</code></pre>
+
+<p><strong>验证 <code>kube-dns</code> 相关服务</strong></p>
+
+<pre><code class="language-bash">[root@k8s-master dns]# kubectl get pods -n kube-system | grep dns
+kube-dns-559bc869fb-tzc2b               3/3       Running   0          15d
+
+[root@k8s-master dns]# kubectl get svc -n kube-system | grep dns
+kube-dns               ClusterIP   10.254.0.2       &lt;none&gt;        53/UDP,53/TCP    15d
+</code></pre>
+
+<p>可以看出， <code>kube-dns</code> 插件已经安装完成，相关 <code>sevice</code> 及 <code>pod</code> 都在正常工作。</p>
+
+<h3 id="检查-kube-dns-功能">检查 kube-dns 功能</h3>
+
+<p><code>kube-dns</code> 插件安装完成后我们需要验证一下 <code>kube-dns</code> 的相关功能。</p>
+
+<p>新建一个 deployment 验证 kube-dns 功能：</p>
+
+<pre><code class="language-bash">[root@k8s-master nginx]# cat my-nginx.yaml 
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: my-nginx
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: my-nginx
+    spec:
+      containers:
+      - name: my-nginx
+        image: 192.168.8.69/library/nginx:1.11.2
+        ports:
+        - containerPort: 80
+</code></pre>
+
+<p>export 该 deployment, 生成 my-nginx 服务:</p>
+
+<pre><code class="language-bash"># kubectl create -f my-nginx.yaml 
+deployment &quot;my-nginx&quot; created
+# kubectl expose deploy my-nginx
+service &quot;my-nginx&quot; exposed
+# kubectl get services --all-namespaces |grep my-nginx
+default       my-nginx               ClusterIP   10.254.196.99    &lt;none&gt;        80/TCP           6s
+</code></pre>
+
+<p>创建另一个 pod，查看 <code>/etc/resolv.conf</code> 是否包含 <code>kubelet</code> 配置的 <code>--cluster-dns</code> 和 <code>--cluster-domain</code>，是否能够将服务 <code>my-nginx</code> 解析到 Cluster IP <code>10.254.196.99</code>。</p>
+
+<pre><code class="language-bash">$ kubectl create -f nginx-pod.yaml
+$ kubectl exec  nginx -i -t -- /bin/bash
+root@nginx:/# cat /etc/resolv.conf
+nameserver 10.254.0.2
+search default.svc.cluster.local. svc.cluster.local. cluster.local. jimmysong.io
+options ndots:5
+
+root@nginx:/# ping my-nginx
+PING my-nginx.default.svc.cluster.local (10.254.196.99): 56 data bytes
+76 bytes from 119.147.223.109: Destination Net Unreachable
+^C--- my-nginx.default.svc.cluster.local ping statistics ---
+
+root@nginx:/# ping kubernetes
+PING kubernetes.default.svc.cluster.local (10.254.0.1): 56 data bytes
+^C--- kubernetes.default.svc.cluster.local ping statistics ---
+11 packets transmitted, 0 packets received, 100% packet loss
+
+root@nginx:/# ping kube-dns.kube-system.svc.cluster.local
+PING kube-dns.kube-system.svc.cluster.local (10.254.0.2): 56 data bytes
+^C--- kube-dns.kube-system.svc.cluster.local ping statistics ---
+6 packets transmitted, 0 packets received, 100% packet loss
+</code></pre>
+
+<p>从结果来看，service 名称可以正常解析， 说明 kube-dns 可以正常工作。</p>
+
+<blockquote>
+<p>直接 <code>ping ClusterIP</code> 是 <code>ping</code> 不通的，<code>ClusterIP</code> 是根据 <code>iptables</code> 路由到服务的 <code>endpoint</code>上，只有结合 <code>ClusterIP</code>加端口才能访问到对应的服务。</p>
+</blockquote>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/k8s-nodes-installation/" data-toggle="tooltip" data-placement="top" title="Kubernetes集群部署Node节点服务">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/k8s-installation-with-binary/" data-toggle="tooltip" data-placement="top" title="二进制方式部署Kubernetes集群">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

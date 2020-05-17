@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>TOOLS on Aeric Blog</title>
+    <link>https://aeric.io/categories/tools/</link>
+    <description>Recent content in TOOLS on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 14 Jan 2019 20:30:33 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/categories/tools/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>mkcert:本地有效的https证书</title>
+      <link>https://aeric.io/post/mkcert-valid-https-certificates-for-localhost/</link>
+      <pubDate>Mon, 14 Jan 2019 20:30:33 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/mkcert-valid-https-certificates-for-localhost/</guid>
+      <description>随着 HTTPS 的越来越普及，现在绝大数的 WEB 网站已经支持了全站 HTTPS，来防止网络攻击者观察或注入页面内容等，这里介绍一种在本地生成 TLS 证书的工具: mkcert</description>
+    </item>
+    
+    <item>
+      <title>使用PASS密码管理器管理密码</title>
+      <link>https://aeric.io/post/pass-tool-guide/</link>
+      <pubDate>Sun, 29 Jul 2018 14:59:56 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/pass-tool-guide/</guid>
+      <description>关于 PASS 工具 PASS 是 Linux 上的一个简单的命令行密码管理器，它将密码存储在一个 gpg 加密后的文件里。这些加密后的文件很好地组织按目录结构存放，现在密码管理器</description>
+    </item>
+    
+  </channel>
+</rss>

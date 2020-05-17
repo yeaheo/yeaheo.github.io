@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Prometheus Alertmanager 基本配置" />
+    <meta property="og:title" content="Prometheus Alertmanager 基本配置" />
+    <meta property="twitter:title" content="Prometheus Alertmanager 基本配置" />
+    
+
+    
+    <meta name="description" content="Alertmanager 作为一个独立的组件，负责接收并处理来自 Prometheus Server 的告警信息,本次我们主要介绍如何安装 Alertmanager 并且测试 Email、wechat 和 slack 等告警方式">
+    <meta property="og:description" content="Alertmanager 作为一个独立的组件，负责接收并处理来自 Prometheus Server 的告警信息,本次我们主要介绍如何安装 Alertmanager 并且测试 Email、wechat 和 slack 等告警方式" />
+    <meta property="twitter:description" content="Alertmanager 作为一个独立的组件，负责接收并处理来自 Prometheus Server 的告警信息,本次我们主要介绍如何安装 Alertmanager 并且测试 Email、wechat 和 slack 等告警方式" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Prometheus Alertmanager 基本配置-吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/prometheus-alertmanager-config/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/lgFvv4.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                    </div>
+                    <h1>Prometheus Alertmanager 基本配置</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 Aeric
+                         
+                        on 
+                        Friday, March 1, 2019
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#安装配置-alertmanager">安装配置 Alertmanager</a></li>
+<li><a href="#alertmanager-集成邮件告警">Alertmanager 集成邮件告警</a></li>
+<li><a href="#alertmanager-集成企业微信告警">Alertmanager 集成企业微信告警</a></li>
+<li><a href="#alertmanager-集成-slack-告警">Alertmanager 集成 Slack 告警</a></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>在 Prometheus Server 中支持基于 PromQL 创建告警规则，如果满足 PromQL 定义的规则，则会产生一条告警，而告警的后续处理流程则由 AlertManager 进行管理。在 AlertManager 中我们可以与邮件，Slack 等等内置的通知方式进行集成，也可以通过 Webhook 自定义告警处理方式。AlertManager 即 Prometheus 体系中的告警处理中心。</p>
+
+<h2 id="安装配置-alertmanager">安装配置 Alertmanager</h2>
+
+<p>告警能力在 Prometheus 的架构中被划分成两个独立的部分。如下所示，通过在 Prometheus 中定义 AlertRule（告警规则），Prometheus 会周期性的对告警规则进行计算，如果满足告警触发条件就会向 Alertmanager 发送告警信息。</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/dlfoee.jpg" alt="prometheus告警图" /></p>
+
+<p>首先我们需要从<a href="https://github.com/prometheus/alertmanager/releases">Alertmanager下载页</a>下载我们需要安装的版本，这里我们选择则安装的prometheus版本是 v0.16.1的最新版本。</p>
+
+<pre><code class="language-bash">$ wget https://github.com/prometheus/alertmanager/releases/download/v0.16.1/alertmanager-0.16.1.linux-amd64.tar.gz
+</code></pre>
+
+<p>解压并安装 alertmanager 服务：</p>
+
+<pre><code class="language-bash">$ tar xf alertmanager-0.16.1.linux-amd64.tar.gz -C /srv/
+$ cd /srv/
+$ mv alertmanager-0.16.1.linux-amd64/ alertmanager
+$ mkdir -pv /srv/alertmanager/data
+$ chown -R prometheus.prometheus /srv/alertmanager
+</code></pre>
+
+<p>创建 alertmanager 系统服务启动文件: <code>/usr/lib/systemd/system/alertmanager.service</code></p>
+
+<pre><code class="language-bash">[Unit]
+Description=Alertmanager
+After=network.target
+
+[Service]
+Type=simple
+User=prometheus
+ExecStart=/srv/alertmanager/alertmanager \
+  --config.file=/srv/alertmanager/alertmanager.yml \
+  --storage.path=/srv/alertmanager/data
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+<p>完整服务启动文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/service/alertmanager.service">alertmanager.service</a></p>
+
+<p>准备 alertmanager 配置文件：<code>/srv/alertmanager/alertmanager.yml</code></p>
+
+<pre><code class="language-bash">global:
+  smtp_smarthost: 'smtp.163.com:25'
+  smtp_from: 'xx@163.com'
+  smtp_auth_username: 'xx@163.com'
+  smtp_auth_password: 'xx'
+  smtp_require_tls: false
+
+templates:
+  - '/srv/alertmanager/template/*.tmpl'
+
+route:
+  group_by: ['alertname','cluster','service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 10m
+  receiver: 'default-receiver'
+
+receivers:
+- name: 'default-receiver'
+  email_configs:
+  - to: 'xx@qq.com'
+    html: '{{ template &quot;alert.html&quot; . }}'
+    headers: { Subject: &quot;Prometheus 告警测试邮件&quot; }
+</code></pre>
+
+<blockquote>
+<p>该文件只是一个邮件报警的示例文件，不影响正常业务的使用，如果需要对业务进行调整可以根据实际情况做修改</p>
+</blockquote>
+
+<p>完整 Alertmanager 配置文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/config/alertmanager/alertmanager.yml">alertmanager.yml</a></p>
+
+<p>启动 alertmanager 服务：</p>
+
+<pre><code class="language-bash">$ systemctl daemon-reload
+$ systemctl enable alertmanager.service
+$ systemctl start alertmanager.service
+$ systemctl status alertmanager.service
+</code></pre>
+
+<p>安装完成后可以访问 alertmanager 的UI界面：<a href="http://localhost:9030">http://localhost:9030</a></p>
+
+<p>配置 Prometheus 集成 Alertmanager，需要修改 prometheus 的配置文件，增加 Alertmanager 的相关配置，具体内容如下所示：</p>
+
+<pre><code class="language-bash">...
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: [&quot;localhost:9093&quot;]
+...
+</code></pre>
+
+<p>修改完成后重启 prometheus 服务即可。</p>
+
+<h2 id="alertmanager-集成邮件告警">Alertmanager 集成邮件告警</h2>
+
+<p>Alertmanager 集成邮件告警首先需要准备好邮件的相关模板，这里我们选择用<a href="https://github.com/prometheus/alertmanager/blob/master/template/default.tmpl">官方默认的模板</a>,直接下载下来就能使用，不用做任何的修改。因为之前我们在配置 Alertmanager 的时候配置了模板的具体存放位置，这里直接将该模板下载到此目录下即可,目录不存在需要手动创建该目录：</p>
+
+<pre><code class="language-bash">$ mkdir -pv /srv/alertmanager/template/
+$ cd /srv/alertmanager/template/
+$ wget https://raw.githubusercontent.com/prometheus/alertmanager/master/template/default.tmpl
+$ chown -R prometheus.prometheus /srv/alertmanager
+</code></pre>
+
+<p>之前 Alertmanager 的配置文件中已经贴出了针对邮件的相关配置，具体如下：</p>
+
+<pre><code class="language-bash">global:
+  smtp_smarthost: 'smtp.163.com:25'
+  smtp_from: 'xx@163.com'
+  smtp_auth_username: 'xx@163.com'
+  smtp_auth_password: 'xx'
+  smtp_require_tls: false
+
+templates:
+  - '/srv/alertmanager/template/*.tmpl'
+
+route:
+  group_by: ['alertname','cluster','service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 10m
+  receiver: 'default-receiver'
+  
+receivers:
+- name: 'default-receiver'
+  email_configs:
+  - to: 'xx@qq.com'
+    html: '{{ template &quot;alert.html&quot; . }}'
+    headers: { Subject: &quot;Prometheus 告警测试邮件&quot; }
+</code></pre>
+
+<p>配置文件准备好后，还需要创建报警规则文件，这个是在 prometheus 里配置的，例如我们写一个关于 node_exporter 的告警规则，如下：</p>
+
+<pre><code class="language-bash">groups:
+- name: hostStatsAlert
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: page
+    annotations:
+      summary: &quot;Instance {{$labels.instance}} down&quot;
+      description: &quot;{{$labels.instance}} of job {{$labels.job}} has been down for more than 5 minutes.&quot;
+</code></pre>
+
+<p>同时我们还是可以自定义告警规则的，我这里有几个关于主机相关指标的告警规则，可以参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alert-rules/node-stats-alert.rules">node-stats-alert.rules</a>，告警规则准备好后需要在 prometheus 里指定规则相关文件，如下所示（只做参考）：</p>
+
+<pre><code class="language-bash">rule_files:
+  - &quot;alert.rules&quot;
+</code></pre>
+
+<p>配置文件修改完成后，需要重新启动 alertmanager 和 prometheus 服务，之后就可以尝试停掉 node_exporter 服务查看是否可以实现邮件告警。</p>
+
+<h2 id="alertmanager-集成企业微信告警">Alertmanager 集成企业微信告警</h2>
+
+<p>Alertmanager 的企业微信告警和邮件告警配置类似，在配置微信告警前需要准备一个微信企业号，创建自己的告警应用，并准备一些参数，配置企业微信告警需要准备的参数具体如下：</p>
+
+<pre><code class="language-bash">wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'(默认)
+to_party: '部门id'
+agent_id: '应用id'
+corp_id: '维信企业号ID'
+api_secret: '自己创建应用的 secret'
+</code></pre>
+
+<p>准备维信告警模板：</p>
+
+<pre><code class="language-bash">{{ define &quot;wechat.default.message&quot; }}
+{{ if gt (len .Alerts.Firing) 0 -}}
+Alerts Firing:
+{{ range .Alerts}}
+告警级别: {{ .Labels.severity }}
+告警类型: {{ .Labels.alertname }}
+故障主机: {{ .Labels.instance }}
+告警主题: {{ .Annotations.summary }}
+告警详情: {{ .Annotations.description }}
+触发时间: {{ .StartsAt.Format &quot;2006-01-02 15:04:05&quot; }}
+{{- end }}
+{{- end }}
+{{ if gt (len .Alerts.Resolved) 0 -}}
+Alerts Resolved:
+{{ range .Alerts}}
+告警级别: {{ .Labels.severity }}
+告警类型: {{ .Labels.alertname }}
+故障主机: {{ .Labels.instance }}
+告警主题: {{ .Annotations.summary }}
+触发时间: {{ .StartsAt.Format &quot;2006-01-02 15:04:05&quot; }}
+恢复时间: {{ .EndsAt.Format &quot;2006-01-02 15:04:05&quot; }}
+{{- end }}
+{{- end }}
+{{- end }}
+</code></pre>
+
+<p>具体模板文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alertmanager-tmpl/wechat.tmpl">wechat.tmpl</a></p>
+
+<blockquote>
+<p>需要说明的是之前下载的官方模板文件已经包含了微信企业的相关配置，但是输出信息不是很友好，建议按照上面的内容对其进行修改即可</p>
+</blockquote>
+
+<p>模板文件准备完成后还需要修改 alertmanager 的配置文件，增加对企业微信告警的支持：</p>
+
+<pre><code class="language-bash">global:
+  wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+...
+receivers:
+- name: 'wechat'
+  wechat_configs:
+  - send_resolved: true
+    to_party: 'xx'
+    agent_id: 'xx'
+    corp_id: 'xx'
+    api_secret: 'xx'
+</code></pre>
+
+<p>配置文件修改后重启 prometheus 和 alertmanager 服务即可。</p>
+
+<h2 id="alertmanager-集成-slack-告警">Alertmanager 集成 Slack 告警</h2>
+
+<p>Alertmanager 的 Slack 告警和微信告警配置类似，在配置 slack 告警前需要注册一个 slack 账号和对应的频道，具体怎么搞，超出了本文档的范围，还请自行百度或者谷歌吧。</p>
+
+<p>准备 slack 告警模板：</p>
+
+<pre><code class="language-bash">{{ define &quot;__single_message_title&quot; }}{{ range .Alerts.Firing }}{{ .Labels.alertname }} @ {{ .Annotations.identifier }}{{ end }}{{ range .Alerts.Resolved }}{{ .Labels.alertname }} @ {{ .Annotations.identifier }}{{ end }}{{ end }}
+{{ define &quot;custom_title&quot; }}[{{ .Status | toUpper }}{{ if eq .Status &quot;firing&quot; }}:{{ .Alerts.Firing | len }}{{ end }}] {{ if or (and (eq (len .Alerts.Firing) 1) (eq (len .Alerts.Resolved) 0)) (and (eq (len .Alerts.Firing) 0) (eq (len .Alerts.Resolved) 1)) }}{{ template &quot;__single_message_title&quot; . }}{{ end }}{{ end }}
+{{ define &quot;custom_slack_message&quot; }}
+{{ if or (and (eq (len .Alerts.Firing) 1) (eq (len .Alerts.Resolved) 0)) (and (eq (len .Alerts.Firing) 0) (eq (len .Alerts.Resolved) 1)) }}
+{{ range .Alerts.Firing }}{{ .Annotations.description }}{{ end }}{{ range .Alerts.Resolved }}{{ .Annotations.description }}{{ end }}
+{{ else }}
+{{ if gt (len .Alerts.Firing) 0 }}
+*Alerts Firing:*
+{{ range .Alerts.Firing }}- {{ .Annotations.identifier }}: {{ .Annotations.description }}
+{{ end }}{{ end }}
+{{ if gt (len .Alerts.Resolved) 0 }}
+*Alerts Resolved:*
+{{ range .Alerts.Resolved }}- {{ .Annotations.identifier }}: {{ .Annotations.description }}
+{{ end }}{{ end }}
+{{ end }}
+{{ end }}
+</code></pre>
+
+<p>完整 salck 模板文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alertmanager-tmpl/slack.tmpl">slack.tmpl</a></p>
+
+<blockquote>
+<p>需要说明的是之前下载的官方模板文件已经包含了salck的相关配置，但是输出信息不是很友好，建议直接下载上面模板文件并将其放在模板目录下</p>
+</blockquote>
+
+<p>配置 salck 告警：</p>
+
+<pre><code class="language-bash">...
+receivers:
+- name: 'slack-channel'
+  slack_configs:
+  - channel: #xx  (频道)
+    api_url: 'https://hooks.slack.com/services/TGGQZ8GPN/BGGRF1XNG/xx'
+    icon_url: 'https://avatars3.githubusercontent.com/u/3380462'
+    send_resolved: true
+    title: '{{ template &quot;custom_title&quot; . }}'
+    text: '{{ template &quot;custom_slack_message&quot; . }}'
+</code></pre>
+
+<p>配置文件修改后重启 prometheus 和 alertmanager 服务即可。</p>
+
+<p>cheers!!!</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/prometheus-addons-installation/" data-toggle="tooltip" data-placement="top" title="Prometheus 安装和基本配置">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/kubernetes-1-14-release-changelog/" data-toggle="tooltip" data-placement="top" title="Kubernetes 1.14 更新日志">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--17-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>
