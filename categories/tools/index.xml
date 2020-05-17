@@ -6,10 +6,19 @@
     <description>Recent content in TOOLS on Aeric Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 14 Jan 2019 20:30:33 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 16 May 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://aeric.io/categories/tools/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Yaml 文件高亮工具</title>
+      <link>https://aeric.io/post/yh/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://aeric.io/post/yh/</guid>
+      <description>我们都知道 jq 工具一般是处理 json 格式的文本，使其可以高亮显示以便提高阅读性，今天偶然发现另一个好玩的工具，这个工具就是 yh ，该工具可以对 yaml 格式的文</description>
+    </item>
     
     <item>
       <title>mkcert:本地有效的https证书</title>

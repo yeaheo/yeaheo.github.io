@@ -86,7 +86,7 @@
     <item>
       <title>Kubernetes</title>
       <link>https://aeric.io/tags/kubernetes/</link>
-      <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
       <guid>https://aeric.io/tags/kubernetes/</guid>
       <description></description>
@@ -170,6 +170,15 @@
       <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
       
       <guid>https://aeric.io/tags/traefik/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Yaml</title>
+      <link>https://aeric.io/tags/yaml/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://aeric.io/tags/yaml/</guid>
       <description></description>
     </item>
     
