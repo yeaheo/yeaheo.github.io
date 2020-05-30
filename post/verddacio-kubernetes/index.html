@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Aeric Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg">
+    <meta property="twitter:image" content="https://aeric.io/https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/mt.fuji.jpg" />
+    
+
+    
+    <meta name="title" content="Kubernetes 安装 Verddacio " />
+    <meta property="og:title" content="Kubernetes 安装 Verddacio " />
+    <meta property="twitter:title" content="Kubernetes 安装 Verddacio " />
+    
+
+    
+    <meta name="description" content="对于 Verddacio，官方的定义是这样的: Verdaccio is a lightweight private npm proxy registry built in Node.js 。意思就是 Verdaccio 是一个 Node.js 创建的轻量的私有 Npm Proxy Registry">
+    <meta property="og:description" content="对于 Verddacio，官方的定义是这样的: Verdaccio is a lightweight private npm proxy registry built in Node.js 。意思就是 Verdaccio 是一个 Node.js 创建的轻量的私有 Npm Proxy Registry" />
+    <meta property="twitter:description" content="对于 Verddacio，官方的定义是这样的: Verdaccio is a lightweight private npm proxy registry built in Node.js 。意思就是 Verdaccio 是一个 Node.js 创建的轻量的私有 Npm Proxy Registry" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Kubernetes 安装 Verddacio -吕啸腾的博客 | Aeric Blog</title>
+
+    <link rel="canonical" href="/post/verddacio-kubernetes/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Aeric Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/tech">TECH</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tools">TOOLS</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tech">Tech</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('https://aericio.oss-cn-beijing.aliyuncs.com/images/bg/99d7d0aa8064.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/verddacio" title="Verddacio">
+                            Verddacio
+                        </a>
+                        
+                        <a class="tag" href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        <a class="tag" href="/tags/npm" title="Npm">
+                            Npm
+                        </a>
+                        
+                    </div>
+                    <h1>Kubernetes 安装 Verddacio </h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                                 AericLyu
+                         
+                        on 
+                        Saturday, May 30, 2020
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#私有仓库工作流程">私有仓库工作流程</a></li>
+<li><a href="#准备部署配置文件">准备部署配置文件</a>
+<ul>
+<li><a href="#verddacio-configmap-文件">Verddacio  Configmap 文件</a></li>
+<li><a href="#verdaccio-deployment-文件">Verdaccio deployment 文件</a></li>
+<li><a href="#verdaccio-service-文件">Verdaccio Service 文件</a></li>
+<li><a href="#ingress-暴露服务">Ingress 暴露服务</a></li>
+</ul></li>
+<li><a href="#验证安装情况">验证安装情况</a></li>
+<li><a href="#测试仓库可用性">测试仓库可用性</a>
+<ul>
+<li><a href="#设置仓库源">设置仓库源</a></li>
+<li><a href="#添加用户-登录">添加用户/登录</a></li>
+<li><a href="#上传私有包">上传私有包</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                
+                
+
+<p>对于 Verddacio，官方的定义是这样的: <code>Verdaccio is a lightweight private npm proxy registry built in Node.js</code> 。意思就是 Verdaccio 是一个 Node.js 创建的轻量的私有 <strong>Npm Proxy Registry</strong>。它具有以下特性:</p>
+
+<ul>
+<li>它是基于 Node.js 的网页应用程序；</li>
+<li>私有 Npm Registry；</li>
+<li>本地网络 Proxy；</li>
+<li>可插入式应用程序；</li>
+<li>易安装和使用；</li>
+<li>提供 Docker 和 Kubernetes 支持；</li>
+<li>与 yarn, npm 和 pnpm 100% 兼容；</li>
+<li>forked 于 sinopia@1.4.0 并且 100% 向后兼容。</li>
+</ul>
+
+<p>官方还有段视频，有条件的可以看一看:</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/hDIFKzmoCaA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>为了更符合 Kubernetes 应用的特点，我是在 Kubernetes 集群里部署 Verddacio，然后最外层用的是 Traefik 2.0 版本暴露对应服务，具体环境如下说明：</p>
+
+<pre><code class="language-yml">Kubernetes 集群版本: v1.16.9
+Verddacio 版本：v4.6.2
+Traefik 版本：v2.2
+存储方式：hostPath
+</code></pre>
+
+<blockquote>
+<p>存储方式需要依据自己实际情况而定，这里为了方便我用的是 <code>hostPath</code> 的方式，其他方式可以根据自己应用情况进行更改，因为是私有 npm 仓库，需要缓存包文件，所以持久化存储是必须的，要不部署起来也没有实际意义</p>
+</blockquote>
+
+<p>还有就是：</p>
+
+<blockquote>
+<p>traefik 可以用 nginx-ingress-controller 代替，或者 service 类型直接改为 <code>NodePort</code> 根据自己实际情况而定</p>
+</blockquote>
+
+<h2 id="私有仓库工作流程">私有仓库工作流程</h2>
+
+<p>一般的 NPM 私有仓库的工作流程如下图所示：</p>
+
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/private-npm.jpg" alt="npm registry" /></p>
+
+<p>大概流程就是用户 install 后向私有 npm 发起请求，服务器会先查询所请求的这个模块是否是私有模块或已经缓存过的公共模块，如果是则直接返回给用户；如果请求的是一个还没有被缓存的公共模块，那么则会向上游源请求模块并进行缓存后返回给用户。</p>
+
+<p>上游的源可以是 官方仓库:<a href="https://registry.npmjs.org/">https://registry.npmjs.org/</a>，速度奇慢，也可以是淘宝镜像:<a href="https://registry.npm.taobao.org">https://registry.npm.taobao.org</a>，速度快。</p>
+
+<h2 id="准备部署配置文件">准备部署配置文件</h2>
+
+<p>配置文件主要包括配置文件和部署文件，我整理了一份放到了 <a href="https://github.com/yeaheo/kubeapps/tree/master/verdaccio">GitHub</a> 上，感兴趣的可以下载下来，直接修改。本次部署在 <code>devops</code> 命名空间下。</p>
+
+<h3 id="verddacio-configmap-文件">Verddacio  Configmap 文件</h3>
+
+<p>首先，先创建 Verddacio 的配置文件，然后以 ConfigMap 的形式部署：</p>
+
+<pre><code class="language-yaml"># source verddacio-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: npm-verdaccio
+  labels:
+    app: verdaccio
+data:
+  config.yaml: |-
+    storage: /verdaccio/storage/data
+    web:
+      enable: true
+      title: Npm Registry
+      gravatar: true
+    auth:
+      htpasswd:
+        file: /verdaccio/storage/htpasswd
+        max_users: 1000
+    uplinks:
+      npmjs:
+        url: https://registry.npm.taobao.org/
+    packages:
+      '@*/*':
+        access: $all
+        publish: $authenticated
+        proxy: npmjs
+
+      '**':
+        access: $all
+        publish: $authenticated
+        proxy: npmjs
+    middlewares:
+      audit:
+        enabled: true
+    logs:
+      - {type: stdout, format: pretty, level: http}
+</code></pre>
+
+<p>修改完成后直接 apply 即可：</p>
+
+<pre><code class="language-bash">$ kubectl apply -f verdaccio-cm.yaml --namespace devops
+</code></pre>
+
+<h3 id="verdaccio-deployment-文件">Verdaccio deployment 文件</h3>
+
+<p>准备 deployment 文件，这里我用 <code>nodeName</code> 属性将其固定了一台机器上，也可以选择其他调度策略，并且存储用的 <code>hostPath</code> 方式，如下:</p>
+
+<pre><code class="language-yaml"># source verdaccio-deploy.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: verdaccio
+  name: npm-verdaccio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: verdaccio
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  template:
+    metadata:
+      labels:
+        app: verdaccio
+    spec:
+      nodeName: 172.30.1.22  # 固定部署主机
+      securityContext:
+        runAsUser: 100
+        runAsGroup: 101
+      containers:
+        - name: verdaccio
+          image: &quot;verdaccio/verdaccio:latest&quot;
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4873
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /-/ping
+              port: http
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /-/ping
+              port: http
+            initialDelaySeconds: 5
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: /verdaccio/storage
+              name: storage
+              readOnly: false
+            - mountPath: /verdaccio/conf
+              name: config
+              readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: npm-verdaccio
+      - name: storage
+        hostPath:                 # 持久化存储
+          path: /mnt/data
+          type: DirectoryOrCreate
+</code></pre>
+
+<p>修改完成后，直接 apply 即可：</p>
+
+<pre><code class="language-bash">$ kubectl apply -f verdaccio-deploy.yaml --namespace devops
+</code></pre>
+
+<blockquote>
+<p>固定节点的方式和持久化存储的方式有很多种，根据自己情况选择即可</p>
+</blockquote>
+
+<p>还有一个特别需要注意的是：</p>
+
+<blockquote>
+<p>官方的镜像默认使用的是 verdaccio 用户启动服务的，如果我们不修改宿主机目录权限会报权限问题</p>
+</blockquote>
+
+<p>修改宿主机目录权限：</p>
+
+<pre><code class="language-bash">## 创建目录
+$ mkdir -pv /mnt/data/data
+## 创建验证文件
+$ touch /mnt/data/htpasswd
+## 修改权限
+$ chown -R 100:101 /mnt/data/
+</code></pre>
+
+<h3 id="verdaccio-service-文件">Verdaccio Service 文件</h3>
+
+<pre><code class="language-yaml"># source verdaccio-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: npm-verdaccio
+  labels:
+    app: verdaccio
+spec:
+  ports:
+    - port: 4873
+      targetPort: http
+      protocol: TCP
+      name: 
+  selector:
+    app: verdaccio
+  type: ClusterIP
+</code></pre>
+
+<p>同样修改完成后，直接 apply 即可：</p>
+
+<pre><code class="language-bash">$ kubectl apply -f verdaccio-svc.yaml --namespace devops
+</code></pre>
+
+<h3 id="ingress-暴露服务">Ingress 暴露服务</h3>
+
+<p>修改 Ingress 部署文件，这里 Traefik 用的是 CRD 资源 <code>IngressRoutes</code> :</p>
+
+<pre><code class="language-yaml"># source verdaccio-ingress.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: verdaccio-ui
+  labels:
+    app: verdaccio
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`registry.npm.devops.io`)
+      kind: Rule
+      services:
+        - name: npm-verdaccio
+          port: 4873
+</code></pre>
+
+<p>修改完成后直接 apply 即可：</p>
+
+<pre><code class="language-bash">$ kubectl apply -f verdaccio-ingress.yaml --namespace devops
+</code></pre>
+
+<blockquote>
+<p>暴露服务的方式有很多种，自己自身情况选择一种即可</p>
+</blockquote>
+
+<h2 id="验证安装情况">验证安装情况</h2>
+
+<p>上述部署完成后，我们可以验证一下部署情况:</p>
+
+<pre><code class="language-bash">$ kubectl get all -n devops
+NAME                                    READY   STATUS    RESTARTS   AGE
+pod/npm-verdaccio-5bf4b84589-5x5gg      1/1     Running   0          5h21m
+
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/npm-verdaccio   ClusterIP   10.105.46.53    &lt;none&gt;        4873/TCP   27h
+
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/npm-verdaccio      1/1     1            1           27h
+
+NAME                                          DESIRED   CURRENT   READY   AGE
+replicaset.apps/npm-verdaccio-5bf4b84589      1         1         1       8h
+replicaset.apps/npm-verdaccio-67ddff8879      0         0         0       5h23m
+replicaset.apps/npm-verdaccio-7865566fcf      0         0         0       27h
+replicaset.apps/npm-verdaccio-c55db58f6       0         0         0       24h
+</code></pre>
+
+<h2 id="测试仓库可用性">测试仓库可用性</h2>
+
+<h3 id="设置仓库源">设置仓库源</h3>
+
+<p>这里我随便用的域名 <code>registry.npm.devops.io</code> ，一般没有问题的话可以直接用浏览器访问的（需要手动添加解析），为了测试方便，需要将 npm 的默认源设置为 <code>http://registry.npm.devops.io</code>:</p>
+
+<pre><code class="language-bash">$ npm set registry http://registry.npm.devops.io
+</code></pre>
+
+<h3 id="添加用户-登录">添加用户/登录</h3>
+
+<p>我们需要创建个用户方便上传私有包：</p>
+
+<pre><code class="language-bash">$ npm adduser --registry http://registry.npm.devops.io
+</code></pre>
+
+<blockquote>
+<p>需要输入用户名、密码、邮箱</p>
+</blockquote>
+
+<h3 id="上传私有包">上传私有包</h3>
+
+<p>创建用户并登录成功后，接下来就可以创建并上传私有包了，具体步骤如下：</p>
+
+<pre><code class="language-bash">## 准备 nodejs 项目
+$ mkdir npmtest
+$ cd npmtest &amp;&amp; touch index.js
+$ npm init
+
+## 上传私有包
+$ npm adduser --registry http://registry.npm.devops.io
+$ npm publish --registry http://registry.npm.devops.io
+</code></pre>
+
+<p>如果遇到报错可以根据 pod 的日志排错，一般都是因为权限问题。</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/yh/" data-toggle="tooltip" data-placement="top" title="Yaml 文件高亮工具">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+<div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yeaheo" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker-compose" title="Docker-compose">
+                            Docker-compose
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/erlang" title="Erlang">
+                            Erlang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/harbor" title="Harbor">
+                            Harbor
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/helm" title="Helm">
+                            Helm
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/ingress" title="Ingress">
+                            Ingress
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="Marathon">
+                            Marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="Mesos">
+                            Mesos
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="Prometheus">
+                            Prometheus
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="RabbitMQ">
+                            RabbitMQ
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/traefik" title="Traefik">
+                            Traefik
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Aeric Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fa fa-circle fa-stack-2x"></i>
+                               <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+                   
+                    
+                    <li>
+                        <a href="mailto:aeric.lyu@aeric.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://aericio.oss-cn-beijing.aliyuncs.com/images/person/wechat.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-wechat fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yeaheo">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/%E5%95%B8%E8%85%BE-%E5%90%95-371521176/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; 2020 <a href="https://aeric.io">Aeric Lyu</a> All Right Reserved <strong style="font-weight: bold;">·</strong> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                    <br>
+                    
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="116px" height="20px"
+                        src="https://img.shields.io/badge/Powered%20by-Hugo-red" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="126px" height="20px"
+                        src="https://img.shields.io/badge/Hugo%20Version-%20v0.53-blue" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="118px" height="20px"
+                        src="https://img.shields.io/badge/Theme-cleanwhite-yellow" >
+                    </iframe>
+                    <strong style="font-weight: bold;">|</strong>
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="158px" height="20px"
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+<script>
+    (function(){
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https'){
+       bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else{
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+
+
+<script>
+    
+    var _baId = 'a652845a80b28987e63249ab49c64768';
+
+    
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-135431940-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
+</html>

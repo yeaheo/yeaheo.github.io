@@ -86,7 +86,7 @@
     <item>
       <title>Kubernetes</title>
       <link>https://aeric.io/tags/kubernetes/</link>
-      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
       
       <guid>https://aeric.io/tags/kubernetes/</guid>
       <description></description>
@@ -125,6 +125,15 @@
       <pubDate>Mon, 14 Jan 2019 20:30:33 +0800</pubDate>
       
       <guid>https://aeric.io/tags/mkcert/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Npm</title>
+      <link>https://aeric.io/tags/npm/</link>
+      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/npm/</guid>
       <description></description>
     </item>
     
@@ -170,6 +179,15 @@
       <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
       
       <guid>https://aeric.io/tags/traefik/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Verddacio</title>
+      <link>https://aeric.io/tags/verddacio/</link>
+      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/verddacio/</guid>
       <description></description>
     </item>
     

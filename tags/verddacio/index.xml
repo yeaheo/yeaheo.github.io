@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Verddacio on Aeric Blog</title>
+    <link>https://aeric.io/tags/verddacio/</link>
+    <description>Recent content in Verddacio on Aeric Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 30 May 2020 20:12:53 +0800</lastBuildDate>
+    
+	<atom:link href="https://aeric.io/tags/verddacio/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Kubernetes 安装 Verddacio </title>
+      <link>https://aeric.io/post/verddacio-kubernetes/</link>
+      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/post/verddacio-kubernetes/</guid>
+      <description>对于 Verddacio，官方的定义是这样的: Verdaccio is a lightweight private npm proxy registry built in Node.js 。意思就是 Verdaccio 是一个 Node.js 创建的轻量的私有 Npm Proxy Registry。它具有以下特性:</description>
+    </item>
+    
+  </channel>
+</rss>
