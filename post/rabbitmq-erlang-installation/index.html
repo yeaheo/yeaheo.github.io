@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -212,73 +212,47 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
-                
+                <nav id="TableOfContents"></nav>
                 
                 <p>Erlang 是一种多用途编程语言，主要用于开发并发和分布式系统。它最初是一种专有的编程语言，Ericsson 使用它来开发电话和通信应用程序。</p>
-
 <p>本文档旨在在 CentOS 7 系统上安装配置 Erlang 环境，因为 RabbitMQ 是基于 Erlang 开发设计的，所以本文档主要服务于后续 RabbitMQ 的安装和配置。</p>
-
 <p>其他系统的安装配置可以参考 Erlang 的官方站点相关文档：<a href="https://www.erlang.org">https://www.erlang.org</a></p>
-
 <p>Erlang 官方库文件参见<a href="https://packages.erlang-solutions.com/erlang/">Erlang repository page</a>, 我们需要根据我们的需要下载对应的版本。本次我们选择用 rpm 的方式安装。</p>
-
 <p>系统基本环境如下：</p>
-
-<pre><code class="language-bash">$ cat /etc/redhat-release
-CentOS Linux release 7.5.1804 (Core)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat /etc/redhat-release
+CentOS Linux release 7.5.1804 <span style="color:#ff79c6">(</span>Core<span style="color:#ff79c6">)</span>
 
 $ uname -r
 3.10.0-862.el7.x86_64
-</code></pre>
-
-<p>下载基本依赖软件：</p>
-
-<pre><code class="language-bash">$ yum update -y
+</code></pre></div><p>下载基本依赖软件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum update -y
 $ yum install epel-release -y
 $ yum install gcc gcc-c++ glibc-devel make ncurses-devel openssl-devel autoconf git wget wxBase.x86_64
-</code></pre>
-
-<p>下载 Erlang 软件：</p>
-
-<pre><code class="language-bash">$ mkdir /opt/soft
-$ cd /opt/soft
+</code></pre></div><p>下载 Erlang 软件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /opt/soft
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
 $ wget http://packages.erlang-solutions.com/erlang-solutions-1.0-1.noarch.rpm
 $ rpm -Uvh erlang-solutions-1.0-1.noarch.rpm
-</code></pre>
-
-<p>导入 Erlang  相关 key：</p>
-
-<pre><code class="language-bash">$ rpm --import https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
-</code></pre>
-
-<p>修改 repo 文件，启用 gpg 校验功能:</p>
-
-<pre><code class="language-bash">[erlang-solutions]
-name=CentOS $releasever - $basearch - Erlang Solutions
-baseurl=https://packages.erlang-solutions.com/rpm/centos/$releasever/$basearch
-gpgcheck=1    # 修改此参数，将 0 改为 1
-gpgkey=https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
-enabled=1
-</code></pre>
-
-<p>安装 Erlang：</p>
-
-<pre><code class="language-bash">$ yum makecache
+</code></pre></div><p>导入 Erlang  相关 key：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rpm --import https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
+</code></pre></div><p>修改 repo 文件，启用 gpg 校验功能:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>erlang-solutions<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">name</span><span style="color:#ff79c6">=</span>CentOS <span style="color:#8be9fd;font-style:italic">$releasever</span> - <span style="color:#8be9fd;font-style:italic">$basearch</span> - Erlang Solutions
+<span style="color:#8be9fd;font-style:italic">baseurl</span><span style="color:#ff79c6">=</span>https://packages.erlang-solutions.com/rpm/centos/<span style="color:#8be9fd;font-style:italic">$releasever</span>/<span style="color:#8be9fd;font-style:italic">$basearch</span>
+<span style="color:#8be9fd;font-style:italic">gpgcheck</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span>    <span style="color:#6272a4"># 修改此参数，将 0 改为 1</span>
+<span style="color:#8be9fd;font-style:italic">gpgkey</span><span style="color:#ff79c6">=</span>https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
+<span style="color:#8be9fd;font-style:italic">enabled</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span>
+</code></pre></div><p>安装 Erlang：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum makecache
 $ yum install erlang -y
-</code></pre>
-
-<p>等待安装完成即可。</p>
-
+</code></pre></div><p>等待安装完成即可。</p>
 <p>Erlang 安装完成后，可以用如下命令检查其版本：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ erl
+Erlang/OTP <span style="color:#bd93f9">21</span> <span style="color:#ff79c6">[</span>erts-10.1<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>source<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>64-bit<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>smp:1:1<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>ds:1:1:10<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>async-threads:1<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>hipe<span style="color:#ff79c6">]</span>
 
-<pre><code class="language-bash">$ erl
-Erlang/OTP 21 [erts-10.1] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:1] [hipe]
-
-Eshell V10.1  (abort with ^G)
+Eshell V10.1  <span style="color:#ff79c6">(</span>abort with ^G<span style="color:#ff79c6">)</span>
 1&gt;
-</code></pre>
-
-<p>这样，我们已经成功安装了 Erlang。</p>
+</code></pre></div><p>这样，我们已经成功安装了 Erlang。</p>
 
 
                 
@@ -343,87 +317,79 @@ Eshell V10.1  (abort with ^G)
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

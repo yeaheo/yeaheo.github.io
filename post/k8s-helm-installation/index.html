@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,89 +213,60 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#安装-helm-客户端">安装 Helm 客户端</a></li>
-<li><a href="#安装-helm-服务端-tiller">安装 Helm 服务端 Tiller</a></li>
-<li><a href="#kubernetes-rbac配置">Kubernetes RBAC配置</a></li>
-<li><a href="#验证-tiller-是否安装成功">验证 Tiller 是否安装成功</a></li>
-<li><a href="#卸载-helm-服务端-tiller">卸载 Helm 服务端 Tiller</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#安装-helm-客户端">安装 Helm 客户端</a></li>
+        <li><a href="#安装-helm-服务端-tiller">安装 Helm 服务端 Tiller</a></li>
+        <li><a href="#kubernetes-rbac配置">Kubernetes RBAC配置</a></li>
+        <li><a href="#验证-tiller-是否安装成功">验证 Tiller 是否安装成功</a></li>
+        <li><a href="#卸载-helm-服务端-tiller">卸载 Helm 服务端 Tiller</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>前期在 Kubernetes 集群中部署应用多少有点不适应，因为我们需要维护的资源配置清单 yaml 文件随着应用的增加，对应的文件也越来越多，这就在一定程度上导致了以下几个问题：</p>
-
+                <p>前期在 Kubernetes 集群中部署应用多少有点不适应，因为我们需要维护的资源配置清单 yaml 文件随着应用的增加，对应的文件也越来越多，这就在一定程度上导致了以下几个问题：</p>
 <ul>
 <li>如何管理，编辑和更新这些这些分散的kubernetes应用配置文件</li>
 <li>可不可以把一套的相关配置文件作为一个应用进行管理</li>
 <li>如何分发和重用 kubernetes 的应用配置</li>
 </ul>
-
 <p>而 Helm 的出现就解决了这些问题，它封装 Kubernetes 原生应用程序的一系列 YAML 文件。可以在你部署应用的时候自定义应用程序的一些 Metadata，以便于应用程序的分发。下面在 Kubernetes 集群中部署 Helm，具体过程参考如下描述：</p>
-
 <p>Helm 的安装方式很多，这里采用二进制的方式安装。具体安装方法可以参考 <a href="https://docs.helm.sh/">Helm 的官方帮助文档</a>。同时安装 Helm 也可以参考 <a href="https://github.com/helm/helm/blob/master/docs/install.md">GitHub 官方文档</a></p>
-
 <h2 id="安装-helm-客户端">安装 Helm 客户端</h2>
-
 <p><strong>使用官方提供的脚本一键安装</strong></p>
-
-<pre><code class="language-bash">$ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get &gt; get_helm.sh
-$ chmod 700 get_helm.sh
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get &gt; get_helm.sh
+$ chmod <span style="color:#bd93f9">700</span> get_helm.sh
 $ ./get_helm.sh
-</code></pre>
+</code></pre></div><p><strong>手动下载二进制文件安装</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># Helm 安装版本为 v2.9.1，其他版本类似</span>
 
-<p><strong>手动下载二进制文件安装</strong></p>
-
-<pre><code class="language-bash"># Helm 安装版本为 v2.9.1，其他版本类似
-
-# 下载 Helm
+<span style="color:#6272a4"># 下载 Helm</span>
 $ wget https://storage.googleapis.com/kubernetes-helm/helm-v2.9.1-linux-amd64.tar.gz
-# 解压 Helm
+<span style="color:#6272a4"># 解压 Helm</span>
 $ tar -zxvf helm-v2.9.1-linux-amd64.tar.gz
-# 复制客户端执行文件到 bin 目录下
+<span style="color:#6272a4"># 复制客户端执行文件到 bin 目录下</span>
 $ cp linux-amd64/helm /usr/local/bin/
-</code></pre>
-
-<h2 id="安装-helm-服务端-tiller">安装 Helm 服务端 Tiller</h2>
-
+</code></pre></div><h2 id="安装-helm-服务端-tiller">安装 Helm 服务端 Tiller</h2>
 <p>Tiller 是以 Deployment 方式部署在 Kubernetes 集群中的，只需使用以下指令便可简单的完成安装。</p>
-
-<pre><code class="language-bash">helm init --upgrade
-</code></pre>
-
-<p>在缺省配置下， Helm 会利用 <code>gcr.io/kubernetes-helm/tiller</code>  镜像在 Kubernetes 集群上安装配置 Tiller；并且利用 &ldquo;<a href="https://kubernetes-charts.storage.googleapis.com&quot;">https://kubernetes-charts.storage.googleapis.com&quot;</a> 作为缺省的 <code>stable repository</code>  的地址。由于在国内可能无法访问 <code>gcr.io</code>，<code>storage.googleapis.com</code> 等域名，阿里云容器服务为此提供了镜像站点。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm init --upgrade
+</code></pre></div><p>在缺省配置下， Helm 会利用 <code>gcr.io/kubernetes-helm/tiller</code>  镜像在 Kubernetes 集群上安装配置 Tiller；并且利用 &ldquo;<a href="https://kubernetes-charts.storage.googleapis.com">https://kubernetes-charts.storage.googleapis.com</a>&rdquo; 作为缺省的 <code>stable repository</code>  的地址。由于在国内可能无法访问 <code>gcr.io</code>，<code>storage.googleapis.com</code> 等域名，阿里云容器服务为此提供了镜像站点。</p>
 <p>更换阿里云镜像站点如下：</p>
-
-<pre><code class="language-bash"># 配置阿里云镜像安装并把默认仓库设置为阿里云上的镜像仓库
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 配置阿里云镜像安装并把默认仓库设置为阿里云上的镜像仓库</span>
 $ helm init --upgrade --tiller-image registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.9.1 --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
-</code></pre>
+</code></pre></div><p>安装完成后，将看到如下类似信息输出：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm init --upgrade
+<span style="color:#8be9fd;font-style:italic">$HELM_HOME</span> has been configured at /Users/test/.helm.
 
-<p>安装完成后，将看到如下类似信息输出：</p>
-
-<pre><code class="language-bash">$ helm init --upgrade
-$HELM_HOME has been configured at /Users/test/.helm.
-
-Tiller (the helm server side component) has been installed into your Kubernetes Cluster.
+Tiller <span style="color:#ff79c6">(</span>the helm server side component<span style="color:#ff79c6">)</span> has been installed into your Kubernetes Cluster.
 Happy Helming!
-</code></pre>
-
-<h2 id="kubernetes-rbac配置">Kubernetes RBAC配置</h2>
-
+</code></pre></div><h2 id="kubernetes-rbac配置">Kubernetes RBAC配置</h2>
 <p>自 Kubernetes 1.6 版本开始，API Server 启用了 RBAC 授权。而目前的 Tiller 部署没有定义授权的 ServiceAccount ，这会导致访问 API Server 时被拒绝。我们可以采用如下方法，明确为 Tiller 部署添加授权。</p>
-
 <p>创建 Kubernetes 的服务帐号和角色绑定：</p>
-
-<pre><code class="language-bash">kubectl create serviceaccount --namespace kube-system tiller
-kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-</code></pre>
-
-<p>或者利用如下的 yaml 配置文件创建服务账号和授权，创建 <code>rbac-config.yaml</code>：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole<span style="color:#ff79c6">=</span>cluster-admin --serviceaccount<span style="color:#ff79c6">=</span>kube-system:tiller
+</code></pre></div><p>或者利用如下的 yaml 配置文件创建服务账号和授权，创建 <code>rbac-config.yaml</code>：</p>
 <pre><code>apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -314,64 +285,38 @@ subjects:
   - kind: ServiceAccount
     name: tiller
     namespace: kube-system
-</code></pre>
-
-<p>在 Kubernetes 集群中授权：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f rbac-config.yaml
-</code></pre>
-
-<p>为 Tiller 设置帐号：</p>
-
-<pre><code class="language-bash"># 使用 kubectl patch 更新 API 对象
-$ kubectl patch deploy --namespace kube-system tiller-deploy -p '{&quot;spec&quot;:{&quot;template&quot;:{&quot;spec&quot;:{&quot;serviceAccount&quot;:&quot;tiller&quot;}}}}'
-deployment.extensions &quot;tiller-deploy&quot; patched
-</code></pre>
-
-<p>查看是否授权成功:</p>
-
-<pre><code class="language-bash">$ kubectl get deploy --namespace kube-system tiller-deploy --output yaml | grep serviceAccount
+</code></pre><p>在 Kubernetes 集群中授权：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f rbac-config.yaml
+</code></pre></div><p>为 Tiller 设置帐号：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 使用 kubectl patch 更新 API 对象</span>
+$ kubectl patch deploy --namespace kube-system tiller-deploy -p <span style="color:#f1fa8c">&#39;{&#34;spec&#34;:{&#34;template&#34;:{&#34;spec&#34;:{&#34;serviceAccount&#34;:&#34;tiller&#34;}}}}&#39;</span>
+deployment.extensions <span style="color:#f1fa8c">&#34;tiller-deploy&#34;</span> patched
+</code></pre></div><p>查看是否授权成功:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl get deploy --namespace kube-system tiller-deploy --output yaml | grep serviceAccount
       serviceAccount: tiller
       serviceAccountName: tiller
-</code></pre>
-
-<p>当出现上述信息表示已经授权成功！</p>
-
+</code></pre></div><p>当出现上述信息表示已经授权成功！</p>
 <h2 id="验证-tiller-是否安装成功">验证 Tiller 是否安装成功</h2>
-
 <p>当 Helm 和 Tiller 安装完成并且已经授权成功后，可以通过 <code>kubectl</code> 检查是否安装完成：</p>
-
-<pre><code class="language-bash">$ kubectl get pods -n kube-system | grep tiller
-tiller-deploy-7fdbf6766f-w9wd9          1/1       Running   0          2d
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl get pods -n kube-system | grep tiller
+tiller-deploy-7fdbf6766f-w9wd9          1/1       Running   <span style="color:#bd93f9">0</span>          2d
 
 $ helm version
-Client: &amp;version.Version{SemVer:&quot;v2.9.1&quot;, GitCommit:&quot;20adb27c7c5868466912eebdf6664e7390ebe710&quot;, GitTreeState:&quot;clean&quot;}
-Server: &amp;version.Version{SemVer:&quot;v2.9.1&quot;, GitCommit:&quot;20adb27c7c5868466912eebdf6664e7390ebe710&quot;, GitTreeState:&quot;clean&quot;}
-</code></pre>
-
-<blockquote>
+Client: &amp;version.Version<span style="color:#ff79c6">{</span>SemVer:<span style="color:#f1fa8c">&#34;v2.9.1&#34;</span>, GitCommit:<span style="color:#f1fa8c">&#34;20adb27c7c5868466912eebdf6664e7390ebe710&#34;</span>, GitTreeState:<span style="color:#f1fa8c">&#34;clean&#34;</span><span style="color:#ff79c6">}</span>
+Server: &amp;version.Version<span style="color:#ff79c6">{</span>SemVer:<span style="color:#f1fa8c">&#34;v2.9.1&#34;</span>, GitCommit:<span style="color:#f1fa8c">&#34;20adb27c7c5868466912eebdf6664e7390ebe710&#34;</span>, GitTreeState:<span style="color:#f1fa8c">&#34;clean&#34;</span><span style="color:#ff79c6">}</span>
+</code></pre></div><blockquote>
 <p>有时候当我们执行 <code>helm version</code> 时，会输出连接 <code>Server</code> 端时和 <code>socat</code> 相关的报错的信息，这是我们没有安装 <code>socat</code> 软件，我们需要在所有集群节点上安装 <code>socat</code></p>
 </blockquote>
-
 <p>在所有节点上安装 <code>socat</code> :</p>
-
-<pre><code class="language-bash">$ yum install socat -y
-</code></pre>
-
-<p>当安装完成后再执行 <code>helm version</code> 一般就不会报错了，当输出类似如下信息时表示 Helm 和 Tiller 安装成功。</p>
-
-<pre><code class="language-bash">$ helm version
-Client: &amp;version.Version{SemVer:&quot;v2.9.1&quot;, GitCommit:&quot;20adb27c7c5868466912eebdf6664e7390ebe710&quot;, GitTreeState:&quot;clean&quot;}
-Server: &amp;version.Version{SemVer:&quot;v2.9.1&quot;, GitCommit:&quot;20adb27c7c5868466912eebdf6664e7390ebe710&quot;, GitTreeState:&quot;clean&quot;}
-</code></pre>
-
-<h2 id="卸载-helm-服务端-tiller">卸载 Helm 服务端 Tiller</h2>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum install socat -y
+</code></pre></div><p>当安装完成后再执行 <code>helm version</code> 一般就不会报错了，当输出类似如下信息时表示 Helm 和 Tiller 安装成功。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm version
+Client: &amp;version.Version<span style="color:#ff79c6">{</span>SemVer:<span style="color:#f1fa8c">&#34;v2.9.1&#34;</span>, GitCommit:<span style="color:#f1fa8c">&#34;20adb27c7c5868466912eebdf6664e7390ebe710&#34;</span>, GitTreeState:<span style="color:#f1fa8c">&#34;clean&#34;</span><span style="color:#ff79c6">}</span>
+Server: &amp;version.Version<span style="color:#ff79c6">{</span>SemVer:<span style="color:#f1fa8c">&#34;v2.9.1&#34;</span>, GitCommit:<span style="color:#f1fa8c">&#34;20adb27c7c5868466912eebdf6664e7390ebe710&#34;</span>, GitTreeState:<span style="color:#f1fa8c">&#34;clean&#34;</span><span style="color:#ff79c6">}</span>
+</code></pre></div><h2 id="卸载-helm-服务端-tiller">卸载 Helm 服务端 Tiller</h2>
 <p>如果你需要在 Kubernetes 中卸载已部署的 Tiller，可使用以下命令完成卸载：</p>
-
-<pre><code class="language-bash">$ helm reset
-</code></pre>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm reset
+</code></pre></div>
 
                 
 
@@ -435,87 +380,79 @@ Server: &amp;version.Version{SemVer:&quot;v2.9.1&quot;, GitCommit:&quot;20adb27c
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -221,199 +221,114 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li>
-<ul>
-<li><a href="#zookeeper-集群部署">Zookeeper 集群部署</a></li>
-<li><a href="#mesos-master-集群部署">Mesos-master 集群部署</a></li>
-<li><a href="#部署-mesos-集群-framework-marathon-服务">部署 mesos 集群 Framework Marathon 服务</a></li>
-<li><a href="#部署-mesos-slave-节点服务">部署 mesos-slave 节点服务</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>整个 mesos 集群主要由 Zookeeper、Mesos、Marathon 和 Docker 几个组件构成，各组件用途及扮演的角色信息如下所示：</p>
-
+                <p>整个 mesos 集群主要由 Zookeeper、Mesos、Marathon 和 Docker 几个组件构成，各组件用途及扮演的角色信息如下所示：</p>
 <ul>
 <li><strong>Zookeeper:</strong> Zookeeper 是一个分布式的，开放源码的分布式应用程序协调服务，是 Google 的 Chubby 一个开源的实现，是 Hadoop 和 Hbase 的重要组件。它是一个为分布式应用提供一致性服务的软件，提供的功能包括：配置维护、名字服务、分布式同步、组服务等。</li>
 <li><strong>Mesos:</strong> Mesos 采用与 Linux kernerl 相同的机制，只是运行在不同的抽象层次上。Mesos kernel 利用资源管理和调度的 API 在整个数据中心或云环境中运行和提供引用（例如，Hadoop，Spark，Kafaka，Elastic Search）。</li>
 <li><strong>Marathon:</strong> Marathon是一个 Mesos 应用框架，能够支持运行长服务，比如 web 应用等。是集群的分布式Init.d，能够原样运行任何 Linux 二进制发布版本，如 Tomcat Play 等等，可以集群的多进程管理。也是一种私有的 PaaS，实现服务的发现，为部署提供提供 REST API 服务，有授权和 SSL、配置约束，通过 HAProxy 实现服务发现和负载平衡。</li>
 <li><strong>Docker:</strong> Docker 是一个开源的应用容器引擎，让开发者可以打包他们的应用以及依赖包到一个可移植的容器中，然后发布到任何流行的 Linux 机器上，也可以实现虚拟化。</li>
 </ul>
-
 <p>本文档旨在利用容器（docker）部署 Mesos 集群，包括 Zookeeper 集群同样也利用 docker 部署。</p>
-
 <h3 id="zookeeper-集群部署">Zookeeper 集群部署</h3>
-
 <p>Zookeeper 集群主机环境及软件版本如下所示：</p>
-
-<pre><code class="language-bash"># 集群主机环境
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 集群主机环境</span>
 server.1  10.70.0.10
 server.2  10.70.0.11
 server.3  10.70.0.12
 
-# 集群版本
+<span style="color:#6272a4"># 集群版本</span>
 Zookeeper v3.4.12
-</code></pre>
-
-<p>在部署 zookeeper 集群前需要先创建 zookeeper 的配置文件目录和数据存储目录，可以参考如下：</p>
-
-<pre><code class="language-bash">mkdir -pv /opt/zookeeper/conf
+</code></pre></div><p>在部署 zookeeper 集群前需要先创建 zookeeper 的配置文件目录和数据存储目录，可以参考如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir -pv /opt/zookeeper/conf
 mkdir -pv /opt/zookeeper/data
-</code></pre>
+</code></pre></div><p>准备 Zookeeper 配置文件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /opt/zookeeper/conf/zoo.cfg &lt;&lt; EOF
+<span style="color:#8be9fd;font-style:italic">dataDir</span><span style="color:#ff79c6">=</span>/data
+<span style="color:#8be9fd;font-style:italic">clientPort</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">2181</span>
+<span style="color:#8be9fd;font-style:italic">initLimit</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">5</span>
+<span style="color:#8be9fd;font-style:italic">syncLimit</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>
+server.1<span style="color:#ff79c6">=</span>10.70.0.10:2888:3888
+server.2<span style="color:#ff79c6">=</span>10.70.0.11:2888:3888
+server.3<span style="color:#ff79c6">=</span>10.70.0.12:2888:3888
+</code></pre></div><p>添加节点识别文件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># server 1</span>
+<span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#bd93f9">1</span> &gt; /opt/zookeeper/data/myid
 
-<p>准备 Zookeeper 配置文件：</p>
+<span style="color:#6272a4"># server 2</span>
+<span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#bd93f9">2</span> &gt; /opt/zookeeper/data/myid
 
-<pre><code class="language-bash">cat /opt/zookeeper/conf/zoo.cfg &lt;&lt; EOF
-dataDir=/data
-clientPort=2181
-initLimit=5
-syncLimit=2
-server.1=10.70.0.10:2888:3888
-server.2=10.70.0.11:2888:3888
-server.3=10.70.0.12:2888:3888
-</code></pre>
-
-<p>添加节点识别文件：</p>
-
-<pre><code class="language-bash"># server 1
-echo 1 &gt; /opt/zookeeper/data/myid
-
-# server 2
-echo 2 &gt; /opt/zookeeper/data/myid
-
-# server 3
-echo 3 &gt; /opt/zookeeper/data/myid
-</code></pre>
-
-<p>拉取 Zookeeper 镜像：</p>
-
-<pre><code class="language-bash">docker pull zookeeper:3.4.12
-</code></pre>
-
-<p>启动相关容器：</p>
-
-<pre><code class="language-bash">docker run --name zookeeper -d --net host -v /opt/zookeeper/logs:/opt/zookeeper/logs -v /opt/zookeeper/conf/zoo.cfg:/conf/zoo.cfg -v /opt/zookeeper/data:/data --restart=always  zookeeper:3.4.12
-</code></pre>
-
-<p>验证集群，了解主从情况:</p>
-
-<pre><code class="language-bash">echo stat | nc 10.70.0.10  2181
-echo stat | nc 10.70.0.11  2181
-echo stat | nc 10.70.0.12  2181   
-</code></pre>
-
-<h3 id="mesos-master-集群部署">Mesos-master 集群部署</h3>
-
+<span style="color:#6272a4"># server 3</span>
+<span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#bd93f9">3</span> &gt; /opt/zookeeper/data/myid
+</code></pre></div><p>拉取 Zookeeper 镜像：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker pull zookeeper:3.4.12
+</code></pre></div><p>启动相关容器：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name zookeeper -d --net host -v /opt/zookeeper/logs:/opt/zookeeper/logs -v /opt/zookeeper/conf/zoo.cfg:/conf/zoo.cfg -v /opt/zookeeper/data:/data --restart<span style="color:#ff79c6">=</span>always  zookeeper:3.4.12
+</code></pre></div><p>验证集群，了解主从情况:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">echo</span> stat | nc 10.70.0.10  <span style="color:#bd93f9">2181</span>
+<span style="color:#8be9fd;font-style:italic">echo</span> stat | nc 10.70.0.11  <span style="color:#bd93f9">2181</span>
+<span style="color:#8be9fd;font-style:italic">echo</span> stat | nc 10.70.0.12  <span style="color:#bd93f9">2181</span>   
+</code></pre></div><h3 id="mesos-master-集群部署">Mesos-master 集群部署</h3>
 <p>Mesos-master 集群主机环境及软件版本如下：</p>
-
-<pre><code class="language-bash"># 集群主机环境
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 集群主机环境</span>
 mesos-master-1 10.70.0.10
 mesos-master-2 10.70.0.11
 mesos-master-3 10.70.0.12
 
-# 软件版本
+<span style="color:#6272a4"># 软件版本</span>
 mesos v1.5.0
 marathon v1.5.8
-</code></pre>
-
-<p>首先我们需要将本机的 IP 地址赋值个 <code>HOST_IP</code>变量，最好的方法是通过修改 <code>/etc/profile</code>文件将其写入到全局变量中。编辑 <code>/etc/profile</code>文件，写入如下内容：</p>
-
-<pre><code class="language-bash">export HOST_IP=`ip a|awk -F'/| '+ '/10.70.0/{print $3}'
-</code></pre>
-
-<p>验证全局变量：</p>
-
-<pre><code class="language-bash">echo $HOST_IP
-</code></pre>
-
-<p><strong>mesos-1 主机部署 mesos 服务</strong></p>
-
-<pre><code class="language-bash">docker run --name mesos-master-01 -d --net=host --restart=always  -e MESOS_PORT=5050  -e &quot;MESOS_HOSTNAME=${HOST_IP}&quot;   -e &quot;MESOS_IP=${HOST_IP}&quot;  -e MESOS_ZK=zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  -e MESOS_QUORUM=2   -e MESOS_REGISTRY=in_memory   -e MESOS_LOG_DIR=/var/log/mesos   -e MESOS_WORK_DIR=/var/tmp/mesos   -v &quot;$(pwd)/log/mesos:/var/log/mesos&quot;   -v &quot;$(pwd)/tmp/mesos:/var/tmp/mesos&quot;  mesosphere/mesos-master:1.5.0
-</code></pre>
-
-<p><strong>mesos-2 主机部署 mesos 服务</strong></p>
-
-<pre><code class="language-bash">docker run --name mesos-master-02 -d --net=host --restart=always  -e MESOS_PORT=5050  -e &quot;MESOS_HOSTNAME=${HOST_IP}&quot;   -e &quot;MESOS_IP=${HOST_IP}&quot;  -e MESOS_ZK=zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  -e MESOS_QUORUM=2   -e MESOS_REGISTRY=in_memory   -e MESOS_LOG_DIR=/var/log/mesos   -e MESOS_WORK_DIR=/var/tmp/mesos   -v &quot;$(pwd)/log/mesos:/var/log/mesos&quot;   -v &quot;$(pwd)/tmp/mesos:/var/tmp/mesos&quot;  mesosphere/mesos-master:1.5.0
-</code></pre>
-
-<p><strong>mesos-3 主机部署 mesos 服务</strong></p>
-
-<pre><code class="language-bash">docker run --name mesos-master-03 -d --net=host --restart=always  -e MESOS_PORT=5050  -e &quot;MESOS_HOSTNAME=${HOST_IP}&quot;   -e &quot;MESOS_IP=${HOST_IP}&quot;  -e MESOS_ZK=zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  -e MESOS_QUORUM=2   -e MESOS_REGISTRY=in_memory   -e MESOS_LOG_DIR=/var/log/mesos   -e MESOS_WORK_DIR=/var/tmp/mesos   -v &quot;$(pwd)/log/mesos:/var/log/mesos&quot;   -v &quot;$(pwd)/tmp/mesos:/var/tmp/mesos&quot;  mesosphere/mesos-master:1.5.0
-</code></pre>
-
-<p>当三台主机的 mesos 服务部署完成后 mesos 集群基本就完成了，可以通过浏览器访问 <code>http://10.70.0.10:5050</code>访问 mesos 集群。</p>
-
+</code></pre></div><p>首先我们需要将本机的 IP 地址赋值个 <code>HOST_IP</code>变量，最好的方法是通过修改 <code>/etc/profile</code>文件将其写入到全局变量中。编辑 <code>/etc/profile</code>文件，写入如下内容：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">`</span>ip a|awk -F<span style="color:#f1fa8c">&#39;/| &#39;</span>+ <span style="color:#f1fa8c">&#39;/10.70.0/{print $3}&#39;</span>
+</code></pre></div><p>验证全局变量：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$HOST_IP</span>
+</code></pre></div><p><strong>mesos-1 主机部署 mesos 服务</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name mesos-master-01 -d --net<span style="color:#ff79c6">=</span>host --restart<span style="color:#ff79c6">=</span>always  -e <span style="color:#8be9fd;font-style:italic">MESOS_PORT</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">5050</span>  -e <span style="color:#f1fa8c">&#34;MESOS_HOSTNAME=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>   -e <span style="color:#f1fa8c">&#34;MESOS_IP=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>  -e <span style="color:#8be9fd;font-style:italic">MESOS_ZK</span><span style="color:#ff79c6">=</span>zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  -e <span style="color:#8be9fd;font-style:italic">MESOS_QUORUM</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>   -e <span style="color:#8be9fd;font-style:italic">MESOS_REGISTRY</span><span style="color:#ff79c6">=</span>in_memory   -e <span style="color:#8be9fd;font-style:italic">MESOS_LOG_DIR</span><span style="color:#ff79c6">=</span>/var/log/mesos   -e <span style="color:#8be9fd;font-style:italic">MESOS_WORK_DIR</span><span style="color:#ff79c6">=</span>/var/tmp/mesos   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/log/mesos:/var/log/mesos&#34;</span>   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/tmp/mesos:/var/tmp/mesos&#34;</span>  mesosphere/mesos-master:1.5.0
+</code></pre></div><p><strong>mesos-2 主机部署 mesos 服务</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name mesos-master-02 -d --net<span style="color:#ff79c6">=</span>host --restart<span style="color:#ff79c6">=</span>always  -e <span style="color:#8be9fd;font-style:italic">MESOS_PORT</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">5050</span>  -e <span style="color:#f1fa8c">&#34;MESOS_HOSTNAME=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>   -e <span style="color:#f1fa8c">&#34;MESOS_IP=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>  -e <span style="color:#8be9fd;font-style:italic">MESOS_ZK</span><span style="color:#ff79c6">=</span>zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  -e <span style="color:#8be9fd;font-style:italic">MESOS_QUORUM</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>   -e <span style="color:#8be9fd;font-style:italic">MESOS_REGISTRY</span><span style="color:#ff79c6">=</span>in_memory   -e <span style="color:#8be9fd;font-style:italic">MESOS_LOG_DIR</span><span style="color:#ff79c6">=</span>/var/log/mesos   -e <span style="color:#8be9fd;font-style:italic">MESOS_WORK_DIR</span><span style="color:#ff79c6">=</span>/var/tmp/mesos   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/log/mesos:/var/log/mesos&#34;</span>   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/tmp/mesos:/var/tmp/mesos&#34;</span>  mesosphere/mesos-master:1.5.0
+</code></pre></div><p><strong>mesos-3 主机部署 mesos 服务</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name mesos-master-03 -d --net<span style="color:#ff79c6">=</span>host --restart<span style="color:#ff79c6">=</span>always  -e <span style="color:#8be9fd;font-style:italic">MESOS_PORT</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">5050</span>  -e <span style="color:#f1fa8c">&#34;MESOS_HOSTNAME=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>   -e <span style="color:#f1fa8c">&#34;MESOS_IP=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>  -e <span style="color:#8be9fd;font-style:italic">MESOS_ZK</span><span style="color:#ff79c6">=</span>zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  -e <span style="color:#8be9fd;font-style:italic">MESOS_QUORUM</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>   -e <span style="color:#8be9fd;font-style:italic">MESOS_REGISTRY</span><span style="color:#ff79c6">=</span>in_memory   -e <span style="color:#8be9fd;font-style:italic">MESOS_LOG_DIR</span><span style="color:#ff79c6">=</span>/var/log/mesos   -e <span style="color:#8be9fd;font-style:italic">MESOS_WORK_DIR</span><span style="color:#ff79c6">=</span>/var/tmp/mesos   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/log/mesos:/var/log/mesos&#34;</span>   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/tmp/mesos:/var/tmp/mesos&#34;</span>  mesosphere/mesos-master:1.5.0
+</code></pre></div><p>当三台主机的 mesos 服务部署完成后 mesos 集群基本就完成了，可以通过浏览器访问 <code>http://10.70.0.10:5050</code>访问 mesos 集群。</p>
 <h3 id="部署-mesos-集群-framework-marathon-服务">部署 mesos 集群 Framework Marathon 服务</h3>
-
 <p>当我们 mesos 集群部署完成后，该集群还不能正常工作，我们需要安装 marathon 计算框架来调度相关容器， marathon 框架是经过注册的方式接入 mesos 集群的，为了保证其高可用性，本次我们部署三个节点的服务，marathon 可以部署在单独的三台的主机上，但是为了节约系统资源，我选择将其部署在 mesos 集群的三台主机上。</p>
-
 <p>marathon 的主机环境及软件版本如下所示：</p>
-
-<pre><code class="language-bash"># marathon 主机环境
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># marathon 主机环境</span>
 marathon-1 10.70.0.10
 marathon-2 10.70.0.11
 marathon-3 10.70.0.12
-</code></pre>
-
-<p>Marathon 也是利用 zookeeper 实现高可用的。本次部署我们用上述搭建的 zookeeper 集群实现 marathon 的高可用。</p>
-
+</code></pre></div><p>Marathon 也是利用 zookeeper 实现高可用的。本次部署我们用上述搭建的 zookeeper 集群实现 marathon 的高可用。</p>
 <p><strong>marathon-1 上部署 marathon 服务</strong></p>
-
-<pre><code class="language-bash">docker run --name marathon-1 -d --net=host --restart=always  -e MARATHON_HTTP_ADDRESS=${HOST_IP}  -e MARATHON_HOSTNAME=${HOST_IP} --master zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  --zk  zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/marathon mesosphere/marathon:v1.5.8
-</code></pre>
-
-<p><strong>marathon-2 上部署 marathon 服务</strong></p>
-
-<pre><code class="language-bash">docker run --name marathon-2 -d --net=host --restart=always  -e MARATHON_HTTP_ADDRESS=${HOST_IP}  -e MARATHON_HOSTNAME=${HOST_IP} --master zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  --zk  zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/marathon mesosphere/marathon:v1.5.8
-</code></pre>
-
-<p><strong>marathon-2 上部署 marathon 服务</strong></p>
-
-<pre><code class="language-bash">docker run --name marathon-3 -d --net=host --restart=always  -e MARATHON_HTTP_ADDRESS=${HOST_IP}  -e MARATHON_HOSTNAME=${HOST_IP} --master zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  --zk  zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/marathon mesosphere/marathon:v1.5.8
-</code></pre>
-
-<p>当 marathon 集群部署完成后，正常情况下，marathon 就可以在 mesos 集群的管理页面看到注册信息及访问地址，marathon 服务默认通过 <code>8080</code>端口监听服务，我们可以利用 <code>http://10.70.0.10:8080</code>访问到 marathon 的相关界面。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name marathon-1 -d --net<span style="color:#ff79c6">=</span>host --restart<span style="color:#ff79c6">=</span>always  -e <span style="color:#8be9fd;font-style:italic">MARATHON_HTTP_ADDRESS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span>  -e <span style="color:#8be9fd;font-style:italic">MARATHON_HOSTNAME</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span> --master zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  --zk  zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/marathon mesosphere/marathon:v1.5.8
+</code></pre></div><p><strong>marathon-2 上部署 marathon 服务</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name marathon-2 -d --net<span style="color:#ff79c6">=</span>host --restart<span style="color:#ff79c6">=</span>always  -e <span style="color:#8be9fd;font-style:italic">MARATHON_HTTP_ADDRESS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span>  -e <span style="color:#8be9fd;font-style:italic">MARATHON_HOSTNAME</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span> --master zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  --zk  zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/marathon mesosphere/marathon:v1.5.8
+</code></pre></div><p><strong>marathon-2 上部署 marathon 服务</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name marathon-3 -d --net<span style="color:#ff79c6">=</span>host --restart<span style="color:#ff79c6">=</span>always  -e <span style="color:#8be9fd;font-style:italic">MARATHON_HTTP_ADDRESS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span>  -e <span style="color:#8be9fd;font-style:italic">MARATHON_HOSTNAME</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span> --master zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos  --zk  zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/marathon mesosphere/marathon:v1.5.8
+</code></pre></div><p>当 marathon 集群部署完成后，正常情况下，marathon 就可以在 mesos 集群的管理页面看到注册信息及访问地址，marathon 服务默认通过 <code>8080</code>端口监听服务，我们可以利用 <code>http://10.70.0.10:8080</code>访问到 marathon 的相关界面。</p>
 <h3 id="部署-mesos-slave-节点服务">部署 mesos-slave 节点服务</h3>
-
 <p>mesos 是分为 mesos-master 和 mesos-slave 节点，他们分工不同，具体如下所述：</p>
-
 <p>Mesos-master 是整个系统的核心，负责管理接入mesos的各个framework（由frameworks_manager管理）和 slave（由slaves_manager管理），并将slave上的资源按照某种策略分配给framework（由独立插拔模块Allocator管 理）。</p>
-
 <p>Mesos-slave 负责接收并执行来自 mesos-master 的命令、管理节点上的 mesos-task ，并为各个 task  分配资源。 mesos-slave 将自己的资源量发送给 mesos-master，由 mesos-master 中的 Allocator 模块决定将资源分配给哪个 framework，前考虑的资源有CPU和内存两种，也就是说，mesos-slave 会将CPU个数和内存量发送给mesos-master，而用 户提交作业时，需要指定每个任务需要的CPU个数和内存量，这样，当任务运行时，mesos-slave 会将任务放到包含固定资源的 linux container 中运行，以达到资源隔离的效果。很明显，master 存在单点故障问题，为此，mesos 采用了 zookeeper 解决该问题。</p>
-
 <p>该部分主要是在某台主机上部署 <code>mesos-slave</code> 服务,主机环境及软件版本如下：</p>
-
-<pre><code class="language-bash"># mesos-salve 主机环境
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># mesos-salve 主机环境</span>
 mesos-salve-1 10.70.0.20
 
-# mesos-slave 软件版本
+<span style="color:#6272a4"># mesos-slave 软件版本</span>
 mesos-salve  v1.5.0
-</code></pre>
-
-<p>同样的首先我们需要将本机的 IP 地址赋值个 <code>HOST_IP</code>变量，最好的方法是通过修改 <code>/etc/profile</code>文件将其写入到全局变量中。编辑 <code>/etc/profile</code>文件，写入如下内容：</p>
-
-<pre><code class="language-bash">export HOST_IP=`ip a|awk -F'/| '+ '/10.70.0/{print $3}'
-</code></pre>
-
-<p>验证全局变量：</p>
-
-<pre><code class="language-bash">echo $HOST_IP
-</code></pre>
-
-<p><strong>部署 mesos-slave 服务</strong></p>
-
-<pre><code class="language-bash">docker run --name mesos-slave -d --net=host --privileged --restart=always -e &quot;MESOS_IP=${HOST_IP}&quot;  -e &quot;MESOS_HOSTNAME=${HOST_IP}&quot;  -e MESOS_PORT=5051   -e MESOS_MASTER=zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos    -e MESOS_SWITCH_USER=0   -e MESOS_CONTAINERIZERS=docker,mesos   -e MESOS_LOG_DIR=/var/log/mesos   -e MESOS_WORK_DIR=/var/tmp/mesos   -v &quot;$(pwd)/log/mesos:/var/log/mesos&quot;   -v &quot;$(pwd)/tmp/mesos:/var/tmp/mesos&quot;   -v /var/run/docker.sock:/var/run/docker.sock   -v /cgroup:/cgroup   -v /sys:/sys   -e &quot;MESOS_SYSTEMD_ENABLE_SUPPORT=false&quot; mesosphere/mesos-slave:1.5.0
-</code></pre>
-
-<p>当 mesos-slave 部署完成后就可以通过 mesos 集群的管理页面看到注册到集群的 <code>mesos-agent</code>了，至此，整个 mesos 集群就部署完成了</p>
-
+</code></pre></div><p>同样的首先我们需要将本机的 IP 地址赋值个 <code>HOST_IP</code>变量，最好的方法是通过修改 <code>/etc/profile</code>文件将其写入到全局变量中。编辑 <code>/etc/profile</code>文件，写入如下内容：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">`</span>ip a|awk -F<span style="color:#f1fa8c">&#39;/| &#39;</span>+ <span style="color:#f1fa8c">&#39;/10.70.0/{print $3}&#39;</span>
+</code></pre></div><p>验证全局变量：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$HOST_IP</span>
+</code></pre></div><p><strong>部署 mesos-slave 服务</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name mesos-slave -d --net<span style="color:#ff79c6">=</span>host --privileged --restart<span style="color:#ff79c6">=</span>always -e <span style="color:#f1fa8c">&#34;MESOS_IP=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>  -e <span style="color:#f1fa8c">&#34;MESOS_HOSTNAME=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">HOST_IP</span><span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>  -e <span style="color:#8be9fd;font-style:italic">MESOS_PORT</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">5051</span>   -e <span style="color:#8be9fd;font-style:italic">MESOS_MASTER</span><span style="color:#ff79c6">=</span>zk://10.70.0.10:2181,10.70.0.11:2181,10.70.0.12:2181/mesos    -e <span style="color:#8be9fd;font-style:italic">MESOS_SWITCH_USER</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">0</span>   -e <span style="color:#8be9fd;font-style:italic">MESOS_CONTAINERIZERS</span><span style="color:#ff79c6">=</span>docker,mesos   -e <span style="color:#8be9fd;font-style:italic">MESOS_LOG_DIR</span><span style="color:#ff79c6">=</span>/var/log/mesos   -e <span style="color:#8be9fd;font-style:italic">MESOS_WORK_DIR</span><span style="color:#ff79c6">=</span>/var/tmp/mesos   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/log/mesos:/var/log/mesos&#34;</span>   -v <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span><span style="color:#8be9fd;font-style:italic">pwd</span><span style="color:#ff79c6">)</span><span style="color:#f1fa8c">/tmp/mesos:/var/tmp/mesos&#34;</span>   -v /var/run/docker.sock:/var/run/docker.sock   -v /cgroup:/cgroup   -v /sys:/sys   -e <span style="color:#f1fa8c">&#34;MESOS_SYSTEMD_ENABLE_SUPPORT=false&#34;</span> mesosphere/mesos-slave:1.5.0
+</code></pre></div><p>当 mesos-slave 部署完成后就可以通过 mesos 集群的管理页面看到注册到集群的 <code>mesos-agent</code>了，至此，整个 mesos 集群就部署完成了</p>
 <blockquote>
 <p>在生产环境中，建议部署多个 agent 节点，保证应用的高可用性</p>
 </blockquote>
@@ -481,87 +396,79 @@ mesos-salve  v1.5.0
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

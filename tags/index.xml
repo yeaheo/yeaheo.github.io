@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Aeric Blog</title>
@@ -6,10 +6,91 @@
     <description>Recent content in Tags on Aeric Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 27 Jan 2019 21:09:35 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 30 May 2020 20:12:53 +0800</lastBuildDate>
     
 	<atom:link href="https://aeric.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Kubernetes</title>
+      <link>https://aeric.io/tags/kubernetes/</link>
+      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/kubernetes/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Npm</title>
+      <link>https://aeric.io/tags/npm/</link>
+      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/npm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Verddacio</title>
+      <link>https://aeric.io/tags/verddacio/</link>
+      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/verddacio/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Yaml</title>
+      <link>https://aeric.io/tags/yaml/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://aeric.io/tags/yaml/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Prometheus</title>
+      <link>https://aeric.io/tags/prometheus/</link>
+      <pubDate>Tue, 10 Dec 2019 12:26:28 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/prometheus/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RabbitMQ</title>
+      <link>https://aeric.io/tags/rabbitmq/</link>
+      <pubDate>Tue, 10 Dec 2019 12:26:28 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/rabbitmq/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Ingress</title>
+      <link>https://aeric.io/tags/ingress/</link>
+      <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/ingress/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Traefik</title>
+      <link>https://aeric.io/tags/traefik/</link>
+      <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/traefik/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Release</title>
+      <link>https://aeric.io/tags/release/</link>
+      <pubDate>Wed, 27 Mar 2019 10:49:54 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/release/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Consul</title>
@@ -26,24 +107,6 @@
       <pubDate>Sun, 27 Jan 2019 21:09:35 +0800</pubDate>
       
       <guid>https://aeric.io/tags/docker/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Docker-compose</title>
-      <link>https://aeric.io/tags/docker-compose/</link>
-      <pubDate>Thu, 10 Jan 2019 14:37:01 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/docker-compose/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Erlang</title>
-      <link>https://aeric.io/tags/erlang/</link>
-      <pubDate>Sun, 02 Dec 2018 16:48:15 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/erlang/</guid>
       <description></description>
     </item>
     
@@ -75,20 +138,11 @@
     </item>
     
     <item>
-      <title>Ingress</title>
-      <link>https://aeric.io/tags/ingress/</link>
-      <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
+      <title>Mkcert</title>
+      <link>https://aeric.io/tags/mkcert/</link>
+      <pubDate>Mon, 14 Jan 2019 20:30:33 +0800</pubDate>
       
-      <guid>https://aeric.io/tags/ingress/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Kubernetes</title>
-      <link>https://aeric.io/tags/kubernetes/</link>
-      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/kubernetes/</guid>
+      <guid>https://aeric.io/tags/mkcert/</guid>
       <description></description>
     </item>
     
@@ -111,6 +165,15 @@
     </item>
     
     <item>
+      <title>Docker-compose</title>
+      <link>https://aeric.io/tags/docker-compose/</link>
+      <pubDate>Thu, 10 Jan 2019 14:37:01 +0800</pubDate>
+      
+      <guid>https://aeric.io/tags/docker-compose/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Metrics</title>
       <link>https://aeric.io/tags/metrics/</link>
       <pubDate>Fri, 04 Jan 2019 12:23:36 +0800</pubDate>
@@ -120,20 +183,20 @@
     </item>
     
     <item>
-      <title>Mkcert</title>
-      <link>https://aeric.io/tags/mkcert/</link>
-      <pubDate>Mon, 14 Jan 2019 20:30:33 +0800</pubDate>
+      <title>Zookeeper</title>
+      <link>https://aeric.io/tags/zookeeper/</link>
+      <pubDate>Thu, 06 Dec 2018 16:34:08 +0800</pubDate>
       
-      <guid>https://aeric.io/tags/mkcert/</guid>
+      <guid>https://aeric.io/tags/zookeeper/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>Npm</title>
-      <link>https://aeric.io/tags/npm/</link>
-      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
+      <title>Erlang</title>
+      <link>https://aeric.io/tags/erlang/</link>
+      <pubDate>Sun, 02 Dec 2018 16:48:15 +0800</pubDate>
       
-      <guid>https://aeric.io/tags/npm/</guid>
+      <guid>https://aeric.io/tags/erlang/</guid>
       <description></description>
     </item>
     
@@ -143,69 +206,6 @@
       <pubDate>Sun, 29 Jul 2018 14:59:56 +0800</pubDate>
       
       <guid>https://aeric.io/tags/pass/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Prometheus</title>
-      <link>https://aeric.io/tags/prometheus/</link>
-      <pubDate>Tue, 10 Dec 2019 12:26:28 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/prometheus/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>RabbitMQ</title>
-      <link>https://aeric.io/tags/rabbitmq/</link>
-      <pubDate>Tue, 10 Dec 2019 12:26:28 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/rabbitmq/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Release</title>
-      <link>https://aeric.io/tags/release/</link>
-      <pubDate>Wed, 27 Mar 2019 10:49:54 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/release/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Traefik</title>
-      <link>https://aeric.io/tags/traefik/</link>
-      <pubDate>Sat, 05 Oct 2019 18:12:53 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/traefik/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Verddacio</title>
-      <link>https://aeric.io/tags/verddacio/</link>
-      <pubDate>Sat, 30 May 2020 20:12:53 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/verddacio/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Yaml</title>
-      <link>https://aeric.io/tags/yaml/</link>
-      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://aeric.io/tags/yaml/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Zookeeper</title>
-      <link>https://aeric.io/tags/zookeeper/</link>
-      <pubDate>Thu, 06 Dec 2018 16:34:08 +0800</pubDate>
-      
-      <guid>https://aeric.io/tags/zookeeper/</guid>
       <description></description>
     </item>
     

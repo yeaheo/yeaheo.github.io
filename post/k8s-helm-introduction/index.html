@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,90 +213,80 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#helm-基本概念">Helm 基本概念</a></li>
-<li><a href="#helm-基本组件">Helm 基本组件</a></li>
-<li><a href="#helm-的工作原理">Helm 的工作原理</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#helm-基本概念">Helm 基本概念</a></li>
+        <li><a href="#helm-基本组件">Helm 基本组件</a></li>
+        <li><a href="#helm-的工作原理">Helm 的工作原理</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p><a href="https://helm.sh">Helm</a> 是 Kubernetes 生态系统中的一个软件包管理工具，Helm 是由 <a href="https://deis.com/">Deis</a> 发起的一个开源工具，有助于简化部署和管理 Kubernetes 应用。 它有点类似于 Ubuntu 中的 APT 或 CentOS 中的 YUM</p>
-
+                <p><a href="https://helm.sh">Helm</a> 是 Kubernetes 生态系统中的一个软件包管理工具，Helm 是由 <a href="https://deis.com/">Deis</a> 发起的一个开源工具，有助于简化部署和管理 Kubernetes 应用。 它有点类似于 Ubuntu 中的 APT 或 CentOS 中的 YUM</p>
 <p>Helm 官方网站：<a href="https://helm.sh">https://helm.sh</a></p>
-
 <p>Helm GitHub 地址: <a href="https://github.com/helm/helm">https://github.com/helm/helm</a></p>
-
 <h2 id="helm-基本概念">Helm 基本概念</h2>
-
 <p>Helm 可以理解为 Kubernetes 的包管理工具，可以方便地发现、共享和使用为 Kubernetes 构建的应用，它包含几个基本概念</p>
-
 <ul>
-<li><strong>Helm :</strong>  一个命令行下的客户端工具。主要用于 Kubernetes 应用程序 Chart 的创建、打包、发布以及创建和管理本地和远程的 Chart 仓库。</li>
-
-<li><p><strong>Tiller :</strong>  Helm 的服务端，部署在 Kubernetes 集群中。Tiller 用于接收 Helm 的请求，并根据 Chart 生成 Kubernetes 的部署文件（ Helm 称为 Release ），然后提交给 Kubernetes 创建应用。Tiller 还提供了 Release 的升级、删除、回滚等一系列功能。</p></li>
-
-<li><p><strong>Chart :</strong>  一个 Helm 包，其中包含了运行一个应用所需要的镜像、依赖和资源定义等，还可能包含 Kubernetes 集群中的服务定义，类似 Homebrew 中的 formula，APT 的 dpkg 或者 Yum 的 rpm 文件。</p></li>
-
-<li><p><strong>Release :</strong>   在 Kubernetes 集群上运行的 Chart 的一个实例。在同一个集群上，一个 Chart 可以安装很多次。每次安装都会创建一个新的 release。例如一个 MySQL Chart，如果想在服务器上运行两个数据库，就可以把这个 Chart 安装两次。每次安装都会生成自己的 Release，会有自己的 Release 名称。</p></li>
-
-<li><p><strong>Repository ：</strong> 用于发布和存储 Chart 的仓库。</p></li>
+<li>
+<p><strong>Helm :</strong>  一个命令行下的客户端工具。主要用于 Kubernetes 应用程序 Chart 的创建、打包、发布以及创建和管理本地和远程的 Chart 仓库。</p>
+</li>
+<li>
+<p><strong>Tiller :</strong>  Helm 的服务端，部署在 Kubernetes 集群中。Tiller 用于接收 Helm 的请求，并根据 Chart 生成 Kubernetes 的部署文件（ Helm 称为 Release ），然后提交给 Kubernetes 创建应用。Tiller 还提供了 Release 的升级、删除、回滚等一系列功能。</p>
+</li>
+<li>
+<p><strong>Chart :</strong>  一个 Helm 包，其中包含了运行一个应用所需要的镜像、依赖和资源定义等，还可能包含 Kubernetes 集群中的服务定义，类似 Homebrew 中的 formula，APT 的 dpkg 或者 Yum 的 rpm 文件。</p>
+</li>
+<li>
+<p><strong>Release :</strong>   在 Kubernetes 集群上运行的 Chart 的一个实例。在同一个集群上，一个 Chart 可以安装很多次。每次安装都会创建一个新的 release。例如一个 MySQL Chart，如果想在服务器上运行两个数据库，就可以把这个 Chart 安装两次。每次安装都会生成自己的 Release，会有自己的 Release 名称。</p>
+</li>
+<li>
+<p><strong>Repository ：</strong> 用于发布和存储 Chart 的仓库。</p>
+</li>
 </ul>
-
 <h2 id="helm-基本组件">Helm 基本组件</h2>
-
 <p>Helm 采用客户端/服务器架构，有如下基本组件组成：</p>
-
 <ul>
 <li><strong>Helm CLI</strong> 是 Helm 客户端，可以在本地执行。</li>
 <li><strong>Tiller</strong> 是服务器端组件，在 Kubernetes 群集上运行，并管理 Kubernetes 应用程序的生命周期。</li>
 <li><strong>Repository</strong> 是 Chart 仓库，Helm客户端通过HTTP协议来访问仓库中Chart的索引文件和压缩包。</li>
 </ul>
-
 <p>Helm 各个基本组件之间的关系如下图所示：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/6KF0TE.jpg" alt="Helm 各个基本组件之间的关系" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/6KF0TE.jpg" alt="Helm 各个基本组件之间的关系"></p>
 <h2 id="helm-的工作原理">Helm 的工作原理</h2>
-
 <p>上面列出了 Helm 的基本组件及其用途，而 Helm 的工作过程和这些组件的功能用途是分不开的， Helm 依赖这些组件来完成整个工作流程，下面列出几个重要的工作过程，包括应用的安装、更新、回滚等流程。具体内容如下所述：</p>
-
 <p><strong>应用安装（chart install）</strong></p>
-
 <ul>
-<li><p>Helm 从指定的目录或者 TAR 文件中解析出 Chart 结构信息。</p></li>
-
-<li><p>Helm 将指定的 Chart 结构和 Values 信息通过 gRPC 传递给 Tiller。</p></li>
-
-<li><p>Tiller 根据 Chart 和 Values 生成一个 Release。</p></li>
-
-<li><p>Tiller 将 Release 发送给 Kubernetes 用于生成 Release。</p></li>
+<li>
+<p>Helm 从指定的目录或者 TAR 文件中解析出 Chart 结构信息。</p>
+</li>
+<li>
+<p>Helm 将指定的 Chart 结构和 Values 信息通过 gRPC 传递给 Tiller。</p>
+</li>
+<li>
+<p>Tiller 根据 Chart 和 Values 生成一个 Release。</p>
+</li>
+<li>
+<p>Tiller 将 Release 发送给 Kubernetes 用于生成 Release。</p>
+</li>
 </ul>
-
 <p><strong>应用更新（chart update）</strong></p>
-
 <ul>
 <li>Helm 从指定的目录或者 TAR 文件中解析出 Chart 结构信息。</li>
 <li>Helm 将需要更新的 Release 的名称、Chart 结构和 Values 信息传递给 Tiller。</li>
 <li>Tiller 生成 Release 并更新指定名称的 Release 的 History。</li>
 <li>Tiller 将 Release 发送给 Kubernetes 用于更新 Release。</li>
 </ul>
-
 <p><strong>应用回滚（chart rollback）</strong></p>
-
 <ul>
 <li>Helm 将要回滚的 Release 的名称传递给 Tiller。</li>
 <li>Tiller 根据 Release 的名称查找 History。</li>
 <li>Tiller 从 History 中获取上一个 Release。</li>
 <li>Tiller 将上一个 Release 发送给 Kubernetes 用于替换当前 Release。</li>
 </ul>
-
 <p><strong>Chart 处理依赖说明</strong>：</p>
-
 <p>Tiller 在处理 Chart 时，直接将 Chart 以及其依赖的所有 Charts 合并为一个 Release，同时传递给 Kubernetes。因此 Tiller 并不负责管理依赖之间的启动顺序。Chart 中的应用需要能够自行处理依赖关系。</p>
 
 
@@ -362,87 +352,79 @@
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

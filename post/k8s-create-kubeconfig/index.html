@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,136 +213,103 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li>
-<ul>
-<li><a href="#创建-tls-bootstrapping-token">创建 TLS Bootstrapping Token</a></li>
-<li><a href="#创建-kubelet-bootstrapping-kubeconfig-文件">创建 kubelet bootstrapping kubeconfig 文件</a></li>
-<li><a href="#创建-kube-proxy-kubeconfig-文件">创建 kube-proxy kubeconfig 文件</a></li>
-<li><a href="#分发-kubeconfig-文件">分发 kubeconfig 文件</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>需要说明的是 <code>kubelet</code>、<code>kube-proxy</code> 等 Node 机器上的进程与 Master 机器的 <code>kube-apiserver</code> 进程通信时需要认证和授权；</p>
-
+                <p>需要说明的是 <code>kubelet</code>、<code>kube-proxy</code> 等 Node 机器上的进程与 Master 机器的 <code>kube-apiserver</code> 进程通信时需要认证和授权；</p>
 <p><code>kubernetes v1.4</code> 版本开始支持由 <code>kube-apiserver</code> 为客户端生成 TLS 证书的 TLS <code>Bootstrapping</code>功能，这样就不需要为每个客户端生成证书了，但目前只支持为 kubectl 生成证书。</p>
-
 <blockquote>
 <p>以下操作只需要在 <code>master</code> 上执行即可，生成的 <code>*.kubeconfig</code> 文件可以直接拷贝到 node 节点的 <code>/etc/kubernetes</code> 目录下。</p>
 </blockquote>
-
 <h3 id="创建-tls-bootstrapping-token">创建 TLS Bootstrapping Token</h3>
-
 <p>token 可以是任意的包涵 128 bit 的字符串，可以使用安全的随机数发生器生成。</p>
-
 <p>具体配置参考如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">BOOTSTRAP_TOKEN</span><span style="color:#ff79c6">=</span><span style="color:#ff79c6">$(</span>head -c <span style="color:#bd93f9">16</span> /dev/urandom | od -An -t x | tr -d <span style="color:#f1fa8c">&#39; &#39;</span><span style="color:#ff79c6">)</span>
 
-<pre><code class="language-bash">cd /etc/kubernetes
-export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
-
-cat &gt; token.csv &lt;&lt;EOF
-${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,&quot;system:kubelet-bootstrap&quot;
-EOF
-</code></pre>
-
-<blockquote>
+cat &gt; token.csv <span style="color:#f1fa8c">&lt;&lt;EOF
+</span><span style="color:#f1fa8c">${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,&#34;system:kubelet-bootstrap&#34;
+</span><span style="color:#f1fa8c">EOF</span>
+</code></pre></div><blockquote>
 <p>在进行后续操作前请检查 token.csv 文件，确认其中的 ${BOOTSTRAP_TOKEN} 环境变量已经被真实的值替换。</p>
 </blockquote>
-
 <p><code>BOOTSTRAP_TOKEN</code> 将被写入到 <code>kube-apiserver</code> 使用的 <code>token.csv</code> 文件和 <code>kubelet</code> 使用的 <code>bootstrap.kubeconfig</code> 文件，如果后续重新生成了 <code>BOOTSTRAP_TOKEN</code>，则需要进行如下操作：</p>
-
 <ul>
 <li>更新 <code>token.csv</code> 文件，分发到所有机器 (master 和 node）的 <code>/etc/kubernetes/</code> 目录下，分发到node节点上非必需；</li>
 <li>重新生成 <code>bootstrap.kubeconfig</code> 文件，分发到所有 node 机器的 <code>/etc/kubernetes/</code> 目录下；</li>
 <li>重启 <code>kube-apiserver</code> 和 <code>kubelet</code> 进程；</li>
 <li>重新 approve kubelet 的 csr 请求。</li>
 </ul>
-
 <h3 id="创建-kubelet-bootstrapping-kubeconfig-文件">创建 kubelet bootstrapping kubeconfig 文件</h3>
-
 <p>具体配置参考如下：</p>
-
-<pre><code class="language-bash">cd /etc/kubernetes
-export KUBE_APISERVER=&quot;https://192.168.8.66:6443&quot;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
  
-# 设置集群参数
-kubectl config set-cluster kubernetes \
-  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-  --embed-certs=true \
-  --server=${KUBE_APISERVER} \
-  --kubeconfig=bootstrap.kubeconfig
+<span style="color:#6272a4"># 设置集群参数</span>
+kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --certificate-authority<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --server<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
   
-# 设置客户端认证参数
-kubectl config set-credentials kubelet-bootstrap \
-  --token=${BOOTSTRAP_TOKEN} \
-  --kubeconfig=bootstrap.kubeconfig
+<span style="color:#6272a4"># 设置客户端认证参数</span>
+kubectl config set-credentials kubelet-bootstrap <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --token<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">BOOTSTRAP_TOKEN</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
 
-# 设置上下文参数
-kubectl config set-context default \
-  --cluster=kubernetes \
-  --user=kubelet-bootstrap \
-  --kubeconfig=bootstrap.kubeconfig
+<span style="color:#6272a4"># 设置上下文参数</span>
+kubectl config set-context default <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --cluster<span style="color:#ff79c6">=</span>kubernetes <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --user<span style="color:#ff79c6">=</span>kubelet-bootstrap <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
   
-# 设置默认上下文
-kubectl config use-context default --kubeconfig=bootstrap.kubeconfig
-</code></pre>
-
-<p>参数说明：</p>
-
+<span style="color:#6272a4"># 设置默认上下文</span>
+kubectl config use-context default --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
+</code></pre></div><p>参数说明：</p>
 <ul>
 <li><code>--embed-certs</code> 为 <code>true</code> 时表示将 <code>certificate-authority</code> 证书写入到生成的 <code>ootstrap.kubeconfig</code> 文件中；</li>
 <li>设置客户端认证参数时没有指定秘钥和证书，后续由 <code>kube-apiserver</code> 自动生成；</li>
 </ul>
-
 <h3 id="创建-kube-proxy-kubeconfig-文件">创建 kube-proxy kubeconfig 文件</h3>
-
 <p>创建 kube-proxy 的 kubeconfig 文件参考如下：</p>
-
-<pre><code class="language-bash">cd /etc/kubernetes
-export KUBE_APISERVER=&quot;https://192.168.8.66:6443&quot;
-# 设置集群参数
-kubectl config set-cluster kubernetes \
-  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-  --embed-certs=true \
-  --server=${KUBE_APISERVER} \
-  --kubeconfig=kube-proxy.kubeconfig
-# 设置客户端认证参数
-kubectl config set-credentials kube-proxy \
-  --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
-  --client-key=/etc/kubernetes/ssl/kube-proxy-key.pem \
-  --embed-certs=true \
-  --kubeconfig=kube-proxy.kubeconfig
-# 设置上下文参数
-kubectl config set-context default \
-  --cluster=kubernetes \
-  --user=kube-proxy \
-  --kubeconfig=kube-proxy.kubeconfig
-# 设置默认上下文
-kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
-</code></pre>
-
-<p>参数说明：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
+<span style="color:#6272a4"># 设置集群参数</span>
+kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --certificate-authority<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --server<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
+<span style="color:#6272a4"># 设置客户端认证参数</span>
+kubectl config set-credentials kube-proxy <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --client-certificate<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kube-proxy.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --client-key<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kube-proxy-key.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
+<span style="color:#6272a4"># 设置上下文参数</span>
+kubectl config set-context default <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --cluster<span style="color:#ff79c6">=</span>kubernetes <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --user<span style="color:#ff79c6">=</span>kube-proxy <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
+<span style="color:#6272a4"># 设置默认上下文</span>
+kubectl config use-context default --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
+</code></pre></div><p>参数说明：</p>
 <ul>
 <li>设置集群参数和客户端认证参数时 <code>--embed-certs</code> 都为 <code>true</code>，这会将 <code>certificate-authority、client-certificate</code> 和 <code>client-key</code> 指向的证书文件内容写入到生成的 <code>kube-proxy.kubeconfig</code> 文件中；</li>
 <li><code>kube-proxy.pem</code> 证书中 CN 为 system:kube-proxy，<code>kube-apiserver</code> 预定义的 RoleBinding cluster-admin 将User system:kube-proxy 与 Role system:node-proxier 绑定，该 Role 授予了调用 <code>kube-apiserver</code> Proxy 相关 API 的权限；</li>
 </ul>
-
 <h3 id="分发-kubeconfig-文件">分发 kubeconfig 文件</h3>
-
 <p>创建完成后，我们需要将生成的两个 kubeconfig 文件分发到所有 Node 上的 <code>/etc/kubernetes/</code> 目录中。</p>
-
-<pre><code class="language-bash">cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
 scp bootstrap.kubeconfig kube-proxy.kubeconfig node-ip:/etc/kubernetes/
-# /etc/kubernetes/目录需要在node节点上提前创建，在制作证书和密钥的时候已经创建了所以不再赘述
-</code></pre>
-
+<span style="color:#6272a4"># /etc/kubernetes/目录需要在node节点上提前创建，在制作证书和密钥的时候已经创建了所以不再赘述</span>
+</code></pre></div>
 
                 
 
@@ -406,87 +373,79 @@ scp bootstrap.kubeconfig kube-proxy.kubeconfig node-ip:/etc/kubernetes/
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -209,94 +209,64 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li><a href="#将-pod-分配给节点">将 Pod 分配给节点</a>
-<ul>
-<li><a href="#nodeselector">nodeSelector</a></li>
-<li><a href="#affinity-and-anti-affinity">Affinity and anti-affinity</a>
-<ul>
-<li><a href="#nodeaffinity">nodeAffinity</a></li>
-<li><a href="#podaffinity">podAffinity</a></li>
-</ul></li>
-<li><a href="#nodename">nodeName</a></li>
-</ul></li>
-<li><a href="#污点和容忍度">污点和容忍度</a></li>
-<li><a href="#参考资料">参考资料</a></li>
-</ul>
+  <ul>
+    <li><a href="#将-pod-分配给节点">将 Pod 分配给节点</a>
+      <ul>
+        <li><a href="#nodeselector">nodeSelector</a></li>
+        <li><a href="#affinity-and-anti-affinity">Affinity and anti-affinity</a></li>
+        <li><a href="#nodename">nodeName</a></li>
+      </ul>
+    </li>
+    <li><a href="#污点和容忍度">污点和容忍度</a></li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ul>
 </nav>
                 
-                
-
-<p>我们在使用 Kubernetes 集群调度应用 POD 的时候，一般情况下我们都是用集群的自动调度机制选择某个节点，默认情况 Kubernetes 集群一般分为预选和优选两种调度策略，计算得分来进行调度，得分高的节点优先被调度。</p>
-
+                <p>我们在使用 Kubernetes 集群调度应用 POD 的时候，一般情况下我们都是用集群的自动调度机制选择某个节点，默认情况 Kubernetes 集群一般分为预选和优选两种调度策略，计算得分来进行调度，得分高的节点优先被调度。</p>
 <p>默认情况下调度器考虑的是资源充足并且负载尽量平均，但是有时候我们需要将特定 POD 运行在我们指定的节点上，或者说我们不希望对外的一些服务和内部的服务跑在同一个节点上，因为内部服务对外部的服务可能产生某些不可预知的影响。有的时候我们某两个服务直接交流比较频繁，又希望能够将这两个服务的 POD 调度到同样的节点上，这个时候 Kubernetes 集群的亲和性相关概念就可以实现上述目的。</p>
-
 <p>在 Kubernetes 集群中亲和性（Affinity）一般分为节点亲和性（nodeAffinity）和 pod 亲和性（podAffinity）两类。</p>
-
 <p>这里我们针对亲和性相关概念主要说明一下 <code>nodeSelector</code>、<code>nodeAffinity</code>、<code>podAffinity</code>、<code>Taints</code> 以及<code>Tolerations</code> 的相关内容。</p>
-
 <h1 id="将-pod-分配给节点">将 Pod 分配给节点</h1>
-
 <p>您可以将 <a href="https://kubernetes.io/docs/concepts/workloads/pods/pod/">pod</a> 限制为只能在特定 <a href="https://kubernetes.io/docs/concepts/architecture/nodes/">节点</a> 上运行或者更喜欢在特定节点上运行，这里主要有以下几种方式：</p>
-
 <ul>
 <li>nodeSelector</li>
 <li>Affinity and anti-affinity</li>
 <li>nodeName</li>
 </ul>
-
 <h2 id="nodeselector">nodeSelector</h2>
-
 <p><code>nodeSelector</code> 其实是最简单的一种节点约束形式，它依赖 Kubernetes 集群中的 label 属性，我们知道<code>label</code>是<code>kubernetes</code>中一个非常重要的概念，用户可以非常灵活的利用 label 来管理集群中的资源，比如最常见的一个就是 service 通过匹配 label 去选择 POD 的。而 POD 的调度也可以根据节点的 label 进行特定的部署。</p>
-
 <p>集群现状：</p>
-
-<pre><code class="language-bash">➜ ~ kubectl get nodes
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl get nodes
 NAME                                STATUS   ROLES    AGE   VERSION
 cn-beijing.i-2zeigrq970614g1spzpu   Ready    &lt;none&gt;   30d   v1.12.6-aliyun.1
 cn-beijing.i-2zeigrq970614g1spzpv   Ready    &lt;none&gt;   30d   v1.12.6-aliyun.1
-</code></pre>
-
-<p>如果需要查看 node 节点的 label 可以使用如下命令：</p>
-
-<pre><code class="language-bash">➜ ~ kubectl get nodes --show-labels
+</code></pre></div><p>如果需要查看 node 节点的 label 可以使用如下命令：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl get nodes --show-labels
 或者
 ➜ ~ kubectl describe nodes &lt;node-name&gt;
-</code></pre>
-
-<p>首先需要为节点打上标签，参考如下命令：</p>
-
-<pre><code class="language-bash">➜ ~ kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;
-</code></pre>
-
-<p>这里我为 <code>cn-beijing.i-2zeigrq970614g1spzpv</code> 这个节点加一个 <code>source=yeaheo</code>的标签：</p>
-
-<pre><code class="language-bash">➜ ~ kubectl label nodes cn-beijing.i-2zeigrq970614g1spzpv source=yeaheo
+</code></pre></div><p>首先需要为节点打上标签，参考如下命令：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;<span style="color:#ff79c6">=</span>&lt;label-value&gt;
+</code></pre></div><p>这里我为 <code>cn-beijing.i-2zeigrq970614g1spzpv</code> 这个节点加一个 <code>source=yeaheo</code>的标签：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl label nodes cn-beijing.i-2zeigrq970614g1spzpv <span style="color:#8be9fd;font-style:italic">source</span><span style="color:#ff79c6">=</span>yeaheo
 node/cn-beijing.i-2zeigrq970614g1spzpv labeled
-</code></pre>
-
-<p>当 node 被打上了相关标签后，在调度的时候就可以使用这些标签了，只需要在 POD 的 spec 字段中添加<code>nodeSelector</code>字段，里面是我们需要被调度的节点的 label，本次我们用官方文档的 pod 模板：</p>
-
-<pre><code class="language-bash">apiVersion: v1
+</code></pre></div><p>当 node 被打上了相关标签后，在调度的时候就可以使用这些标签了，只需要在 POD 的 spec 字段中添加<code>nodeSelector</code>字段，里面是我们需要被调度的节点的 label，本次我们用官方文档的 pod 模板：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
 kind: Pod
 metadata:
   name: nginx
   labels:
-    env: test
+    env: <span style="color:#8be9fd;font-style:italic">test</span>
 spec:
   containers:
   - name: nginx
     image: nginx:alpine 
-</code></pre>
-
-<p>在 <code>spec</code>字段添加 <code>nodeSelector</code>后完整的 yaml 文件如下所示：</p>
-
-<pre><code class="language-bash">apiVersion: v1
+</code></pre></div><p>在 <code>spec</code>字段添加 <code>nodeSelector</code>后完整的 yaml 文件如下所示：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
 kind: Pod
 metadata:
   name: nginx
   labels:
-    env: test
+    env: <span style="color:#8be9fd;font-style:italic">test</span>
 spec:
   containers:
   - name: nginx
@@ -304,40 +274,23 @@ spec:
     imagePullPolicy: IfNotPresent
   nodeSelector:
     source: yeaheo
-</code></pre>
-
-<p>部署该文件：</p>
-
-<pre><code class="language-bash">➜ ~ kubectl apply -f pod-nginx.yaml
-</code></pre>
-
-<p>部署完成后，可以通过查看该 pod 确实调度到了指定节点上：</p>
-
-<pre><code class="language-bash">➜ affinity kubectl get pods -n default -o wide
+</code></pre></div><p>部署该文件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl apply -f pod-nginx.yaml
+</code></pre></div><p>部署完成后，可以通过查看该 pod 确实调度到了指定节点上：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ affinity kubectl get pods -n default -o wide
 NAME    READY   STATUS    RESTARTS   AGE     IP             NODE                                NOMINATED NODE
-nginx   1/1     Running   0          2m46s   172.16.0.205   cn-beijing.i-2zeigrq970614g1spzpv   &lt;none&gt;
-</code></pre>
-
-<h2 id="affinity-and-anti-affinity">Affinity and anti-affinity</h2>
-
+nginx   1/1     Running   <span style="color:#bd93f9">0</span>          2m46s   172.16.0.205   cn-beijing.i-2zeigrq970614g1spzpv   &lt;none&gt;
+</code></pre></div><h2 id="affinity-and-anti-affinity">Affinity and anti-affinity</h2>
 <p><code>nodeSelector</code>提供了一种非常简单的方法来将pod限制为具有特定标签的节点。而 <code>Affinity</code>相比 <code>nodeSelector</code>更加的强大，官方文档这样比较两者的：</p>
-
-<pre><code class="language-bash">1、the language is more expressive (not just “AND of exact match”)
-2、you can indicate that the rule is “soft”/“preference” rather than a hard requirement, so if the scheduler can’t satisfy it, the pod will still be scheduled
-3、you can constrain against labels on other pods running on the node (or other topological domain), rather than against labels on the node itself, which allows rules about which pods can and cannot be co-located
-</code></pre>
-
-<p>亲和特征由两种类型的亲和力组成，“节点亲和力”和“节点间亲和力/反亲和力”。节点亲和力就像现有的<code>nodeSelector</code>（但具有上面列出的前两个好处），而pod间亲和/反亲和力限制 pod 标签而不是节点标签，如上面列出的第三个项目中所述，除了拥有第一个和上面列出的第二个属性。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">1、the language is more expressive <span style="color:#ff79c6">(</span>not just “AND of exact match”<span style="color:#ff79c6">)</span>
+2、you can indicate that the rule is “soft”/“preference” rather than a hard requirement, so <span style="color:#ff79c6">if</span> the scheduler can’t satisfy it, the pod will still be scheduled
+3、you can constrain against labels on other pods running on the node <span style="color:#ff79c6">(</span>or other topological domain<span style="color:#ff79c6">)</span>, rather than against labels on the node itself, which allows rules about which pods can and cannot be co-located
+</code></pre></div><p>亲和特征由两种类型的亲和力组成，“节点亲和力”和“节点间亲和力/反亲和力”。节点亲和力就像现有的<code>nodeSelector</code>（但具有上面列出的前两个好处），而pod间亲和/反亲和力限制 pod 标签而不是节点标签，如上面列出的第三个项目中所述，除了拥有第一个和上面列出的第二个属性。</p>
 <h3 id="nodeaffinity">nodeAffinity</h3>
-
 <p><code>nodeAffinity</code>就是节点亲和性，相对应的是<code>Anti-Affinity</code>，就是反亲和性，这种方法比上面的<code>nodeSelector</code>更加灵活，它可以进行一些简单的逻辑组合了，不只是简单的相等匹配。 调度可以分成软策略和硬策略两种方式，软策略就是如果你没有满足调度要求的节点的话，POD 就会忽略这条规则，继续完成调度过程，说白了就是<strong>满足条件最好了，没有的话也无所谓了</strong>的策略；而硬策略就比较强硬了，如果没有满足条件的节点的话，就不断重试直到满足条件为止，简单说就是<strong>你必须满足我的要求，不然我就不干</strong>的策略。</p>
-
 <p><code>nodeAffinity</code>就有两上面两种策略：<code>preferredDuringSchedulingIgnoredDuringExecution</code>和<code>requiredDuringSchedulingIgnoredDuringExecution</code>，前面的就是软策略，后面的就是硬策略。</p>
-
 <p>如下 <code>pod-with-node-affinity.yaml</code> 配置清单文件定义的亲和性：</p>
-
-<pre><code class="language-bash">apiVersion: v1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
 kind: Pod
 metadata:
   name: with-node-affinity
@@ -353,7 +306,7 @@ spec:
             - e2e-az1
             - e2e-az2
       preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 1
+      - weight: <span style="color:#bd93f9">1</span>
         preference:
           matchExpressions:
           - key: another-node-label-key
@@ -363,12 +316,8 @@ spec:
   containers:
   - name: with-node-affinity
     image: k8s.gcr.io/pause:2.0
-</code></pre>
-
-<p>此节点关联性规则表示，该pod只能放置在一个标签上，该标签的键是<code>kubernetes.io/e2e-az-name</code>，其值为<code>e2e-az1</code>或者<code>e2e-az2</code>。此外，在满足该标准的节点中，具有其键<code>another-node-label-key</code>和值的标签的节点<code>another-node-label-value</code>应该是首选的。</p>
-
+</code></pre></div><p>此节点关联性规则表示，该pod只能放置在一个标签上，该标签的键是<code>kubernetes.io/e2e-az-name</code>，其值为<code>e2e-az1</code>或者<code>e2e-az2</code>。此外，在满足该标准的节点中，具有其键<code>another-node-label-key</code>和值的标签的节点<code>another-node-label-value</code>应该是首选的。</p>
 <p>现在<code>Kubernetes</code>提供的操作符有下面的几种：</p>
-
 <ul>
 <li>In：label 的值在某个列表中</li>
 <li>NotIn：label 的值不在某个列表中</li>
@@ -377,18 +326,13 @@ spec:
 <li>Exists：某个 label 存在</li>
 <li>DoesNotExist：某个 label 不存在</li>
 </ul>
-
 <blockquote>
 <p>如果同时指定了<code>nodeSelector</code> 和 <code>nodeAffinity</code>,那么必须同时满足才可以被调度；如果<code>nodeSelectorTerms</code>下面有多个选项的话，满足任何一个条件就可以了；如果<code>matchExpressions</code>有多个选项的话，则必须同时满足这些条件才能正常调度 POD。如果删除或更改计划容器的节点的标签，则不会删除该容器。换句话说，亲和度选择仅在调度pod时起作用。</p>
 </blockquote>
-
 <h3 id="podaffinity">podAffinity</h3>
-
 <p>上面两种方式都是让 POD 去选择节点的，有的时候我们也希望能够根据 POD 之间的关系进行调度，<code>Kubernetes</code>在1.4版本引入的<code>podAffinity</code>概念就可以实现我们这个需求。</p>
-
 <p>和<code>nodeAffinity</code>类似，<code>podAffinity</code>也有<code>requiredDuringSchedulingIgnoredDuringExecution</code>和 <code>preferredDuringSchedulingIgnoredDuringExecution</code>两种调度策略，唯一不同的是如果要使用互斥性，我们需要使用<code>podAntiAffinity</code>字段。 如下例子所示，我们希望<code>with-pod-affinity</code>和<code>busybox-pod</code>能够就近部署，而不希望和<code>node-affinity-pod</code>部署在同一个拓扑域下面：</p>
-
-<pre><code class="language-bash">apiVersion: v1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
 kind: Pod
 metadata:
   name: with-pod-affinity
@@ -410,7 +354,7 @@ spec:
         topologyKey: kubernetes.io/hostname
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 1
+      - weight: <span style="color:#bd93f9">1</span>
         podAffinityTerm:
           labelSelector:
             matchExpressions:
@@ -419,21 +363,14 @@ spec:
               values:
               - node-affinity-pod
           topologyKey: kubernetes.io/hostname
-</code></pre>
-
-<p>上面这个例子中的 POD 需要调度到某个指定的主机上，至少有一个节点上运行了这样的 POD：这个 POD 有一个<code>app=busybox-pod</code>的 label。<code>podAntiAffinity</code>则是希望最好不要调度到这样的节点：这个节点上运行了某个 POD，而这个 POD 有<code>app=node-affinity-pod</code>的 label。</p>
-
+</code></pre></div><p>上面这个例子中的 POD 需要调度到某个指定的主机上，至少有一个节点上运行了这样的 POD：这个 POD 有一个<code>app=busybox-pod</code>的 label。<code>podAntiAffinity</code>则是希望最好不要调度到这样的节点：这个节点上运行了某个 POD，而这个 POD 有<code>app=node-affinity-pod</code>的 label。</p>
 <p>需要注意的是：</p>
-
 <blockquote>
 <p>在<code>labelSelector</code>和 <code>topologyKey</code>的同级，还可以定义 namespaces 列表，表示匹配哪些 namespace 里面的 pod，默认情况下，会匹配定义的 pod 所在的 namespace；如果定义了这个字段，但是它的值为空，则匹配所有的 namespaces。</p>
 </blockquote>
-
 <h2 id="nodename">nodeName</h2>
-
 <p><code>nodeName</code>是最简单的节点选择约束形式，但由于其局限性，通常不使用它。这里简单举个例子：</p>
-
-<pre><code class="language-bash">apiVersion: v1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
 kind: Pod
 metadata:
   name: nginx
@@ -442,67 +379,48 @@ spec:
   - name: nginx
     image: nginx
   nodeName: kube-01
-</code></pre>
-
-<h1 id="污点和容忍度">污点和容忍度</h1>
-
+</code></pre></div><h1 id="污点和容忍度">污点和容忍度</h1>
 <p>对于<code>nodeAffinity</code>无论是硬策略还是软策略方式，都是调度 POD 到预期节点上，而<code>Taints</code>恰好与之相反，如果一个节点标记为 Taints ，除非 POD 也被标识为可以容忍污点节点，否则该 Taints 节点不会被调度pod。</p>
-
 <p>taint 标记节点举例如下：</p>
-
-<pre><code class="language-bash">kubectl taint nodes node1 key=value:NoSchedule
-</code></pre>
-
-<p>如果需要取消此污点可以参考下面命令：</p>
-
-<pre><code class="language-bash">kubectl taint nodes node1 key:NoSchedule-
-</code></pre>
-
-<p>当需要将某些 pod 调度到带有污点的节点上，必须在 pod 的 spec 字段中指定容忍度，这里有个例子可以参考：</p>
-
-<pre><code class="language-bash">tolerations:
-- key: &quot;key&quot;
-  operator: &quot;Equal&quot;
-  value: &quot;value&quot;
-  effect: &quot;NoSchedule&quot;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl taint nodes node1 <span style="color:#8be9fd;font-style:italic">key</span><span style="color:#ff79c6">=</span>value:NoSchedule
+</code></pre></div><p>如果需要取消此污点可以参考下面命令：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl taint nodes node1 key:NoSchedule-
+</code></pre></div><p>当需要将某些 pod 调度到带有污点的节点上，必须在 pod 的 spec 字段中指定容忍度，这里有个例子可以参考：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tolerations:
+- key: <span style="color:#f1fa8c">&#34;key&#34;</span>
+  operator: <span style="color:#f1fa8c">&#34;Equal&#34;</span>
+  value: <span style="color:#f1fa8c">&#34;value&#34;</span>
+  effect: <span style="color:#f1fa8c">&#34;NoSchedule&#34;</span>
   
 或者
 
 tolerations:
-- key: &quot;key&quot;
-  operator: &quot;Exists&quot;
-  effect: &quot;NoSchedule&quot;
+- key: <span style="color:#f1fa8c">&#34;key&#34;</span>
+  operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
+  effect: <span style="color:#f1fa8c">&#34;NoSchedule&#34;</span>
 
-# 如果 operator 未指定，默认为 Equal
-</code></pre>
-
-<p>这里有两种特殊情况，如下：</p>
-
+<span style="color:#6272a4"># 如果 operator 未指定，默认为 Equal</span>
+</code></pre></div><p>这里有两种特殊情况，如下：</p>
 <p>An empty <code>key</code> with operator <code>Exists</code> matches all keys, values and effects which means this will tolerate everything.</p>
-
-<pre><code class="language-bash">tolerations:
-- operator: &quot;Exists&quot;
-</code></pre>
-
-<p>An empty <code>effect</code> matches all effects with key <code>key</code></p>
-
-<pre><code class="language-bash">tolerations:
-- key: &quot;key&quot;
-  operator: &quot;Exists&quot;
-</code></pre>
-
-<p>effect 共有三个可选项，可按实际需求进行设置：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tolerations:
+- operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
+</code></pre></div><p>An empty <code>effect</code> matches all effects with key <code>key</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tolerations:
+- key: <span style="color:#f1fa8c">&#34;key&#34;</span>
+  operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
+</code></pre></div><p>effect 共有三个可选项，可按实际需求进行设置：</p>
 <ul>
-<li><p><code>NoSchedule</code>：POD 不会被调度到标记为 taints 节点。</p></li>
-
-<li><p><code>PreferNoSchedule</code>：NoSchedule 的软策略版本。</p></li>
-
-<li><p><code>NoExecute</code>：该选项意味着一旦 Taint 生效，如该节点内正在运行的 POD 没有对应 Tolerate 设置，会直接被逐出。</p></li>
+<li>
+<p><code>NoSchedule</code>：POD 不会被调度到标记为 taints 节点。</p>
+</li>
+<li>
+<p><code>PreferNoSchedule</code>：NoSchedule 的软策略版本。</p>
+</li>
+<li>
+<p><code>NoExecute</code>：该选项意味着一旦 Taint 生效，如该节点内正在运行的 POD 没有对应 Tolerate 设置，会直接被逐出。</p>
+</li>
 </ul>
-
 <h1 id="参考资料">参考资料</h1>
-
 <ul>
 <li><a href="https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/">https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/</a></li>
 <li><a href="https://kubernetes.io/docs/concepts/configuration/assign-pod-node/">https://kubernetes.io/docs/concepts/configuration/assign-pod-node/</a></li>
@@ -571,87 +489,79 @@ tolerations:
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

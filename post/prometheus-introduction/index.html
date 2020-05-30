@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -209,43 +209,29 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#prometheus-系统简介">Prometheus 系统简介</a></li>
-<li><a href="#prometheus-核心组件">Prometheus 核心组件</a>
-<ul>
-<li><a href="#prometheus-server">Prometheus Server</a></li>
-<li><a href="#exporters">Exporters</a></li>
-<li><a href="#alertmanager">AlertManager</a></li>
-<li><a href="#pushgateway">PushGateway</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#prometheus-系统简介">Prometheus 系统简介</a></li>
+        <li><a href="#prometheus-核心组件">Prometheus 核心组件</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<h2 id="prometheus-系统简介">Prometheus 系统简介</h2>
-
+                <h2 id="prometheus-系统简介">Prometheus 系统简介</h2>
 <p>首先，Prometheus 受启发于 Google 的 Brogmon 监控系统，相似的 Kubernetes 是从 Google 的 Brog 系统演变而来，从 2012 年开始由前 Google 工程师在 Soundcloud 以开源软件的形式进行研发，并且于 2015 年早期对外发布早期版本。2016 年 5 月继 Kubernetes 之后成为第二个正式加入 CNCF 基金会的项目，同年 6 月正式发布 1.0 版本。2017 年底发布了基于全新存储层的 2.0 版本，能更好地与容器平台、云平台配合。</p>
-
 <p>Prometheus 的发展简史如下图所示：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/z5oM7u.jpg" alt="Prometheus 简史" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/z5oM7u.jpg" alt="Prometheus 简史"></p>
 <p>作为新一代监控系统，Prometheus 可以说是彻底颠覆了传统的监控系统，作为监控系统，一般都离不开以下监控<strong>目标</strong>：</p>
-
 <ul>
-<li><strong>长期趋势分析：</strong>通过对监控样本数据的持续收集和统计，对监控指标进行长期趋势分析。例如，通过对磁盘空间增长率的判断，我们可以提前预测在未来什么时间节点上需要对资源进行扩容。</li>
-<li><strong>对照分析：</strong>两个版本的系统运行资源使用情况的差异如何？在不同容量情况下系统的并发和负载变化如何？通过监控能够方便的对系统进行跟踪和比较。</li>
-<li><strong>告警：</strong>当系统出现或者即将出现故障时，监控系统需要迅速反应并通知管理员，从而能够对问题进行快速的处理或者提前预防问题的发生，避免出现对业务的影响。</li>
-<li><strong>故障分析与定位：</strong>当问题发生后，需要对问题进行调查和处理。通过对不同监控监控以及历史数据的分析，能够找到并解决根源问题。</li>
-<li><strong>数据可视化：</strong>通过可视化仪表盘能够直接获取系统的运行状态、资源使用情况、以及服务运行状态等直观的信息。</li>
+<li>**长期趋势分析：**通过对监控样本数据的持续收集和统计，对监控指标进行长期趋势分析。例如，通过对磁盘空间增长率的判断，我们可以提前预测在未来什么时间节点上需要对资源进行扩容。</li>
+<li>**对照分析：**两个版本的系统运行资源使用情况的差异如何？在不同容量情况下系统的并发和负载变化如何？通过监控能够方便的对系统进行跟踪和比较。</li>
+<li>**告警：**当系统出现或者即将出现故障时，监控系统需要迅速反应并通知管理员，从而能够对问题进行快速的处理或者提前预防问题的发生，避免出现对业务的影响。</li>
+<li>**故障分析与定位：**当问题发生后，需要对问题进行调查和处理。通过对不同监控监控以及历史数据的分析，能够找到并解决根源问题。</li>
+<li>**数据可视化：**通过可视化仪表盘能够直接获取系统的运行状态、资源使用情况、以及服务运行状态等直观的信息。</li>
 </ul>
-
 <p>与传统监控系统相比， Prometheus 是一个开源的完整监控解决方案，其对传统监控系统的测试和告警模型进行了彻底的颠覆，形成了基于中央化的规则计算、统一分析和告警的新模型。Prometheus 具有许多独特的<strong>优势</strong>：</p>
-
 <ul>
 <li><strong>易于管理:</strong> Prometheus 核心部分只有一个单独的二进制文件，不存在任何的第三方依赖(数据库，缓存等等)。唯一需要的就是本地磁盘，因此不会有潜在级联故障的风险。Prometheus 基于 Pull 模型的架构方式，可以在任何地方（本地电脑，开发环境，测试环境）搭建我们的监控系统。对于一些复杂的情况，还可以使用Prometheus 服务发现 (Service Discovery) 的能力动态管理监控目标。</li>
 <li><strong>监控服务的内部运行状态:</strong> Pometheus 鼓励用户监控服务的内部状态，基于 Prometheus 丰富的 Client 库，用户可以轻松的在应用程序中添加对 Prometheus 的支持，从而让用户可以获取服务和应用内部真正的运行状态。</li>
@@ -254,42 +240,25 @@
 <li><strong>高效、可扩展、易于集成:</strong> Prometheus 对于联邦集群的支持，可以让多个 Prometheus 实例产生一个逻辑集群，当单实例 Prometheus Server 处理的任务量过大时，通过使用功能分区(sharding)+联邦集群(federation)可以对其进行扩展。使用Prometheus可以快速搭建监控服务，并且可以非常方便地在应用程序中进行集成。</li>
 <li>Prometheus 还有许多特性，这里不再一一赘述，详细信息可以查阅<a href="https://prometheus.io/docs/introduction/overview/">官方文档</a></li>
 </ul>
-
 <h2 id="prometheus-核心组件">Prometheus 核心组件</h2>
-
 <p>上一节中，简单介绍了 Prometheus 监控系统的由来和特性，这里我们将详细介绍一下 Prometheus 监控的核心组件和工作原理。</p>
-
 <p>Prometheus 的基本架构图如下图所示：</p>
-
-<p><img src="https://prometheus.io/assets/architecture.png" alt="Prometheus 基本架构图" /></p>
-
+<p><img src="https://prometheus.io/assets/architecture.png" alt="Prometheus 基本架构图"></p>
 <h3 id="prometheus-server">Prometheus Server</h3>
-
 <p>Prometheus Server 是 Prometheus 组件中的核心部分，负责实现对监控数据的获取，存储以及查询。 Prometheus Server 可以通过静态配置管理监控目标，也可以配合使用 Service Discovery 的方式动态管理监控目标，并从这些监控目标中获取数据。其次 Prometheus Server 需要对采集到的监控数据进行存储，Prometheus Server 本身就是一个时序数据库，将采集到的监控数据按照时间序列的方式存储在本地磁盘当中。最后 Prometheus Server 对外提供了自定义的 PromQL 语言，实现对数据的查询以及分析。</p>
-
 <p>Prometheus Server 内置的 Express Browser UI，通过这个 UI 可以直接通过 PromQL 实现数据的查询以及可视化。</p>
-
 <p>Prometheus Server 的联邦集群能力可以使其从其他的 Prometheus Server 实例中获取数据，因此在大规模监控的情况下，可以通过联邦集群以及功能分区的方式对 Prometheus Server 进行扩展。</p>
-
 <h3 id="exporters">Exporters</h3>
-
 <p>Exporter 将监控数据采集的端点通过 HTTP 服务的形式暴露给 Prometheus Server，然后 Prometheus Server 通过访问该 Exporter 提供的 Endpoint 端点，即可获取到需要采集的监控数据。</p>
-
 <p>一般来说可以将 Exporter 分为 2 类：</p>
-
 <ul>
 <li><strong>直接采集</strong>：这一类 Exporter 直接内置了对 Prometheus 监控的支持，比如 cAdvisor，Kubernetes，Etcd，Gokit等，都直接内置了用于向 Prometheus 暴露监控数据的端点。</li>
 <li><strong>间接采集</strong>：间接采集，原有监控目标并不直接支持 Prometheus，因此我们需要通过 Prometheus 提供的 Client Library 编写该监控目标的监控采集程序。例如: Mysql Exporter，JMX Exporter，Consul Exporter等。</li>
 </ul>
-
 <h3 id="alertmanager">AlertManager</h3>
-
 <p>在 Prometheus Server 中支持基于 PromQL 创建告警规则，如果满足 PromQL 定义的规则，则会产生一条告警，而告警的后续处理流程则由 AlertManager 进行管理。在 AlertManager 中我们可以与邮件，Slack 等等内置的通知方式进行集成，也可以通过 Webhook 自定义告警处理方式。AlertManager 即 Prometheus 体系中的告警处理中心。</p>
-
 <h3 id="pushgateway">PushGateway</h3>
-
 <p>由于 Prometheus 数据采集基于 Pull 模型进行设计，因此在网络环境的配置上必须要让 Prometheus Server 能够直接与 Exporter 进行通信。 当这种网络需求无法直接满足时，就可以利用 PushGateway 来进行中转。可以通过PushGateway 将内部网络的监控数据主动 Push 到 Gateway 当中。而 Prometheus Server 则可以采用同样 Pull 的方式从 PushGateway 中获取到监控数据。</p>
-
 <p>接下来将在 Linux 系统上部署 Prometheus 监控系统，具体过程可以参考后期博文。</p>
 
 
@@ -355,87 +324,79 @@
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

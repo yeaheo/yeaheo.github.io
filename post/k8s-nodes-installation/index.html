@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,130 +213,99 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li>
-<ul>
-<li><a href="#安装并配置-kubelet-服务">安装并配置 kubelet 服务</a></li>
-<li><a href="#安装并配置-kube-proxy-服务">安装并配置 kube-proxy 服务</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>kubernetes node 节点包含如下组件：</p>
-
-<pre><code class="language-bash">Flanneld
+                <p>kubernetes node 节点包含如下组件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Flanneld
 Docker:docker直接用yum安装即可
 kubelet
 kube-proxy
 注意：每台 node 上都需要安装 flannel，master 节点上可以不必安装。
-</code></pre>
-
-<p>我们在前面已经配置了 Flanneld 和 Docker 服务，具体参见 <a href="../k8s-flannel-and-docker-config">配置 docker 及 flanneld 服务</a></p>
-
+</code></pre></div><p>我们在前面已经配置了 Flanneld 和 Docker 服务，具体参见 <a href="../k8s-flannel-and-docker-config">配置 docker 及 flanneld 服务</a></p>
 <p>我们本次只安装 <code>kubelet</code> 和 <code>kube-proxy</code> 服务。</p>
-
 <blockquote>
 <p>kubernets <code>v1.9</code> 相对于 kuberentes <code>v1.6</code> 集群，必须关闭swap，否则kubelet启动将失败。
 关闭 <code>swap</code> 只需修改 <code>/etc/fstab</code> 将，<code>swap</code> 系统注释掉。
 如果要临时关闭，可以用 <code>swapoff -a</code>， <code>-a</code> 表示关闭所有交换设备。</p>
 </blockquote>
-
 <h3 id="安装并配置-kubelet-服务">安装并配置 kubelet 服务</h3>
-
 <p>kubelet 启动时向 <code>kube-apiserver</code> 发送 <code>TLS bootstrapping</code> 请求，需要先将 <code>bootstrap token</code>文件中的 <code>kubelet-bootstrap</code> 用户赋予 <code>system:node-bootstrapper cluster</code> 角色(role)， 然后 kubelet 才能有权限创建认证请求(certificate signing requests)：</p>
-
-<pre><code class="language-bash">cd /etc/kubernetes
-kubectl create clusterrolebinding kubelet-bootstrap \
-  --clusterrole=system:node-bootstrapper \
-  --user=kubelet-bootstrap
-</code></pre>
-
-<blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+kubectl create clusterrolebinding kubelet-bootstrap <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --clusterrole<span style="color:#ff79c6">=</span>system:node-bootstrapper <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --user<span style="color:#ff79c6">=</span>kubelet-bootstrap
+</code></pre></div><blockquote>
 <p><code>--user=kubelet-bootstrap</code> 是在 <code>/etc/kubernetes/token.csv</code> 文件中指定的用户名，同时也写入了 <code>/etc/kubernetes/bootstrap.kubeconfig</code> 文件；</p>
 </blockquote>
-
 <p>下载最新的 kubelet 和 kube-proxy 二进制文件,因为我们之前已经下载了 kubernetes 的 server 软件包，所以再贴一下，不再赘述：</p>
-
-<pre><code class="language-bash">wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
 tar -xzvf kubernetes-server-linux-amd64.tar.gz
-cd kubernetes
+<span style="color:#8be9fd;font-style:italic">cd</span> kubernetes
 tar -xzvf  kubernetes-src.tar.gz
-cp -r ./server/bin/{kube-proxy,kubelet} /usr/local/bin/
-</code></pre>
-
-<p><strong>创建 kubelet 的 System Unit 配置文件</strong></p>
-
+cp -r ./server/bin/<span style="color:#ff79c6">{</span>kube-proxy,kubelet<span style="color:#ff79c6">}</span> /usr/local/bin/
+</code></pre></div><p><strong>创建 kubelet 的 System Unit 配置文件</strong></p>
 <p>kubelet 的 service 配置文件: <code>/usr/lib/systemd/system/kubelet.service</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Kubernetes Kubelet Server
+<span style="color:#8be9fd;font-style:italic">Documentation</span><span style="color:#ff79c6">=</span>https://github.com/GoogleCloudPlatform/kubernetes
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>docker.service
+<span style="color:#8be9fd;font-style:italic">Requires</span><span style="color:#ff79c6">=</span>docker.service
 
-<pre><code class="language-bash">[Unit]
-Description=Kubernetes Kubelet Server
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-After=docker.service
-Requires=docker.service
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WorkingDirectory</span><span style="color:#ff79c6">=</span>/var/lib/kubelet
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/config
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/kubelet
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/usr/local/bin/kubelet <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBE_LOGTOSTDERR</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBE_LOG_LEVEL</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBELET_API_SERVER</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBELET_ADDRESS</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBELET_PORT</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBELET_HOSTNAME</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBE_ALLOW_PRIV</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBELET_POD_INFRA_CONTAINER</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBELET_ARGS</span>
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
 
-[Service]
-WorkingDirectory=/var/lib/kubelet
-EnvironmentFile=-/etc/kubernetes/config
-EnvironmentFile=-/etc/kubernetes/kubelet
-ExecStart=/usr/local/bin/kubelet \
-            $KUBE_LOGTOSTDERR \
-            $KUBE_LOG_LEVEL \
-            $KUBELET_API_SERVER \
-            $KUBELET_ADDRESS \
-            $KUBELET_PORT \
-            $KUBELET_HOSTNAME \
-            $KUBE_ALLOW_PRIV \
-            $KUBELET_POD_INFRA_CONTAINER \
-            $KUBELET_ARGS
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-</code></pre>
-
-<p>kubelet 完整 Systemd Unit 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kubelet.service">kubelet.service</a></p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+</code></pre></div><p>kubelet 完整 Systemd Unit 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kubelet.service">kubelet.service</a></p>
 <blockquote>
 <p>在启动 kubelet 之前，需要先手动创建 <code>/var/lib/kubelet</code> 目录。</p>
 </blockquote>
-
 <p><strong>创建 kubelet 的配置文件</strong></p>
-
 <blockquote>
 <p>本次安装的 kubernetes 的版本是 <code>v1.9.6</code> 版本，相对于较早版本 <code>v1.6</code>，有点变化：取消了 <code>KUBELET_API_SERVER</code> 的配置，而改用 kubeconfig 文件来定义 master 地址。 所以需要我们注释掉 <code>KUBELET_API_SERVER</code> 配置。</p>
 </blockquote>
-
 <p>修改后的 kubelet 配置文件 <code>/etc/kubernetes/kubelet</code> 参数如下：</p>
-
-<pre><code class="language-bash">###
-## kubernetes kubelet (minion) config
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">###</span>
+<span style="color:#6272a4">## kubernetes kubelet (minion) config</span>
 #
-## The address for the info server to serve on (set to 0.0.0.0 or &quot;&quot; for all interfaces)
-KUBELET_ADDRESS=&quot;--address=192.168.8.67&quot;
+<span style="color:#6272a4">## The address for the info server to serve on (set to 0.0.0.0 or &#34;&#34; for all interfaces)</span>
+<span style="color:#8be9fd;font-style:italic">KUBELET_ADDRESS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--address=192.168.8.67&#34;</span>
 #
-## The port for the info server to serve on
-#KUBELET_PORT=&quot;--port=10250&quot;
+<span style="color:#6272a4">## The port for the info server to serve on</span>
+<span style="color:#6272a4">#KUBELET_PORT=&#34;--port=10250&#34;</span>
 #
-## You may leave this blank to use the actual hostname
-KUBELET_HOSTNAME=&quot;--hostname-override=k8s-node1&quot;
+<span style="color:#6272a4">## You may leave this blank to use the actual hostname</span>
+<span style="color:#8be9fd;font-style:italic">KUBELET_HOSTNAME</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--hostname-override=k8s-node1&#34;</span>
 #
-## location of the api-server
-#KUBELET_API_SERVER=&quot;--api-servers=http://192.168.8.66:8080&quot;   v1.8+ 版本需要注释掉此参数
+<span style="color:#6272a4">## location of the api-server</span>
+<span style="color:#6272a4">#KUBELET_API_SERVER=&#34;--api-servers=http://192.168.8.66:8080&#34;   v1.8+ 版本需要注释掉此参数</span>
 #
-## pod infrastructure container
-KUBELET_POD_INFRA_CONTAINER=&quot;--pod-infra-container-image=192.168.8.69/library/pause-amd64:3.0&quot;
+<span style="color:#6272a4">## pod infrastructure container</span>
+<span style="color:#8be9fd;font-style:italic">KUBELET_POD_INFRA_CONTAINER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--pod-infra-container-image=192.168.8.69/library/pause-amd64:3.0&#34;</span>
 #
-## Add your own!
-KUBELET_ARGS=&quot;--cgroup-driver=systemd --cluster-dns=10.254.0.2 --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  --cert-dir=/etc/kubernetes/ssl --cluster-domain=cluster.local --hairpin-mode promiscuous-bridge --serialize-image-pulls=false --cgroups-per-qos=false --enforce-node-allocatable=&quot;&quot; &quot;
-</code></pre>
-
-<p><strong>参数说明</strong>：</p>
-
+<span style="color:#6272a4">## Add your own!</span>
+<span style="color:#8be9fd;font-style:italic">KUBELET_ARGS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--cgroup-driver=systemd --cluster-dns=10.254.0.2 --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  --cert-dir=/etc/kubernetes/ssl --cluster-domain=cluster.local --hairpin-mode promiscuous-bridge --serialize-image-pulls=false --cgroups-per-qos=false --enforce-node-allocatable=&#34;&#34; &#34;</span>
+</code></pre></div><p><strong>参数说明</strong>：</p>
 <ul>
 <li><code>--address</code> 不能设置为 127.0.0.1，否则后续 Pods 访问 kubelet 的 API 接口时会失败，因为 Pods 访问的 127.0.0.1 指向自己而不是 kubelet；</li>
 <li>如果设置了 <code>--hostname-override</code> 选项，则 <code>ube-proxy</code> 也需要设置该选项，否则会出现找不到 Node 的情况；</li>
@@ -346,131 +315,94 @@ KUBELET_ARGS=&quot;--cgroup-driver=systemd --cluster-dns=10.254.0.2 --bootstrap-
 <li>建议在 <code>--kubeconfig</code> 配置文件中指定 <code>kube-apiserver</code> 地址，如果未指定 <code>--api-servers</code> 选项，则必须指定 <code>--require-kubeconfig</code> 选项后才从配置文件中读取 kube-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），kubectl get nodes 不会返回对应的 Node 信息;</li>
 <li><code>--cluster-dns</code> 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，<code>--cluster-domain</code> 指定域名后缀，这两个参数同时指定后才会生效；</li>
 <li><code>--cluster-domain</code> 指定 pod 启动时 <code>/etc/resolve.conf</code> 文件中的 search domain ，起初我们将其配置成了 cluster.local.，这样在解析 service 的 DNS 名称时是正常的，可是在解析 headless service 中的 FQDN pod name 的时候却错误，因此我们将其修改为 cluster.local，去掉嘴后面的 ”点号“ 就可以解决该问题，关于 kubernetes 中的域名/服务名称解析请参见我的另一篇文章。</li>
-<li><code>--kubeconfig=/etc/kubernetes/kubelet.kubeconfig</code> 中指定的 <code>kubelet.kubeconfig</code> 文件在第一次启动 kubelet 之前并不存在，请看下文，当通过CSR请求后会自动生成 <code>kubelet.kubeconfig</code>文件，如果你的节点上已经生成了 <code>~/.kube/config</code> 文件，你可以将该文件拷贝到该路径下，并重命名为 <code>kubelet.kubeconfig</code>，所有 node 节点可以共用同一个 <code>kubelet.kubeconfig</code> 文件，这样新添加的节点就不需要再创建CSR请求就能自动添加到 kubernetes 集群中。同样，在任意能够访问到 kubernetes 集群的主机上使用 <code>kubectl --kubeconfig</code> 命令操作集群时，只要使用 <code>~/.kube/config</code> 文件就可以通过权限认证，因为这里面已经有认证信息并认为你是 admin 用户，对集群拥有所有权限。</li>
+<li><code>--kubeconfig=/etc/kubernetes/kubelet.kubeconfig</code> 中指定的 <code>kubelet.kubeconfig</code> 文件在第一次启动 kubelet 之前并不存在，请看下文，当通过CSR请求后会自动生成 <code>kubelet.kubeconfig </code>文件，如果你的节点上已经生成了 <code>~/.kube/config</code> 文件，你可以将该文件拷贝到该路径下，并重命名为 <code>kubelet.kubeconfig</code>，所有 node 节点可以共用同一个 <code>kubelet.kubeconfig</code> 文件，这样新添加的节点就不需要再创建CSR请求就能自动添加到 kubernetes 集群中。同样，在任意能够访问到 kubernetes 集群的主机上使用 <code>kubectl --kubeconfig</code> 命令操作集群时，只要使用 <code>~/.kube/config</code> 文件就可以通过权限认证，因为这里面已经有认证信息并认为你是 admin 用户，对集群拥有所有权限。</li>
 <li><code>KUBELET_POD_INFRA_CONTAINER</code> 是基础镜像容器，这里我用的是私有镜像仓库地址，大家部署的时候需要修改为自己的镜像。 pod-infrastructure 镜像是 Redhat 制作的，大小接近80M，下载比较耗时，其实该镜像并不运行什么具体进程，可以使用 Google 的 pause 镜像 <code>gcr.io/google_containers/pause-amd64:3.0</code>，这个镜像只有300多K，比较容易下载和配置。</li>
 </ul>
-
 <p>完整 kubelet 配置文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/kubelet">kubelet</a></p>
-
 <blockquote>
 <p>其他 node 节点上的 kubelet 配置文件对应的 IP 地址需要改为每台 node 节点的 IP 地址。
 主要需要修改 <code>KUBELET_ADDRESS</code> 和 <code>KUBELET_HOSTNAME</code> 参数。
 后期如果需要加 node ，需要修改其他机器的 hosts 文件，否则无法查看新 node 上的 pod 日志。</p>
 </blockquote>
-
 <p><strong>启动 kubelet 服务</strong></p>
-
 <p>我们修改完相关参数后就可以启动 kubelet 服务了。</p>
-
-<pre><code class="language-bash">systemctl daemon-reload
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
 systemctl start kubelet
-systemctl enable kubelet
+systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kubelet
 systemctl status kubelet
-</code></pre>
-
-<p><strong>通过 kublet 的 TLS 证书请求</strong></p>
-
+</code></pre></div><p><strong>通过 kublet 的 TLS 证书请求</strong></p>
 <p>kubelet 首次启动时向 kube-apiserver 发送证书签名请求，必须通过后 kubernetes 系统才会将该 Node 加入到集群。</p>
-
 <p>查看未授权的 CSR 请求:</p>
-
-<pre><code class="language-bash">$ kubectl get csr
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl get csr
 NAME        AGE       REQUESTOR           CONDITION
 csr-2b308   4m        kubelet-bootstrap   Pending
 $ kubectl get nodes
 No resources found.
-</code></pre>
-
-<p>通过 CSR 请求:</p>
-
-<pre><code class="language-bash">$ kubectl certificate approve csr-2b308
-certificatesigningrequest &quot;csr-2b308&quot; approved
-[root@k8s-master kubernetes]# kubectl get nodes
+</code></pre></div><p>通过 CSR 请求:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl certificate approve csr-2b308
+certificatesigningrequest <span style="color:#f1fa8c">&#34;csr-2b308&#34;</span> approved
+<span style="color:#ff79c6">[</span>root@k8s-master kubernetes<span style="color:#ff79c6">]</span><span style="color:#6272a4"># kubectl get nodes</span>
 NAME        STATUS    ROLES     AGE       VERSION
 k8s-node1   Ready     &lt;none&gt;    34d       v1.9.6
-</code></pre>
-
-<p>此时，自动生成了 kubelet kubeconfig 文件和公私钥：</p>
-
-<pre><code class="language-bash">[root@k8s-node1 ~]# ls -l /etc/kubernetes/kubelet.kubeconfig
--rw------- 1 root root 2215 Apr  6 18:15 /etc/kubernetes/kubelet.kubeconfig
-[root@k8s-node1 ~]# ls -l /etc/kubernetes/ssl/kubelet*
--rw-r--r-- 1 root root 1042 Apr  6 18:15 /etc/kubernetes/ssl/kubelet-client.crt
--rw------- 1 root root  227 Apr  6 18:08 /etc/kubernetes/ssl/kubelet-client.key
--rw-r--r-- 1 root root 1111 Apr  6 18:08 /etc/kubernetes/ssl/kubelet.crt
--rw------- 1 root root 1679 Apr  6 18:08 /etc/kubernetes/ssl/kubelet.key
-</code></pre>
-
-<p>假如你更新 kubernetes 的证书，只要没有更新 token.csv，当重启 kubelet 后，该 node 就会自动加入到 kuberentes 集群中，而不会重新发送 certificaterequest，也不需要在 master 节点上执行 <code>kubectl certificate approve</code>操作。前提是不要删除 node 节点上的<code>/etc/kubernetes/ssl/kubelet*</code> 和 <code>/etc/kubernetes/kubelet.kubeconfig</code> 文件。否则kubelet启动时会提示找不到证书而失败。
-&gt; 如果启动 kubelet 的时候见到证书相关的报错，有个 trick 可以解决这个问题，可以将 master 节点上的 <code>~/.kube/config</code> 文件（该文件在安装 kubectl 命令行工具这一步中将会自动生成）拷贝到 node 节点的 <code>/etc/kubernetes/kubelet.kubeconfig</code> 位置，这样就不需要通过 CSR，当 kubelet 启动后就会自动加入的集群中。</p>
-
+</code></pre></div><p>此时，自动生成了 kubelet kubeconfig 文件和公私钥：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ls -l /etc/kubernetes/kubelet.kubeconfig</span>
+-rw------- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">2215</span> Apr  <span style="color:#bd93f9">6</span> 18:15 /etc/kubernetes/kubelet.kubeconfig
+<span style="color:#ff79c6">[</span>root@k8s-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ls -l /etc/kubernetes/ssl/kubelet*</span>
+-rw-r--r-- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">1042</span> Apr  <span style="color:#bd93f9">6</span> 18:15 /etc/kubernetes/ssl/kubelet-client.crt
+-rw------- <span style="color:#bd93f9">1</span> root root  <span style="color:#bd93f9">227</span> Apr  <span style="color:#bd93f9">6</span> 18:08 /etc/kubernetes/ssl/kubelet-client.key
+-rw-r--r-- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">1111</span> Apr  <span style="color:#bd93f9">6</span> 18:08 /etc/kubernetes/ssl/kubelet.crt
+-rw------- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">1679</span> Apr  <span style="color:#bd93f9">6</span> 18:08 /etc/kubernetes/ssl/kubelet.key
+</code></pre></div><p>假如你更新 kubernetes 的证书，只要没有更新 token.csv，当重启 kubelet 后，该 node 就会自动加入到 kuberentes 集群中，而不会重新发送 certificaterequest，也不需要在 master 节点上执行 <code>kubectl certificate approve</code>操作。前提是不要删除 node 节点上的<code>/etc/kubernetes/ssl/kubelet*</code> 和 <code>/etc/kubernetes/kubelet.kubeconfig</code> 文件。否则kubelet启动时会提示找不到证书而失败。</p>
+<blockquote>
+<p>如果启动 kubelet 的时候见到证书相关的报错，有个 trick 可以解决这个问题，可以将 master 节点上的 <code>~/.kube/config</code> 文件（该文件在安装 kubectl 命令行工具这一步中将会自动生成）拷贝到 node 节点的 <code>/etc/kubernetes/kubelet.kubeconfig</code> 位置，这样就不需要通过 CSR，当 kubelet 启动后就会自动加入的集群中。</p>
+</blockquote>
 <h3 id="安装并配置-kube-proxy-服务">安装并配置 kube-proxy 服务</h3>
-
 <p>安装 conntrack</p>
-
-<pre><code class="language-bash">yum -y install conntrack-tools
-</code></pre>
-
-<p><strong>创建 kube-proxy 的 Systemd Unit文件</strong></p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">yum -y install conntrack-tools
+</code></pre></div><p><strong>创建 kube-proxy 的 Systemd Unit文件</strong></p>
 <p>unit 文件路径：<code>/usr/lib/systemd/system/kube-proxy.service</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Kubernetes Kube-Proxy Server
+<span style="color:#8be9fd;font-style:italic">Documentation</span><span style="color:#ff79c6">=</span>https://github.com/GoogleCloudPlatform/kubernetes
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>network.target
 
-<pre><code class="language-bash">[Unit]
-Description=Kubernetes Kube-Proxy Server
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-After=network.target
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/config
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/proxy
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/usr/local/bin/kube-proxy <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_LOGTOSTDERR</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_LOG_LEVEL</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_MASTER</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_PROXY_ARGS</span>
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
+<span style="color:#8be9fd;font-style:italic">LimitNOFILE</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">65536</span>
 
-[Service]
-EnvironmentFile=-/etc/kubernetes/config
-EnvironmentFile=-/etc/kubernetes/proxy
-ExecStart=/usr/local/bin/kube-proxy \
-        $KUBE_LOGTOSTDERR \
-        $KUBE_LOG_LEVEL \
-        $KUBE_MASTER \
-        $KUBE_PROXY_ARGS
-Restart=on-failure
-LimitNOFILE=65536
-
-[Install]
-WantedBy=multi-user.target
-</code></pre>
-
-<p>完整 system unit 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-proxy.service">kube-proxy.service</a></p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+</code></pre></div><p>完整 system unit 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-proxy.service">kube-proxy.service</a></p>
 <p><strong>创建 kube-proxy 的配置文件</strong></p>
-
 <p>kube-poxy 配置文件路径： <code>/etc/kubernetes/proxy</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">###</span>
+<span style="color:#6272a4"># kubernetes proxy config</span>
 
-<pre><code class="language-bash">###
-# kubernetes proxy config
+<span style="color:#6272a4"># default config should be adequate</span>
 
-# default config should be adequate
-
-# Add your own!
-KUBE_PROXY_ARGS=&quot;--bind-address=192.168.8.67 --hostname-override=k8s-node1 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig --cluster-cidr=10.254.0.0/16&quot;
-</code></pre>
-
-<p><strong>参数说明</strong></p>
-
+<span style="color:#6272a4"># Add your own!</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_PROXY_ARGS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--bind-address=192.168.8.67 --hostname-override=k8s-node1 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig --cluster-cidr=10.254.0.0/16&#34;</span>
+</code></pre></div><p><strong>参数说明</strong></p>
 <ul>
 <li><code>--hostname-override</code> 参数值必须与 kubelet 的值一致，否则 kube-proxy 启动后会找不到该 Node，从而不会创建任何 iptables 规则；</li>
 <li><code>kube-proxy</code> 根据 <code>-cluster-cidr</code> 判断集群内部和外部流量，指定 <code>--cluster-cidr</code> 或 <code>--masquerade-all</code> 选项后 kube-proxy 才会对访问 Service IP 的请求做 SNAT；</li>
 <li><code>--kubeconfig</code> 指定的配置文件嵌入了 kube-apiserver 的地址、用户名、证书、秘钥等请求和认证信息；</li>
 </ul>
-
 <p>预定义的 RoleBinding cluster-admin 将User system:kube-proxy 与 Role system:node-proxier 绑定，该 Role 授予了调用 kube-apiserver Proxy 相关 API 的权限；</p>
-
 <p>完整 kube-proxy 配置文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/proxy">proxy</a></p>
-
 <p><strong>启动 kube-proxy 服务</strong></p>
-
-<pre><code class="language-bash">systemctl daemon-reload
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
 systemctl start kube-proxy
-systemctl enable kube-proxy
+systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kube-proxy
 systemctl status kube-proxy
-</code></pre>
-
-<p>至此，整个 kubernetes 集群安装完成，剩下的工作就是在集群上安装各种必要组件了，包括 dns、dashboard、heapster等等；</p>
+</code></pre></div><p>至此，整个 kubernetes 集群安装完成，剩下的工作就是在集群上安装各种必要组件了，包括 dns、dashboard、heapster等等；</p>
 
 
                 
@@ -535,87 +467,79 @@ systemctl status kube-proxy
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

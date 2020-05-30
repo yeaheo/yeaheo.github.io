@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -217,28 +217,23 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#支持-sni-路由和多协议端口的-tcp">支持 SNI 路由和多协议端口的 TCP</a></li>
-<li><a href="#使用中间件-middlewares-自定义路由">使用中间件（Middlewares）自定义路由</a></li>
-<li><a href="#traefik-2-0-提供的全新的-dashboard">Traefik 2.0 提供的全新的 Dashboard</a></li>
-<li><a href="#支持金丝雀发布">支持金丝雀发布</a></li>
-<li><a href="#参考链接">参考链接</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#支持-sni-路由和多协议端口的-tcp">支持 SNI 路由和多协议端口的 TCP</a></li>
+        <li><a href="#使用中间件middlewares自定义路由">使用中间件（Middlewares）自定义路由</a></li>
+        <li><a href="#traefik-20-提供的全新的-dashboard">Traefik 2.0 提供的全新的 Dashboard</a></li>
+        <li><a href="#支持金丝雀发布">支持金丝雀发布</a></li>
+        <li><a href="#参考链接">参考链接</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-architecture.png" alt="Traefik" /></p>
-
+                <p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-architecture.png" alt="Traefik"></p>
 <p>Traefik 是一个开源的反向代理和负载均衡工具，现在官方介绍中将其定位为云原生的边缘路由器，且用了一堆修饰词：简单、自动、高速、全面、开源、产品级、内置监控指标和主流集群技术集成等等。</p>
-
 <p><a href="https://traefik.io">Traefik 2.0</a> 已经发布几天了，我自己也是在测试环境一顿鼓捣，试用了一段时间，今天在这里和大家谈谈 <code>Traefik 2.0</code>，总体而言 <code>Traefik 2.0</code> 给我们的惊喜还是挺大的，因为它终于终于支持了 TCP，哈哈。</p>
-
 <p>总结下来 Traefik 2.0 新增了许多新特性：</p>
-
 <ul>
 <li>开始使用 CRD 来完成相关任务；</li>
 <li>支持 SNI 路由和多协议端口的 TCP；</li>
@@ -248,97 +243,78 @@
 <li>流量复制；</li>
 <li>更加详细的特性解释可以参考<a href="https://github.com/containous/traefik/blob/master/CHANGELOG.md.">CHANGELOG.md</a></li>
 </ul>
-
 <p>下面是我根据几位博主的文章针对几个比较常用的特性进行简述。</p>
-
 <h2 id="支持-sni-路由和多协议端口的-tcp">支持 SNI 路由和多协议端口的 TCP</h2>
-
 <p>下面是<a href="https://containo.us/blog/traefik-2-0-6531ec5196c2/">官方博客</a>的一个示例配置，主要用来做下 TCP 的支持：</p>
-
-<pre><code class="language-bash">tcp:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tcp:
   routers:
     to-database:
       entrypoints:
       - database-entrypoint
-      rule: HostSNI(`*`)
+      rule: HostSNI<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">`</span>*<span style="color:#f1fa8c">`</span><span style="color:#ff79c6">)</span>
       service: database-service
   services:     
     database-service:
       loadBalancer:
         servers:
         - address: xx.xx.xx.xx:xx
-</code></pre>
-
-<p>上述配置表示每个以 <code>database-entrypoint</code> 结尾的请求都将被路由到 <code>database-service</code> 这个服务上去。同时 Traefik 还支持通过 TLS，Traefik 还可以根据 SNI 来路由 TCP 请求。在下面示例中，Traefik 就将根据 SNI 将请求路由到两个数据库：</p>
-
-<pre><code class="language-bash">tcp:
+</code></pre></div><p>上述配置表示每个以 <code>database-entrypoint</code> 结尾的请求都将被路由到 <code>database-service</code> 这个服务上去。同时 Traefik 还支持通过 TLS，Traefik 还可以根据 SNI 来路由 TCP 请求。在下面示例中，Traefik 就将根据 SNI 将请求路由到两个数据库：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tcp:
   routers:
     to-db-1:
       entrypoints:
       - web-secure
-      rule: &quot;HostSNI(`db1.domain`)&quot;
-      service: &quot;db1&quot;
-      tls: {} 
+      rule: <span style="color:#f1fa8c">&#34;HostSNI(`db1.domain`)&#34;</span>
+      service: <span style="color:#f1fa8c">&#34;db1&#34;</span>
+      tls: <span style="color:#ff79c6">{}</span> 
     to-db-2:
       entrypoints:
       - web-secure
-      rule: &quot;HostSNI(`db2.domain`)&quot;
-      service: &quot;db2&quot;
-      tls: {}
-</code></pre>
-
-<p>同时 Traefik 还是支持 HTTP 和 TCP 在同一个端口上，如果你希望获得相同的入口的同时获取 HTTP 和 TCP 请求，那么 Traefik 可以很完美的来处理它。</p>
-
-<pre><code class="language-bash">tcp:
+      rule: <span style="color:#f1fa8c">&#34;HostSNI(`db2.domain`)&#34;</span>
+      service: <span style="color:#f1fa8c">&#34;db2&#34;</span>
+      tls: <span style="color:#ff79c6">{}</span>
+</code></pre></div><p>同时 Traefik 还是支持 HTTP 和 TCP 在同一个端口上，如果你希望获得相同的入口的同时获取 HTTP 和 TCP 请求，那么 Traefik 可以很完美的来处理它。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tcp:
   routers:
     to-db-1:
       entrypoints:
       - web-secure
-      rule: &quot;HostSNI(`db1.domain`)&quot;
-      service: &quot;db-1&quot;
-      tls: {}
+      rule: <span style="color:#f1fa8c">&#34;HostSNI(`db1.domain`)&#34;</span>
+      service: <span style="color:#f1fa8c">&#34;db-1&#34;</span>
+      tls: <span style="color:#ff79c6">{}</span>
 http:
   routers:
     to-db1-dashboard:
       entrypoints:
       - web-secure
-      rule: &quot;Host(`dashboard.db1.domain`)&quot;
-      service: &quot;db1-dashboard&quot;
-      tls: {}
-</code></pre>
-
-<p>上述示例中<code>dashboard.db1.domain</code> 上的 HTTP 请求将路由到数据库的 Dashboard 服务上，而上面的 <code>db1.domain</code> 上的 TCP 请求将路由到数据库上面去</p>
-
-<h2 id="使用中间件-middlewares-自定义路由">使用中间件（Middlewares）自定义路由</h2>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/image-5.png" alt="Middlewares" /></p>
-
+      rule: <span style="color:#f1fa8c">&#34;Host(`dashboard.db1.domain`)&#34;</span>
+      service: <span style="color:#f1fa8c">&#34;db1-dashboard&#34;</span>
+      tls: <span style="color:#ff79c6">{}</span>
+</code></pre></div><p>上述示例中<code>dashboard.db1.domain</code> 上的 HTTP 请求将路由到数据库的 Dashboard 服务上，而上面的 <code>db1.domain</code> 上的 TCP 请求将路由到数据库上面去</p>
+<h2 id="使用中间件middlewares自定义路由">使用中间件（Middlewares）自定义路由</h2>
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/image-5.png" alt="Middlewares"></p>
 <p>在 Traefik 2.0 中还引入了中间件的功能，通过中间件可以将请求路由到目的地之前或者之后来调整请求。我们可以声明一个中间件，这个中间件可以复用到我们之后定义的路由上，下面是<a href="https://docs.traefik.io/v2.0/middlewares/overview/">官方文档</a>中中间件的配置方式:</p>
-
-<pre><code class="language-bash"># As YAML Configuration File
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># As YAML Configuration File</span>
 http:
   routers:
     router1:
       service: myService
       middlewares:
-        - &quot;foo-add-prefix&quot;
-      rule: &quot;Host(`example.com`)&quot;
+        - <span style="color:#f1fa8c">&#34;foo-add-prefix&#34;</span>
+      rule: <span style="color:#f1fa8c">&#34;Host(`example.com`)&#34;</span>
 
   middlewares:
     foo-add-prefix:
       addPrefix:
-        prefix: &quot;/foo&quot;
+        prefix: <span style="color:#f1fa8c">&#34;/foo&#34;</span>
 
   services:
     service1:
       loadBalancer:
         servers:
-          - url: &quot;http://127.0.0.1:80&quot;
-</code></pre>
-
-<p>对于 Kubernetes 用户来说，还可以使用 Traefik 的新 CRD 来进行更加清晰明了的配置，而不需要像 nginx-Ingress 定义好多复杂的注解。</p>
-
-<pre><code class="language-bash"># As a Kubernetes Traefik IngressRoute
+          - url: <span style="color:#f1fa8c">&#34;http://127.0.0.1:80&#34;</span>
+</code></pre></div><p>对于 Kubernetes 用户来说，还可以使用 Traefik 的新 CRD 来进行更加清晰明了的配置，而不需要像 nginx-Ingress 定义好多复杂的注解。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># As a Kubernetes Traefik IngressRoute</span>
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -368,83 +344,57 @@ kind: IngressRoute
 metadata:
   name: ingressroute
 spec:
-# more fields...
+<span style="color:#6272a4"># more fields...</span>
   routes:
-    # more fields...
+    <span style="color:#6272a4"># more fields...</span>
     middlewares:
       - name: stripprefix
-</code></pre>
-
-<p>例如我们常用的 <code>https</code> 方式就是通过中间件实现的，而且在 Traefik 中内置了<a href="https://docs.traefik.io/v2.0/middlewares/overview/">许多中间件</a>：路径操作、多种身份验证机制、缓冲、断路器、重试、压缩、错误处理、headers、IP 白名单、限速、重定向等。</p>
-
-<h2 id="traefik-2-0-提供的全新的-dashboard">Traefik 2.0 提供的全新的 Dashboard</h2>
-
+</code></pre></div><p>例如我们常用的 <code>https</code> 方式就是通过中间件实现的，而且在 Traefik 中内置了<a href="https://docs.traefik.io/v2.0/middlewares/overview/">许多中间件</a>：路径操作、多种身份验证机制、缓冲、断路器、重试、压缩、错误处理、headers、IP 白名单、限速、重定向等。</p>
+<h2 id="traefik-20-提供的全新的-dashboard">Traefik 2.0 提供的全新的 Dashboard</h2>
 <p>Traefik 2.0 提供了一种全新的 WebUI，我们可以通过 dashboard 查看集群上的相关信息。同时还可以看到服务的比较详细的配置信息，如下图所示:</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-dashboard.png" alt="Traefik 2.0 dashboard" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-dashboard.png" alt="Traefik 2.0 dashboard"></p>
 <p>Traefik 2.0 相关服务的具体信息可以参考下图：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-middles.png" alt="Traefik2.0-Middles" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-middles.png" alt="Traefik2.0-Middles"></p>
 <h2 id="支持金丝雀发布">支持金丝雀发布</h2>
-
 <p>在 Traefik2.0 中还支持了金丝雀发布，还有 A/B 测试，这些都是 Traefik 通过服务负载均衡的形式实现的。</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-cannay.png" alt="Traefik 金丝雀发布" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-cannay.png" alt="Traefik 金丝雀发布"></p>
 <p>可以将服务负载均衡器看成负责将请求转发到实际服务的虚拟服务，下面让我们来看一个经典的场景，现在有一个路由到一个 API：</p>
-
-<pre><code class="language-bash">http:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
   routers:
     my-route:
-      rule: &quot;Host(`my.domain`)&quot;
+      rule: <span style="color:#f1fa8c">&#34;Host(`my.domain`)&#34;</span>
       service: my-api-v1
   services:
     my-api-v1:
       loadBalancer:
         servers:
-        - url: &quot;http://private-ip-server-1/&quot;
-</code></pre>
-
-<p>如果需要发布一个新版本，并且希望可以实现逐步部署，比如先部署三分之一，这里需要定义一个新的 ID 来部署一个新服务，例如:</p>
-
-<pre><code class="language-bash">http:
+        - url: <span style="color:#f1fa8c">&#34;http://private-ip-server-1/&#34;</span>
+</code></pre></div><p>如果需要发布一个新版本，并且希望可以实现逐步部署，比如先部署三分之一，这里需要定义一个新的 ID 来部署一个新服务，例如:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
   services:
     my-api-v2:
       loadBalancer:
         servers:
-        - url: &quot;http://private-ip-server-2/&quot;
-</code></pre>
-
-<p>然后再创建一个服务负载均衡器，并设置相应的权重而不是直接指向新的版本：</p>
-
-<pre><code class="language-bash">http:
+        - url: <span style="color:#f1fa8c">&#34;http://private-ip-server-2/&#34;</span>
+</code></pre></div><p>然后再创建一个服务负载均衡器，并设置相应的权重而不是直接指向新的版本：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
   services:
     canary-api:
       weighted:
         services:
         - name: my-api-v1
-          weight: 3
+          weight: <span style="color:#bd93f9">3</span>
         - name: my-api-v2
-          weight: 1
-</code></pre>
-
-<p>最后，将路由指向这个服务：</p>
-
-<pre><code class="language-bash">http:
+          weight: <span style="color:#bd93f9">1</span>
+</code></pre></div><p>最后，将路由指向这个服务：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
   routers:
     my-route:
-      rule: &quot;Host(`my.domain`)&quot;
+      rule: <span style="color:#f1fa8c">&#34;Host(`my.domain`)&#34;</span>
       service: canary-api
-</code></pre>
-
-<p>之后，我们不需要重新部署真正的服务就可以更新权重，当然还可以对它们进行扩容，这都不会对金丝雀部署本身产生任何的影响。</p>
-
+</code></pre></div><p>之后，我们不需要重新部署真正的服务就可以更新权重，当然还可以对它们进行扩容，这都不会对金丝雀部署本身产生任何的影响。</p>
 <p>当然，对于新版的 Traefik 新特性也不止这么点，还有很多新特性，这里不再赘述，只是找几个比较常用的后续做测试，如果需要了解其他新特性可以参考 <a href="https://docs.traefik.io/v2.0/">Traefik 2.0 官方文档</a> 。</p>
-
 <h2 id="参考链接">参考链接</h2>
-
 <ul>
 <li><a href="https://docs.traefik.io/v2.0/">Traefik</a></li>
 <li><a href="https://containo.us/blog/traefik-2-0-6531ec5196c2/">Traefik 2.0 - The Wait is Over!</a></li>
@@ -514,87 +464,79 @@ spec:
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

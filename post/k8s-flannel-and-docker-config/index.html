@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,196 +213,140 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li>
-<ul>
-<li><a href="#配置-flannel-服务">配置 Flannel 服务</a></li>
-<li><a href="#配置-docker-服务">配置 docker 服务</a></li>
-<li><a href="#查询-etcd-中的内容">查询 etcd 中的内容</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p><strong>检查 TLS 证书</strong></p>
-
-<pre><code class="language-bash">[root@ceph-node1 ~]# ls /etc/kubernetes/ssl/
+                <p><strong>检查 TLS 证书</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ls /etc/kubernetes/ssl/</span>
 admin-key.pem  admin.pem  ca-key.pem  ca.pem  kube-proxy-key.pem  kube-proxy.pem  kubernetes-key.pem  kubernetes.pem
-</code></pre>
-
-<h3 id="配置-flannel-服务">配置 Flannel 服务</h3>
-
+</code></pre></div><h3 id="配置-flannel-服务">配置 Flannel 服务</h3>
 <p>建议直接使用 yum 安装 flanneld，除非对版本有特殊需求，默认安装的是 <code>v0.7.1</code> 版本的 flannel。</p>
-
 <p>安装 flanneld 服务，具体参考如下：</p>
-
-<pre><code class="language-bash">yum -y install flannel
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">yum -y install flannel
 systemctl start flanneld.service
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p>在起 flanneld 服务之前，我们需要修改 flanneld服务的 Systemd Unit 文件和对应的配置文件</p>
 </blockquote>
-
 <p><strong>修改 flannel 服务的 systemd unit 文件</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /usr/lib/systemd/system/flanneld.service
+</code></pre></div><p>具体内容如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Flanneld overlay address etcd agent
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>network.target
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>network-online.target
+<span style="color:#8be9fd;font-style:italic">Wants</span><span style="color:#ff79c6">=</span>network-online.target
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>etcd.service
+<span style="color:#8be9fd;font-style:italic">Before</span><span style="color:#ff79c6">=</span>docker.service
 
-<pre><code class="language-bash">cat /usr/lib/systemd/system/flanneld.service
-</code></pre>
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Type</span><span style="color:#ff79c6">=</span>notify
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>/etc/sysconfig/flanneld
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/sysconfig/docker-network
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/usr/bin/flanneld-start <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    <span style="color:#8be9fd;font-style:italic">$FLANNEL_OPTIONS</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    -etcd-endpoints<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">FLANNEL_ETCD_ENDPOINTS</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    -etcd-prefix<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">FLANNEL_ETCD_PREFIX</span><span style="color:#f1fa8c">}</span>
+<span style="color:#8be9fd;font-style:italic">ExecStartPost</span><span style="color:#ff79c6">=</span>/usr/libexec/flannel/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
 
-<p>具体内容如下：</p>
-
-<pre><code class="language-bash">[Unit]
-Description=Flanneld overlay address etcd agent
-After=network.target
-After=network-online.target
-Wants=network-online.target
-After=etcd.service
-Before=docker.service
-
-[Service]
-Type=notify
-EnvironmentFile=/etc/sysconfig/flanneld
-EnvironmentFile=-/etc/sysconfig/docker-network
-ExecStart=/usr/bin/flanneld-start \
-    $FLANNEL_OPTIONS \
-    -etcd-endpoints=${FLANNEL_ETCD_ENDPOINTS} \
-    -etcd-prefix=${FLANNEL_ETCD_PREFIX}
-ExecStartPost=/usr/libexec/flannel/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-RequiredBy=docker.service
-</code></pre>
-
-<p>完整 flanneld systemd unit 参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/flanneld.service">flanneld.service</a></p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+<span style="color:#8be9fd;font-style:italic">RequiredBy</span><span style="color:#ff79c6">=</span>docker.service
+</code></pre></div><p>完整 flanneld systemd unit 参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/flanneld.service">flanneld.service</a></p>
 <p><strong>修改 flannel 服务配置文件</strong></p>
-
 <p>flannel 服务配置文件: <code>/etc/sysconfig/flanneld</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># Flanneld configuration options</span>  
 
-<pre><code class="language-bash"># Flanneld configuration options  
+<span style="color:#6272a4"># etcd url location.  Point this to the server where etcd runs</span>
+<span style="color:#6272a4">#FLANNEL_ETCD_ENDPOINTS=&#34;http://127.0.0.1:2379&#34;</span>
+<span style="color:#8be9fd;font-style:italic">FLANNEL_ETCD_ENDPOINTS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379&#34;</span>
 
-# etcd url location.  Point this to the server where etcd runs
-#FLANNEL_ETCD_ENDPOINTS=&quot;http://127.0.0.1:2379&quot;
-FLANNEL_ETCD_ENDPOINTS=&quot;https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379&quot;
+<span style="color:#6272a4"># etcd config key.  This is the configuration key that flannel queries</span>
+<span style="color:#6272a4"># For address range assignment</span>
+<span style="color:#6272a4">#FLANNEL_ETCD_PREFIX=&#34;/atomic.io/network&#34;</span>
+<span style="color:#8be9fd;font-style:italic">FLANNEL_ETCD_PREFIX</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;/kube-centos/network&#34;</span>
 
-# etcd config key.  This is the configuration key that flannel queries
-# For address range assignment
-#FLANNEL_ETCD_PREFIX=&quot;/atomic.io/network&quot;
-FLANNEL_ETCD_PREFIX=&quot;/kube-centos/network&quot;
-
-# Any additional options that you want to pass
-#FLANNEL_OPTIONS=&quot;&quot;
-FLANNEL_OPTIONS=&quot;-etcd-cafile=/etc/kubernetes/ssl/ca.pem -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem&quot;
-</code></pre>
-
-<p>完整 flannel 服务配置文件参见： <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/flanneld">flanneld</a></p>
-
+<span style="color:#6272a4"># Any additional options that you want to pass</span>
+<span style="color:#6272a4">#FLANNEL_OPTIONS=&#34;&#34;</span>
+<span style="color:#8be9fd;font-style:italic">FLANNEL_OPTIONS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;-etcd-cafile=/etc/kubernetes/ssl/ca.pem -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem&#34;</span>
+</code></pre></div><p>完整 flannel 服务配置文件参见： <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/flanneld">flanneld</a></p>
 <blockquote>
 <p>flannel 服务的 systemd unit 文件及配置文件修改完成后，就可以启动 flanneld 服务了。</p>
 </blockquote>
-
-<pre><code class="language-bash">systemctl daemon-reload
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
 systemctl start flanneld.service
-</code></pre>
-
-<p><strong>在 etcd 中创建网络配置</strong></p>
-
+</code></pre></div><p><strong>在 etcd 中创建网络配置</strong></p>
 <p>执行下面的命令为docker分配IP地址段:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">etcdctl --endpoints<span style="color:#ff79c6">=</span>https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --ca-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --cert-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --key-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes-key.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  mkdir /kube-centos/network
 
-<pre><code class="language-bash">etcdctl --endpoints=https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379 \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  mkdir /kube-centos/network
-
-etcdctl --endpoints=https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379 \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  mk /kube-centos/network/config '{&quot;Network&quot;:&quot;172.30.0.0/16&quot;,&quot;SubnetLen&quot;:24,&quot;Backend&quot;:{&quot;Type&quot;:&quot;vxlan&quot;}}'
-</code></pre>
-
-<h3 id="配置-docker-服务">配置 docker 服务</h3>
-
+etcdctl --endpoints<span style="color:#ff79c6">=</span>https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --ca-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --cert-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --key-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes-key.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  mk /kube-centos/network/config <span style="color:#f1fa8c">&#39;{&#34;Network&#34;:&#34;172.30.0.0/16&#34;,&#34;SubnetLen&#34;:24,&#34;Backend&#34;:{&#34;Type&#34;:&#34;vxlan&#34;}}&#39;</span>
+</code></pre></div><h3 id="配置-docker-服务">配置 docker 服务</h3>
 <p>docker 需要和 flannel 服务在同一个网段内，这样后期才能互通。</p>
-
 <p>docker 服务的安装直接用 yum 包管理工具直接安装即可：</p>
-
-<pre><code class="language-bash">yum -y install docker
-</code></pre>
-
-<p>配置 docker 服务如下：</p>
-
-<pre><code class="language-bash">systemctl stop docker.service
-source  /run/flannel/subnet.env 
-docker  daemon  --bip=${FLANNEL_SUBNET}  --mtu=${FLANNEL_MTU} &amp;
-ifconfig docker0 $FLANNEL_SUBNET
-</code></pre>
-
-<p>修改docker服务文件增加如下内容：</p>
-
-<pre><code class="language-bash">EnvironmentFile=-/run/flannel/docker 
-EnvironmentFile=-/run/docker_opts.env 
-EnvironmentFile=-/run/flannel/subnet.env
-</code></pre>
-
-<p>配置完成后需要重启 docker 及 flannel 服务。</p>
-
-<pre><code class="language-bash">systemctl daemon-reload
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">yum -y install docker
+</code></pre></div><p>配置 docker 服务如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl stop docker.service
+<span style="color:#8be9fd;font-style:italic">source</span>  /run/flannel/subnet.env 
+docker  daemon  --bip<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">FLANNEL_SUBNET</span><span style="color:#f1fa8c">}</span>  --mtu<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">FLANNEL_MTU</span><span style="color:#f1fa8c">}</span> &amp;
+ifconfig docker0 <span style="color:#8be9fd;font-style:italic">$FLANNEL_SUBNET</span>
+</code></pre></div><p>修改docker服务文件增加如下内容：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/run/flannel/docker 
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/run/docker_opts.env 
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/run/flannel/subnet.env
+</code></pre></div><p>配置完成后需要重启 docker 及 flannel 服务。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
 systemctl restart docker.service
 systemctl restart flanneld.service
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p>我们在重启 docker 服务的时候可能重启失败，原因一般是 docker 进程还存在，将其杀死再重启既可，可以参考：<code>ps axf | grep docker | grep -v grep | awk '{print &quot;kill -9 &quot; $1}' | sudo sh</code></p>
 </blockquote>
-
 <h3 id="查询-etcd-中的内容">查询 etcd 中的内容</h3>
-
 <p>docker 和 flannel 服务启动正常后，我们可以参照下面的方式查看 etcd 的内容：</p>
-
-<pre><code class="language-bash">[root@k8s-master ~]# etcdctl --endpoints=${ETCD_ENDPOINTS} \
-    --ca-file=/etc/kubernetes/ssl/ca.pem \
-    --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-    --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-    ls /kube-centos/network/subnets
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># etcdctl --endpoints=${ETCD_ENDPOINTS} \</span>
+    --ca-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --cert-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --key-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes-key.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    ls /kube-centos/network/subnets
 /kube-centos/network/subnets/172.30.78.0-24
 /kube-centos/network/subnets/172.30.79.0-24
 /kube-centos/network/subnets/172.30.41.0-24
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p>其实 flanneld 和 docker 服务在 master 节点上是非必需的，但是我们建议在 master 节点上同样配置 flanneld 和 docker 服务，因为这样可以很方便的通过 master 节点访问 node 上的服务，例如插件 dashboard 的访问，我们可以通过 api-server 来访问：<a href="http://master-ip:8080/ui">http://master-ip:8080/ui</a>。</p>
 </blockquote>
-
 <p>master 节点的 flanneld 和 docker 服务安装好后，我们在 master 节点可以 ping 通 nodes 节点的 flanneld 地址，例如：</p>
-
-<pre><code class="language-bash">[root@k8s-master ~]# ping 172.30.41.0
-PING 172.30.41.0 (172.30.41.0) 56(84) bytes of data.
-64 bytes from 172.30.41.0: icmp_seq=1 ttl=64 time=0.081 ms
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ping 172.30.41.0</span>
+PING 172.30.41.0 <span style="color:#ff79c6">(</span>172.30.41.0<span style="color:#ff79c6">)</span> 56<span style="color:#ff79c6">(</span>84<span style="color:#ff79c6">)</span> bytes of data.
+<span style="color:#bd93f9">64</span> bytes from 172.30.41.0: <span style="color:#8be9fd;font-style:italic">icmp_seq</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span> <span style="color:#8be9fd;font-style:italic">ttl</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">64</span> <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span>0.081 ms
 ^C
 --- 172.30.41.0 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 0.081/0.081/0.081/0.000 ms
+<span style="color:#bd93f9">1</span> packets transmitted, <span style="color:#bd93f9">1</span> received, 0% packet loss, <span style="color:#8be9fd;font-style:italic">time</span> 0ms
+rtt min/avg/max/mdev <span style="color:#ff79c6">=</span> 0.081/0.081/0.081/0.000 ms
 
-[root@k8s-master ~]# ping 172.30.78.0
-PING 172.30.78.0 (172.30.78.0) 56(84) bytes of data.
-64 bytes from 172.30.78.0: icmp_seq=1 ttl=64 time=0.648 ms
+<span style="color:#ff79c6">[</span>root@k8s-master ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ping 172.30.78.0</span>
+PING 172.30.78.0 <span style="color:#ff79c6">(</span>172.30.78.0<span style="color:#ff79c6">)</span> 56<span style="color:#ff79c6">(</span>84<span style="color:#ff79c6">)</span> bytes of data.
+<span style="color:#bd93f9">64</span> bytes from 172.30.78.0: <span style="color:#8be9fd;font-style:italic">icmp_seq</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span> <span style="color:#8be9fd;font-style:italic">ttl</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">64</span> <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span>0.648 ms
 ^C
 --- 172.30.78.0 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 0.648/0.648/0.648/0.000 ms
-[root@k8s-master ~]# ping 172.30.79.0
-PING 172.30.79.0 (172.30.79.0) 56(84) bytes of data.
-64 bytes from 172.30.79.0: icmp_seq=1 ttl=64 time=0.658 ms
-</code></pre>
-
+<span style="color:#bd93f9">1</span> packets transmitted, <span style="color:#bd93f9">1</span> received, 0% packet loss, <span style="color:#8be9fd;font-style:italic">time</span> 0ms
+rtt min/avg/max/mdev <span style="color:#ff79c6">=</span> 0.648/0.648/0.648/0.000 ms
+<span style="color:#ff79c6">[</span>root@k8s-master ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ping 172.30.79.0</span>
+PING 172.30.79.0 <span style="color:#ff79c6">(</span>172.30.79.0<span style="color:#ff79c6">)</span> 56<span style="color:#ff79c6">(</span>84<span style="color:#ff79c6">)</span> bytes of data.
+<span style="color:#bd93f9">64</span> bytes from 172.30.79.0: <span style="color:#8be9fd;font-style:italic">icmp_seq</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span> <span style="color:#8be9fd;font-style:italic">ttl</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">64</span> <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span>0.658 ms
+</code></pre></div>
 
                 
 
@@ -466,87 +410,79 @@ PING 172.30.79.0 (172.30.79.0) 56(84) bytes of data.
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

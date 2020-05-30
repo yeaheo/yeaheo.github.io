@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -217,30 +217,23 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#下载离线安装包">下载离线安装包</a></li>
-<li><a href="#准备-harbor-配置文件">准备 Harbor 配置文件</a></li>
-<li><a href="#执行相关脚本安装-harbor">执行相关脚本安装 Harbor</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#下载离线安装包">下载离线安装包</a></li>
+        <li><a href="#准备-harbor-配置文件">准备 Harbor 配置文件</a></li>
+        <li><a href="#执行相关脚本安装-harbor">执行相关脚本安装 Harbor</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>在一个企业里，企业自有的私有仓库是必须的，配置私有 docker 镜像仓库 harbor，为的是将自己构建的镜像 push 到私有镜像仓库中，方便以后拉取。</p>
-
+                <p>在一个企业里，企业自有的私有仓库是必须的，配置私有 docker 镜像仓库 harbor，为的是将自己构建的镜像 push 到私有镜像仓库中，方便以后拉取。</p>
 <p>Harbor 的官方站点: <a href="https://goharbor.io/">https://goharbor.io/</a></p>
-
 <p>Harbor 的 GitHub 地址: <a href="https://github.com/goharbor/harbor">https://github.com/goharbor/harbor</a></p>
-
 <p>Harbor 的安装和配置可以参考: <a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md">Installation and Configuration Guide</a></p>
-
 <p>Harbor 的安装方式有在线安装和离线安装两种，由于网络的问题，本次安装采用离线安装的方式搭建私有镜像仓库。</p>
-
 <p>安装 Harbor 需要满足以下软件条件：</p>
-
 <table>
 <thead>
 <tr>
@@ -249,26 +242,22 @@
 <th>Description</th>
 </tr>
 </thead>
-
 <tbody>
 <tr>
 <td>Python</td>
 <td>version 2.7 or higher</td>
 <td>Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default</td>
 </tr>
-
 <tr>
 <td>Docker engine</td>
 <td>version 1.10 or higher</td>
 <td>For installation instructions, please refer to: <a href="https://docs.docker.com/engine/installation/">https://docs.docker.com/engine/installation/</a></td>
 </tr>
-
 <tr>
 <td>Docker Compose</td>
 <td>version 1.6.0 or higher</td>
 <td>For installation instructions, please refer to: <a href="https://docs.docker.com/compose/install/">https://docs.docker.com/compose/install/</a></td>
 </tr>
-
 <tr>
 <td>Openssl</td>
 <td>latest is preferred</td>
@@ -276,73 +265,46 @@
 </tr>
 </tbody>
 </table>
-
 <h2 id="下载离线安装包">下载离线安装包</h2>
-
 <p>首先需要从 <a href="https://github.com/goharbor/harbor/releases">Harbor 的官方下载地址</a> 下载我们需要安装的软件离线安装包，harbor 服务具体安装步骤如下：</p>
-
-<pre><code class="language-bash">1、下载并解压软件包;
-2、配置 `harbor.cfg` 文件;
-3、执行脚本文件 `install.sh` 进行安装;
-</code></pre>
-
-<p>下载离线安装包如下：</p>
-
-<pre><code class="language-bash">$ mkdir /opt/soft
-$ cd /opt/soft
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">1、下载并解压软件包;
+2、配置 <span style="color:#f1fa8c">`</span>harbor.cfg<span style="color:#f1fa8c">`</span> 文件;
+3、执行脚本文件 <span style="color:#f1fa8c">`</span>install.sh<span style="color:#f1fa8c">`</span> 进行安装;
+</code></pre></div><p>下载离线安装包如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /opt/soft
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
 $ wget https://storage.googleapis.com/harbor-releases/release-1.7.0/harbor-offline-installer-&lt;HARBOR_VERSION&gt;.tgz
-</code></pre>
-
-<p>解压安装包至指定安装目录：</p>
-
-<pre><code class="language-bash">$ cd /opt/soft
+</code></pre></div><p>解压安装包至指定安装目录：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
 $ tar xvf harbor-offline-installer-&lt;HARBOR_VERSION&gt;.tgz -C /srv/
-# harbor 安装目录为 /srv/ 目录
+<span style="color:#6272a4"># harbor 安装目录为 /srv/ 目录</span>
 
-$ cd /srv/
-</code></pre>
-
-<h2 id="准备-harbor-配置文件">准备 Harbor 配置文件</h2>
-
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/
+</code></pre></div><h2 id="准备-harbor-配置文件">准备 Harbor 配置文件</h2>
 <p>这里我们只是简单的安装 Harbor 如果需要更个性化的配置 harbor 可以参考 <a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md">Installation and Configuration Guide</a></p>
-
 <p>在这里，我们只需要修改以下参数：</p>
-
-<pre><code class="language-bash">......
-hostname = 192.168.8.69
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">......
+<span style="color:#8be9fd;font-style:italic">hostname</span> <span style="color:#ff79c6">=</span> 192.168.8.69
 ......
-harbor_admin_password = admin123.
+<span style="color:#8be9fd;font-style:italic">harbor_admin_password</span> <span style="color:#ff79c6">=</span> admin123.
 ......
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p><code>harbor.cfg</code> 只需要修改 hostname 为你自己的机器 IP 或者域名，harbor 默认的 db 连接密码为 root123，可以自己修改，也可以保持默认，harbor 初始管理员密码为 Harbor12345，可以根据自己需要进行修改，email 选项是用来忘记密码重置用的，根据实际情况修改，如果使用 163 或者 qq 邮箱等，需要使用授权码进行登录，此时就不能使用密码登录了，否则会提示无效。</p>
 </blockquote>
-
 <p>Harbor 的配置文件还是比较简单的。如果需要配置 Harbor 支持 HTTPS 可以参考 <a href="https://github.com/goharbor/harbor/blob/master/docs/configure_https.md">Configuring Harbor with HTTPS Access</a></p>
-
 <h2 id="执行相关脚本安装-harbor">执行相关脚本安装 Harbor</h2>
-
 <p>配置文件修改完成后就可以执行安装脚本安装 Harbor 相关服务了：</p>
-
-<pre><code class="language-bash">$ cd /srv/harbor
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
 $ ./install.sh
-</code></pre>
-
-<p>等待安装过程即可，因为是离线安装，速度还是不错的。如果需要自定义安装 Harbor 的其他功能可以参考 <a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md">Configuration Guide</a></p>
-
+</code></pre></div><p>等待安装过程即可，因为是离线安装，速度还是不错的。如果需要自定义安装 Harbor 的其他功能可以参考 <a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md">Configuration Guide</a></p>
 <p>待脚本执行完成后使用 docke-compose ps 即可查看，常用命令包含以下几个：</p>
-
-<pre><code class="language-bash">docker-compose up -d      # 后台启动，如果容器不存在根据镜像自动创建
-docker-compose down -v    # 停止容器并删除容器
-docker-compose start      # 启动容器，容器不存在就无法启动，不会自动创建镜像
-docker-compose stop       # 停止容器
-</code></pre>
-
-<blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker-compose up -d      <span style="color:#6272a4"># 后台启动，如果容器不存在根据镜像自动创建</span>
+docker-compose down -v    <span style="color:#6272a4"># 停止容器并删除容器</span>
+docker-compose start      <span style="color:#6272a4"># 启动容器，容器不存在就无法启动，不会自动创建镜像</span>
+docker-compose stop       <span style="color:#6272a4"># 停止容器</span>
+</code></pre></div><blockquote>
 <p>其实上面是停止 <code>docker-compose.yml</code> 中定义的所有容器，默认情况下 <code>docker-compose</code>就是操作同目录下的 <code>docker-compose.yml</code>文件，所以我们需要切换到 harbor 目录下才可以执行 docker-compose 相关命令，如果使用其他 <code>yml</code>文件，可以使用 <code>-f</code> 自己指定。</p>
 </blockquote>
-
 <p>至此，harbor 基本安装完成！</p>
 
 
@@ -408,87 +370,79 @@ docker-compose stop       # 停止容器
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

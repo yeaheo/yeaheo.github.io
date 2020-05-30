@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -217,32 +217,19 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#私有仓库工作流程">私有仓库工作流程</a></li>
-<li><a href="#准备部署配置文件">准备部署配置文件</a>
-<ul>
-<li><a href="#verddacio-configmap-文件">Verddacio  Configmap 文件</a></li>
-<li><a href="#verdaccio-deployment-文件">Verdaccio deployment 文件</a></li>
-<li><a href="#verdaccio-service-文件">Verdaccio Service 文件</a></li>
-<li><a href="#ingress-暴露服务">Ingress 暴露服务</a></li>
-</ul></li>
-<li><a href="#验证安装情况">验证安装情况</a></li>
-<li><a href="#测试仓库可用性">测试仓库可用性</a>
-<ul>
-<li><a href="#设置仓库源">设置仓库源</a></li>
-<li><a href="#添加用户-登录">添加用户/登录</a></li>
-<li><a href="#上传私有包">上传私有包</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#私有仓库工作流程">私有仓库工作流程</a></li>
+        <li><a href="#准备部署配置文件">准备部署配置文件</a></li>
+        <li><a href="#验证安装情况">验证安装情况</a></li>
+        <li><a href="#测试仓库可用性">测试仓库可用性</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>对于 Verddacio，官方的定义是这样的: <code>Verdaccio is a lightweight private npm proxy registry built in Node.js</code> 。意思就是 Verdaccio 是一个 Node.js 创建的轻量的私有 <strong>Npm Proxy Registry</strong>。它具有以下特性:</p>
-
+                <p>对于 Verddacio，官方的定义是这样的: <code>Verdaccio is a lightweight private npm proxy registry built in Node.js</code> 。意思就是 Verdaccio 是一个 Node.js 创建的轻量的私有 <strong>Npm Proxy Registry</strong>。它具有以下特性:</p>
 <ul>
 <li>它是基于 Node.js 的网页应用程序；</li>
 <li>私有 Npm Registry；</li>
@@ -251,293 +238,225 @@
 <li>易安装和使用；</li>
 <li>提供 Docker 和 Kubernetes 支持；</li>
 <li>与 yarn, npm 和 pnpm 100% 兼容；</li>
-<li>forked 于 sinopia@1.4.0 并且 100% 向后兼容。</li>
+<li>forked 于 <a href="mailto:sinopia@1.4.0">sinopia@1.4.0</a> 并且 100% 向后兼容。</li>
 </ul>
-
 <p>官方还有段视频，有条件的可以看一看:</p>
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/hDIFKzmoCaA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
+<!-- raw HTML omitted -->
 <p>为了更符合 Kubernetes 应用的特点，我是在 Kubernetes 集群里部署 Verddacio，然后最外层用的是 Traefik 2.0 版本暴露对应服务，具体环境如下说明：</p>
-
-<pre><code class="language-yml">Kubernetes 集群版本: v1.16.9
-Verddacio 版本：v4.6.2
-Traefik 版本：v2.2
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml"><span style="color:#ff79c6">Kubernetes 集群版本</span>: v1<span style="color:#bd93f9">.16.9</span>
+Verddacio 版本：v4<span style="color:#bd93f9">.6.2</span>
+Traefik 版本：v2<span style="color:#bd93f9">.2</span>
 存储方式：hostPath
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p>存储方式需要依据自己实际情况而定，这里为了方便我用的是 <code>hostPath</code> 的方式，其他方式可以根据自己应用情况进行更改，因为是私有 npm 仓库，需要缓存包文件，所以持久化存储是必须的，要不部署起来也没有实际意义</p>
 </blockquote>
-
 <p>还有就是：</p>
-
 <blockquote>
 <p>traefik 可以用 nginx-ingress-controller 代替，或者 service 类型直接改为 <code>NodePort</code> 根据自己实际情况而定</p>
 </blockquote>
-
 <h2 id="私有仓库工作流程">私有仓库工作流程</h2>
-
 <p>一般的 NPM 私有仓库的工作流程如下图所示：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/private-npm.jpg" alt="npm registry" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/private-npm.jpg" alt="npm registry"></p>
 <p>大概流程就是用户 install 后向私有 npm 发起请求，服务器会先查询所请求的这个模块是否是私有模块或已经缓存过的公共模块，如果是则直接返回给用户；如果请求的是一个还没有被缓存的公共模块，那么则会向上游源请求模块并进行缓存后返回给用户。</p>
-
 <p>上游的源可以是 官方仓库:<a href="https://registry.npmjs.org/">https://registry.npmjs.org/</a>，速度奇慢，也可以是淘宝镜像:<a href="https://registry.npm.taobao.org">https://registry.npm.taobao.org</a>，速度快。</p>
-
 <h2 id="准备部署配置文件">准备部署配置文件</h2>
-
 <p>配置文件主要包括配置文件和部署文件，我整理了一份放到了 <a href="https://github.com/yeaheo/kubeapps/tree/master/verdaccio">GitHub</a> 上，感兴趣的可以下载下来，直接修改。本次部署在 <code>devops</code> 命名空间下。</p>
-
-<h3 id="verddacio-configmap-文件">Verddacio  Configmap 文件</h3>
-
+<h3 id="verddacio--configmap-文件">Verddacio  Configmap 文件</h3>
 <p>首先，先创建 Verddacio 的配置文件，然后以 ConfigMap 的形式部署：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># source verddacio-cm.yaml</span>
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: ConfigMap
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: npm-verdaccio
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: verdaccio
+<span style="color:#ff79c6">data</span>:
+  <span style="color:#ff79c6">config.yaml</span>: |<span style="color:#f1fa8c">-
+</span><span style="color:#f1fa8c">    storage: /verdaccio/storage/data</span>
+    <span style="color:#ff79c6">web</span>:
+      <span style="color:#ff79c6">enable</span>: <span style="color:#ff79c6">true</span>
+      <span style="color:#ff79c6">title</span>: Npm Registry
+      <span style="color:#ff79c6">gravatar</span>: <span style="color:#ff79c6">true</span>
+    <span style="color:#ff79c6">auth</span>:
+      <span style="color:#ff79c6">htpasswd</span>:
+        <span style="color:#ff79c6">file</span>: /verdaccio/storage/htpasswd
+        <span style="color:#ff79c6">max_users</span>: <span style="color:#bd93f9">1000</span>
+    <span style="color:#ff79c6">uplinks</span>:
+      <span style="color:#ff79c6">npmjs</span>:
+        <span style="color:#ff79c6">url</span>: https://registry.npm.taobao.org/
+    <span style="color:#ff79c6">packages</span>:
+      <span style="color:#ff79c6">&#39;@*/*&#39;</span>:
+        <span style="color:#ff79c6">access</span>: $all
+        <span style="color:#ff79c6">publish</span>: $authenticated
+        <span style="color:#ff79c6">proxy</span>: npmjs
 
-<pre><code class="language-yaml"># source verddacio-cm.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: npm-verdaccio
-  labels:
-    app: verdaccio
-data:
-  config.yaml: |-
-    storage: /verdaccio/storage/data
-    web:
-      enable: true
-      title: Npm Registry
-      gravatar: true
-    auth:
-      htpasswd:
-        file: /verdaccio/storage/htpasswd
-        max_users: 1000
-    uplinks:
-      npmjs:
-        url: https://registry.npm.taobao.org/
-    packages:
-      '@*/*':
-        access: $all
-        publish: $authenticated
-        proxy: npmjs
-
-      '**':
-        access: $all
-        publish: $authenticated
-        proxy: npmjs
-    middlewares:
-      audit:
-        enabled: true
-    logs:
-      - {type: stdout, format: pretty, level: http}
-</code></pre>
-
-<p>修改完成后直接 apply 即可：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f verdaccio-cm.yaml --namespace devops
-</code></pre>
-
-<h3 id="verdaccio-deployment-文件">Verdaccio deployment 文件</h3>
-
+      <span style="color:#ff79c6">&#39;**&#39;</span>:
+        <span style="color:#ff79c6">access</span>: $all
+        <span style="color:#ff79c6">publish</span>: $authenticated
+        <span style="color:#ff79c6">proxy</span>: npmjs
+    <span style="color:#ff79c6">middlewares</span>:
+      <span style="color:#ff79c6">audit</span>:
+        <span style="color:#ff79c6">enabled</span>: <span style="color:#ff79c6">true</span>
+    <span style="color:#ff79c6">logs</span>:
+      - {<span style="color:#ff79c6">type: stdout, format: pretty, level</span>: http}
+</code></pre></div><p>修改完成后直接 apply 即可：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f verdaccio-cm.yaml --namespace devops
+</code></pre></div><h3 id="verdaccio-deployment-文件">Verdaccio deployment 文件</h3>
 <p>准备 deployment 文件，这里我用 <code>nodeName</code> 属性将其固定了一台机器上，也可以选择其他调度策略，并且存储用的 <code>hostPath</code> 方式，如下:</p>
-
-<pre><code class="language-yaml"># source verdaccio-deploy.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: verdaccio
-  name: npm-verdaccio
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: verdaccio
-  strategy:
-    type: Recreate
-    rollingUpdate: null
-  template:
-    metadata:
-      labels:
-        app: verdaccio
-    spec:
-      nodeName: 172.30.1.22  # 固定部署主机
-      securityContext:
-        runAsUser: 100
-        runAsGroup: 101
-      containers:
-        - name: verdaccio
-          image: &quot;verdaccio/verdaccio:latest&quot;
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 4873
-              name: http
-          livenessProbe:
-            httpGet:
-              path: /-/ping
-              port: http
-            initialDelaySeconds: 5
-          readinessProbe:
-            httpGet:
-              path: /-/ping
-              port: http
-            initialDelaySeconds: 5
-          resources:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># source verdaccio-deploy.yaml</span>
+<span style="color:#ff79c6">apiVersion</span>: apps/v1
+<span style="color:#ff79c6">kind</span>: Deployment
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: verdaccio
+  <span style="color:#ff79c6">name</span>: npm-verdaccio
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">replicas</span>: <span style="color:#bd93f9">1</span>
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">matchLabels</span>:
+      <span style="color:#ff79c6">app</span>: verdaccio
+  <span style="color:#ff79c6">strategy</span>:
+    <span style="color:#ff79c6">type</span>: Recreate
+    <span style="color:#ff79c6">rollingUpdate</span>: <span style="color:#ff79c6">null</span>
+  <span style="color:#ff79c6">template</span>:
+    <span style="color:#ff79c6">metadata</span>:
+      <span style="color:#ff79c6">labels</span>:
+        <span style="color:#ff79c6">app</span>: verdaccio
+    <span style="color:#ff79c6">spec</span>:
+      <span style="color:#ff79c6">nodeName</span>: <span style="color:#bd93f9">172.30.1.22</span>  <span style="color:#6272a4"># 固定部署主机</span>
+      <span style="color:#ff79c6">securityContext</span>:
+        <span style="color:#ff79c6">runAsUser</span>: <span style="color:#bd93f9">100</span>
+        <span style="color:#ff79c6">runAsGroup</span>: <span style="color:#bd93f9">101</span>
+      <span style="color:#ff79c6">containers</span>:
+        - <span style="color:#ff79c6">name</span>: verdaccio
+          <span style="color:#ff79c6">image</span>: <span style="color:#f1fa8c">&#34;verdaccio/verdaccio:latest&#34;</span>
+          <span style="color:#ff79c6">imagePullPolicy</span>: IfNotPresent
+          <span style="color:#ff79c6">ports</span>:
+            - <span style="color:#ff79c6">containerPort</span>: <span style="color:#bd93f9">4873</span>
+              <span style="color:#ff79c6">name</span>: http
+          <span style="color:#ff79c6">livenessProbe</span>:
+            <span style="color:#ff79c6">httpGet</span>:
+              <span style="color:#ff79c6">path</span>: /-/ping
+              <span style="color:#ff79c6">port</span>: http
+            <span style="color:#ff79c6">initialDelaySeconds</span>: <span style="color:#bd93f9">5</span>
+          <span style="color:#ff79c6">readinessProbe</span>:
+            <span style="color:#ff79c6">httpGet</span>:
+              <span style="color:#ff79c6">path</span>: /-/ping
+              <span style="color:#ff79c6">port</span>: http
+            <span style="color:#ff79c6">initialDelaySeconds</span>: <span style="color:#bd93f9">5</span>
+          <span style="color:#ff79c6">resources</span>:
             {}
-          volumeMounts:
-            - mountPath: /verdaccio/storage
-              name: storage
-              readOnly: false
-            - mountPath: /verdaccio/conf
-              name: config
-              readOnly: true
-      volumes:
-      - name: config
-        configMap:
-          name: npm-verdaccio
-      - name: storage
-        hostPath:                 # 持久化存储
-          path: /mnt/data
-          type: DirectoryOrCreate
-</code></pre>
-
-<p>修改完成后，直接 apply 即可：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f verdaccio-deploy.yaml --namespace devops
-</code></pre>
-
-<blockquote>
+          <span style="color:#ff79c6">volumeMounts</span>:
+            - <span style="color:#ff79c6">mountPath</span>: /verdaccio/storage
+              <span style="color:#ff79c6">name</span>: storage
+              <span style="color:#ff79c6">readOnly</span>: <span style="color:#ff79c6">false</span>
+            - <span style="color:#ff79c6">mountPath</span>: /verdaccio/conf
+              <span style="color:#ff79c6">name</span>: config
+              <span style="color:#ff79c6">readOnly</span>: <span style="color:#ff79c6">true</span>
+      <span style="color:#ff79c6">volumes</span>:
+      - <span style="color:#ff79c6">name</span>: config
+        <span style="color:#ff79c6">configMap</span>:
+          <span style="color:#ff79c6">name</span>: npm-verdaccio
+      - <span style="color:#ff79c6">name</span>: storage
+        <span style="color:#ff79c6">hostPath</span>:                 <span style="color:#6272a4"># 持久化存储</span>
+          <span style="color:#ff79c6">path</span>: /mnt/data
+          <span style="color:#ff79c6">type</span>: DirectoryOrCreate
+</code></pre></div><p>修改完成后，直接 apply 即可：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f verdaccio-deploy.yaml --namespace devops
+</code></pre></div><blockquote>
 <p>固定节点的方式和持久化存储的方式有很多种，根据自己情况选择即可</p>
 </blockquote>
-
 <p>还有一个特别需要注意的是：</p>
-
 <blockquote>
 <p>官方的镜像默认使用的是 verdaccio 用户启动服务的，如果我们不修改宿主机目录权限会报权限问题</p>
 </blockquote>
-
 <p>修改宿主机目录权限：</p>
-
-<pre><code class="language-bash">## 创建目录
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">## 创建目录</span>
 $ mkdir -pv /mnt/data/data
-## 创建验证文件
+<span style="color:#6272a4">## 创建验证文件</span>
 $ touch /mnt/data/htpasswd
-## 修改权限
+<span style="color:#6272a4">## 修改权限</span>
 $ chown -R 100:101 /mnt/data/
-</code></pre>
-
-<h3 id="verdaccio-service-文件">Verdaccio Service 文件</h3>
-
-<pre><code class="language-yaml"># source verdaccio-svc.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: npm-verdaccio
-  labels:
-    app: verdaccio
-spec:
-  ports:
-    - port: 4873
-      targetPort: http
-      protocol: TCP
-      name: 
-  selector:
-    app: verdaccio
-  type: ClusterIP
-</code></pre>
-
-<p>同样修改完成后，直接 apply 即可：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f verdaccio-svc.yaml --namespace devops
-</code></pre>
-
-<h3 id="ingress-暴露服务">Ingress 暴露服务</h3>
-
+</code></pre></div><h3 id="verdaccio-service-文件">Verdaccio Service 文件</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># source verdaccio-svc.yaml</span>
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Service
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: npm-verdaccio
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: verdaccio
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">ports</span>:
+    - <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">4873</span>
+      <span style="color:#ff79c6">targetPort</span>: http
+      <span style="color:#ff79c6">protocol</span>: TCP
+      <span style="color:#ff79c6">name</span>: 
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">app</span>: verdaccio
+  <span style="color:#ff79c6">type</span>: ClusterIP
+</code></pre></div><p>同样修改完成后，直接 apply 即可：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f verdaccio-svc.yaml --namespace devops
+</code></pre></div><h3 id="ingress-暴露服务">Ingress 暴露服务</h3>
 <p>修改 Ingress 部署文件，这里 Traefik 用的是 CRD 资源 <code>IngressRoutes</code> :</p>
-
-<pre><code class="language-yaml"># source verdaccio-ingress.yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: verdaccio-ui
-  labels:
-    app: verdaccio
-spec:
-  entryPoints:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># source verdaccio-ingress.yaml</span>
+<span style="color:#ff79c6">apiVersion</span>: traefik.containo.us/v1alpha1
+<span style="color:#ff79c6">kind</span>: IngressRoute
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: verdaccio-ui
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: verdaccio
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">entryPoints</span>:
     - web
-  routes:
-    - match: Host(`registry.npm.devops.io`)
-      kind: Rule
-      services:
-        - name: npm-verdaccio
-          port: 4873
-</code></pre>
-
-<p>修改完成后直接 apply 即可：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f verdaccio-ingress.yaml --namespace devops
-</code></pre>
-
-<blockquote>
+  <span style="color:#ff79c6">routes</span>:
+    - <span style="color:#ff79c6">match</span>: Host(`registry.npm.devops.io`)
+      <span style="color:#ff79c6">kind</span>: Rule
+      <span style="color:#ff79c6">services</span>:
+        - <span style="color:#ff79c6">name</span>: npm-verdaccio
+          <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">4873</span>
+</code></pre></div><p>修改完成后直接 apply 即可：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f verdaccio-ingress.yaml --namespace devops
+</code></pre></div><blockquote>
 <p>暴露服务的方式有很多种，自己自身情况选择一种即可</p>
 </blockquote>
-
 <h2 id="验证安装情况">验证安装情况</h2>
-
 <p>上述部署完成后，我们可以验证一下部署情况:</p>
-
-<pre><code class="language-bash">$ kubectl get all -n devops
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl get all -n devops
 NAME                                    READY   STATUS    RESTARTS   AGE
-pod/npm-verdaccio-5bf4b84589-5x5gg      1/1     Running   0          5h21m
+pod/npm-verdaccio-5bf4b84589-5x5gg      1/1     Running   <span style="color:#bd93f9">0</span>          5h21m
 
-NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT<span style="color:#ff79c6">(</span>S<span style="color:#ff79c6">)</span>    AGE
 service/npm-verdaccio   ClusterIP   10.105.46.53    &lt;none&gt;        4873/TCP   27h
 
 NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/npm-verdaccio      1/1     1            1           27h
+deployment.apps/npm-verdaccio      1/1     <span style="color:#bd93f9">1</span>            <span style="color:#bd93f9">1</span>           27h
 
 NAME                                          DESIRED   CURRENT   READY   AGE
-replicaset.apps/npm-verdaccio-5bf4b84589      1         1         1       8h
-replicaset.apps/npm-verdaccio-67ddff8879      0         0         0       5h23m
-replicaset.apps/npm-verdaccio-7865566fcf      0         0         0       27h
-replicaset.apps/npm-verdaccio-c55db58f6       0         0         0       24h
-</code></pre>
-
-<h2 id="测试仓库可用性">测试仓库可用性</h2>
-
+replicaset.apps/npm-verdaccio-5bf4b84589      <span style="color:#bd93f9">1</span>         <span style="color:#bd93f9">1</span>         <span style="color:#bd93f9">1</span>       8h
+replicaset.apps/npm-verdaccio-67ddff8879      <span style="color:#bd93f9">0</span>         <span style="color:#bd93f9">0</span>         <span style="color:#bd93f9">0</span>       5h23m
+replicaset.apps/npm-verdaccio-7865566fcf      <span style="color:#bd93f9">0</span>         <span style="color:#bd93f9">0</span>         <span style="color:#bd93f9">0</span>       27h
+replicaset.apps/npm-verdaccio-c55db58f6       <span style="color:#bd93f9">0</span>         <span style="color:#bd93f9">0</span>         <span style="color:#bd93f9">0</span>       24h
+</code></pre></div><h2 id="测试仓库可用性">测试仓库可用性</h2>
 <h3 id="设置仓库源">设置仓库源</h3>
-
 <p>这里我随便用的域名 <code>registry.npm.devops.io</code> ，一般没有问题的话可以直接用浏览器访问的（需要手动添加解析），为了测试方便，需要将 npm 的默认源设置为 <code>http://registry.npm.devops.io</code>:</p>
-
-<pre><code class="language-bash">$ npm set registry http://registry.npm.devops.io
-</code></pre>
-
-<h3 id="添加用户-登录">添加用户/登录</h3>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ npm <span style="color:#8be9fd;font-style:italic">set</span> registry http://registry.npm.devops.io
+</code></pre></div><h3 id="添加用户登录">添加用户/登录</h3>
 <p>我们需要创建个用户方便上传私有包：</p>
-
-<pre><code class="language-bash">$ npm adduser --registry http://registry.npm.devops.io
-</code></pre>
-
-<blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ npm adduser --registry http://registry.npm.devops.io
+</code></pre></div><blockquote>
 <p>需要输入用户名、密码、邮箱</p>
 </blockquote>
-
 <h3 id="上传私有包">上传私有包</h3>
-
 <p>创建用户并登录成功后，接下来就可以创建并上传私有包了，具体步骤如下：</p>
-
-<pre><code class="language-bash">## 准备 nodejs 项目
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">## 准备 nodejs 项目</span>
 $ mkdir npmtest
-$ cd npmtest &amp;&amp; touch index.js
+$ <span style="color:#8be9fd;font-style:italic">cd</span> npmtest <span style="color:#ff79c6">&amp;&amp;</span> touch index.js
 $ npm init
 
-## 上传私有包
+<span style="color:#6272a4">## 上传私有包</span>
 $ npm adduser --registry http://registry.npm.devops.io
 $ npm publish --registry http://registry.npm.devops.io
-</code></pre>
-
-<p>如果遇到报错可以根据 pod 的日志排错，一般都是因为权限问题。</p>
+</code></pre></div><p>如果遇到报错可以根据 pod 的日志排错，一般都是因为权限问题。</p>
 
 
                 
@@ -597,87 +516,79 @@ $ npm publish --registry http://registry.npm.devops.io
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

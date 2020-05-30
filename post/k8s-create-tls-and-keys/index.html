@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,39 +213,25 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#创建tls证书及密钥">创建TLS证书及密钥</a>
-<ul>
-<li><a href="#安装证书制作工具-cfssl">安装证书制作工具-CFSSL</a></li>
-<li><a href="#创建ca证书">创建CA证书</a></li>
-<li><a href="#创建-kubernetes-证书">创建 kubernetes 证书</a></li>
-<li><a href="#创建-admin-证书">创建 admin 证书</a></li>
-<li><a href="#创建-kube-proxy-证书">创建 kube-proxy 证书</a></li>
-</ul></li>
-<li><a href="#校验证书">校验证书</a></li>
-<li><a href="#分发证书">分发证书</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#创建tls证书及密钥">创建TLS证书及密钥</a></li>
+        <li><a href="#校验证书">校验证书</a></li>
+        <li><a href="#分发证书">分发证书</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>集群环境如下：</p>
-
-<pre><code class="language-bash">k8s-master: 192.168.8.66
+                <p>集群环境如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">k8s-master: 192.168.8.66
 k8s-nodes:  192.168.8.67 192.168.8.68
 k8s-harbor: 192.168.8.69
-</code></pre>
-
-<h2 id="创建tls证书及密钥">创建TLS证书及密钥</h2>
-
+</code></pre></div><h2 id="创建tls证书及密钥">创建TLS证书及密钥</h2>
 <p><code>kubernetes</code>系统的各组件需要使用 <code>TLS</code> 证书对通信进行加密，本文档使用 CloudFlare 的 PKI 工具集 <code>cfssl</code> 来生成 Certificate Authority (CA) 和其它证书；</p>
-
 <p>集群TLS认证需要的证书及密钥如下：</p>
-
-<pre><code class="language-bash">admin-key.pem
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">admin-key.pem
 admin.pem
 ca-key.pem
 ca.pem
@@ -253,269 +239,204 @@ kube-proxy-key.pem
 kube-proxy.pem
 kubernetes-key.pem
 kubernetes.pem
-</code></pre>
-
-<p>集群各组件对证书的依赖如下：</p>
-
-<pre><code class="language-bash"># etcd：使用 ca.pem、kubernetes-key.pem、kubernetes.pem；
-# kube-apiserver：使用 ca.pem、kubernetes-key.pem、kubernetes.pem；
-# kubelet：使用 ca.pem；
-# kube-proxy：使用 ca.pem、kube-proxy-key.pem、kube-proxy.pem；
-# kubectl：使用 ca.pem、admin-key.pem、admin.pem；
-# kube-controller-manager：使用 ca-key.pem、ca.pem
-</code></pre>
-
-<h3 id="安装证书制作工具-cfssl">安装证书制作工具-CFSSL</h3>
-
+</code></pre></div><p>集群各组件对证书的依赖如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># etcd：使用 ca.pem、kubernetes-key.pem、kubernetes.pem；</span>
+<span style="color:#6272a4"># kube-apiserver：使用 ca.pem、kubernetes-key.pem、kubernetes.pem；</span>
+<span style="color:#6272a4"># kubelet：使用 ca.pem；</span>
+<span style="color:#6272a4"># kube-proxy：使用 ca.pem、kube-proxy-key.pem、kube-proxy.pem；</span>
+<span style="color:#6272a4"># kubectl：使用 ca.pem、admin-key.pem、admin.pem；</span>
+<span style="color:#6272a4"># kube-controller-manager：使用 ca-key.pem、ca.pem</span>
+</code></pre></div><h3 id="安装证书制作工具-cfssl">安装证书制作工具-CFSSL</h3>
 <p>安装前需要在 <code>/etc/profile</code> 文件中配置 <code>GOPATH</code> 变量，内容如下：</p>
-
-<pre><code class="language-bash">...
-export GOPATH=/usr/local/go
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">...
+<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">GOPATH</span><span style="color:#ff79c6">=</span>/usr/local/go
 ...
-source /etc/profile
-</code></pre>
-
-<p>安装CFSSL</p>
-
-<pre><code class="language-bash">$ go get -u github.com/cloudflare/cfssl/cmd/...
-$ echo $GOPATH
+<span style="color:#8be9fd;font-style:italic">source</span> /etc/profile
+</code></pre></div><p>安装CFSSL</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go get -u github.com/cloudflare/cfssl/cmd/...
+$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$GOPATH</span>
 /usr/local/go
 $ ls /usr/local/go/bin/
 cfssl  cfssl-bundle  cfssl-certinfo  cfssljson  cfssl-newkey  cfssl-scan  mkbundle  multirootca
-</code></pre>
-
-<h3 id="创建ca证书">创建CA证书</h3>
-
+</code></pre></div><h3 id="创建ca证书">创建CA证书</h3>
 <p><strong>创建CA配置文件</strong></p>
-
-<pre><code class="language-bash">mkdir /root/ssl
-cd /root/ssl
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir /root/ssl
+<span style="color:#8be9fd;font-style:italic">cd</span> /root/ssl
 cfssl print-defaults config &gt; config.json
 cfssl print-defaults csr &gt; csr.json
-# 根据config.json文件的格式创建如下的ca-config.json文件
-# 过期时间设置成了 87600h
-cat &gt; ca-config.json &lt;&lt;EOF
-{
-  &quot;signing&quot;: {
-    &quot;default&quot;: {
-      &quot;expiry&quot;: &quot;87600h&quot;
-    },
-    &quot;profiles&quot;: {
-      &quot;kubernetes&quot;: {
-        &quot;usages&quot;: [
-            &quot;signing&quot;,
-            &quot;key encipherment&quot;,
-            &quot;server auth&quot;,
-            &quot;client auth&quot;
-        ],
-        &quot;expiry&quot;: &quot;87600h&quot;
-      }
-    }
-   }
-}
-EOF
-</code></pre>
-
-<p>字段说明如下：</p>
-
+<span style="color:#6272a4"># 根据config.json文件的格式创建如下的ca-config.json文件</span>
+<span style="color:#6272a4"># 过期时间设置成了 87600h</span>
+cat &gt; ca-config.json <span style="color:#f1fa8c">&lt;&lt;EOF
+</span><span style="color:#f1fa8c">{
+</span><span style="color:#f1fa8c">  &#34;signing&#34;: {
+</span><span style="color:#f1fa8c">    &#34;default&#34;: {
+</span><span style="color:#f1fa8c">      &#34;expiry&#34;: &#34;87600h&#34;
+</span><span style="color:#f1fa8c">    },
+</span><span style="color:#f1fa8c">    &#34;profiles&#34;: {
+</span><span style="color:#f1fa8c">      &#34;kubernetes&#34;: {
+</span><span style="color:#f1fa8c">        &#34;usages&#34;: [
+</span><span style="color:#f1fa8c">            &#34;signing&#34;,
+</span><span style="color:#f1fa8c">            &#34;key encipherment&#34;,
+</span><span style="color:#f1fa8c">            &#34;server auth&#34;,
+</span><span style="color:#f1fa8c">            &#34;client auth&#34;
+</span><span style="color:#f1fa8c">        ],
+</span><span style="color:#f1fa8c">        &#34;expiry&#34;: &#34;87600h&#34;
+</span><span style="color:#f1fa8c">      }
+</span><span style="color:#f1fa8c">    }
+</span><span style="color:#f1fa8c">   }
+</span><span style="color:#f1fa8c">}
+</span><span style="color:#f1fa8c">EOF</span>
+</code></pre></div><p>字段说明如下：</p>
 <ul>
 <li><code>ca-config.json</code>：可以定义多个 profiles，分别指定不同的过期时间、使用场景等参数；后续在签名证书时使用某个 profile；</li>
 <li><code>signing</code>：表示该证书可用于签名其它证书；生成的 ca.pem 证书中 CA=TRUE；</li>
 <li><code>server auth</code>：表示client可以用该 CA 对server提供的证书进行验证；</li>
 <li><code>client auth</code>：表示server可以用该 CA 对client提供的证书进行验证；</li>
 </ul>
-
 <p><strong>创建 CA 证书签名请求</strong></p>
-
-<pre><code class="language-bash">cat &gt; ca-csr.json &lt;&lt; EOF
-    {
-      &quot;CN&quot;: &quot;kubernetes&quot;,
-      &quot;key&quot;: {
-        &quot;algo&quot;: &quot;rsa&quot;,
-        &quot;size&quot;: 2048
-      },
-      &quot;names&quot;: [
-        {
-          &quot;C&quot;: &quot;CN&quot;,
-          &quot;ST&quot;: &quot;BeiJing&quot;,
-          &quot;L&quot;: &quot;BeiJing&quot;,
-          &quot;O&quot;: &quot;k8s&quot;,
-          &quot;OU&quot;: &quot;System&quot;
-        }
-      ]
-    }
-    EOF
-</code></pre>
-
-<p>字段说明如下：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; ca-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+</span><span style="color:#f1fa8c">    {
+</span><span style="color:#f1fa8c">      &#34;CN&#34;: &#34;kubernetes&#34;,
+</span><span style="color:#f1fa8c">      &#34;key&#34;: {
+</span><span style="color:#f1fa8c">        &#34;algo&#34;: &#34;rsa&#34;,
+</span><span style="color:#f1fa8c">        &#34;size&#34;: 2048
+</span><span style="color:#f1fa8c">      },
+</span><span style="color:#f1fa8c">      &#34;names&#34;: [
+</span><span style="color:#f1fa8c">        {
+</span><span style="color:#f1fa8c">          &#34;C&#34;: &#34;CN&#34;,
+</span><span style="color:#f1fa8c">          &#34;ST&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">          &#34;L&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">          &#34;O&#34;: &#34;k8s&#34;,
+</span><span style="color:#f1fa8c">          &#34;OU&#34;: &#34;System&#34;
+</span><span style="color:#f1fa8c">        }
+</span><span style="color:#f1fa8c">      ]
+</span><span style="color:#f1fa8c">    }
+</span><span style="color:#f1fa8c">    EOF</span>
+</code></pre></div><p>字段说明如下：</p>
 <ul>
 <li>&ldquo;CN&rdquo;：Common Name，kube-apiserver 从证书中提取该字段作为请求的用户名 (User Name)；浏览器使用该字段验证网站是否合法；</li>
 <li>&ldquo;O&rdquo;：Organization，kube-apiserver 从证书中提取该字段作为请求用户所属的组 (Group)；</li>
 </ul>
-
 <p><strong>生成 CA 证书和密钥</strong></p>
-
-<pre><code class="language-bash">$ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 $ ls ca*
 ca-config.json  ca.csr  ca-csr.json  ca-key.pem  ca.pem
-</code></pre>
-
-<h3 id="创建-kubernetes-证书">创建 kubernetes 证书</h3>
-
+</code></pre></div><h3 id="创建-kubernetes-证书">创建 kubernetes 证书</h3>
 <p><strong>创建 kubernetes 证书签名请求文件</strong></p>
-
-<pre><code class="language-bash">cat &gt; kubernetes-csr.json &lt;&lt; EOF
-{
-  &quot;CN&quot;: &quot;kubernetes&quot;,
-  &quot;hosts&quot;: [
-    &quot;127.0.0.1&quot;,
-    &quot;192.168.8.66&quot;,
-    &quot;192.168.8.67&quot;,
-    &quot;192.168.8.68&quot;,
-    &quot;192.168.8.69&quot;,
-    &quot;10.254.0.1&quot;,
-    &quot;kubernetes&quot;,
-    &quot;kubernetes.default&quot;,
-    &quot;kubernetes.default.svc&quot;,
-    &quot;kubernetes.default.svc.cluster&quot;,
-    &quot;kubernetes.default.svc.cluster.local&quot;
-  ],
-  &quot;key&quot;: {
-      &quot;algo&quot;: &quot;rsa&quot;,
-      &quot;size&quot;: 2048
-  },
-  &quot;names&quot;: [
-      {
-          &quot;C&quot;: &quot;CN&quot;,
-          &quot;ST&quot;: &quot;BeiJing&quot;,
-          &quot;L&quot;: &quot;BeiJing&quot;,
-          &quot;O&quot;: &quot;k8s&quot;,
-          &quot;OU&quot;: &quot;System&quot;
-      }
-  ]
-}
-EOF
-</code></pre>
-
-<p>如果 hosts 字段不为空则需要指定授权使用该证书的 IP 或域名列表，由于该证书后续被 etcd 集群和 kubernetes master 集群使用，所以上面分别指定了 etcd 集群、kubernetes master 集群的主机 IP 和 kubernetes 服务的服务 IP（一般是 kube-apiserver 指定的 service-cluster-ip-range 网段的第一个IP，如 10.254.0.1。hosts 中的内容可以为空，即使按照上面的配置，向集群中增加新节点后也不需要重新生成证书。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; kubernetes-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+</span><span style="color:#f1fa8c">{
+</span><span style="color:#f1fa8c">  &#34;CN&#34;: &#34;kubernetes&#34;,
+</span><span style="color:#f1fa8c">  &#34;hosts&#34;: [
+</span><span style="color:#f1fa8c">    &#34;127.0.0.1&#34;,
+</span><span style="color:#f1fa8c">    &#34;192.168.8.66&#34;,
+</span><span style="color:#f1fa8c">    &#34;192.168.8.67&#34;,
+</span><span style="color:#f1fa8c">    &#34;192.168.8.68&#34;,
+</span><span style="color:#f1fa8c">    &#34;192.168.8.69&#34;,
+</span><span style="color:#f1fa8c">    &#34;10.254.0.1&#34;,
+</span><span style="color:#f1fa8c">    &#34;kubernetes&#34;,
+</span><span style="color:#f1fa8c">    &#34;kubernetes.default&#34;,
+</span><span style="color:#f1fa8c">    &#34;kubernetes.default.svc&#34;,
+</span><span style="color:#f1fa8c">    &#34;kubernetes.default.svc.cluster&#34;,
+</span><span style="color:#f1fa8c">    &#34;kubernetes.default.svc.cluster.local&#34;
+</span><span style="color:#f1fa8c">  ],
+</span><span style="color:#f1fa8c">  &#34;key&#34;: {
+</span><span style="color:#f1fa8c">      &#34;algo&#34;: &#34;rsa&#34;,
+</span><span style="color:#f1fa8c">      &#34;size&#34;: 2048
+</span><span style="color:#f1fa8c">  },
+</span><span style="color:#f1fa8c">  &#34;names&#34;: [
+</span><span style="color:#f1fa8c">      {
+</span><span style="color:#f1fa8c">          &#34;C&#34;: &#34;CN&#34;,
+</span><span style="color:#f1fa8c">          &#34;ST&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">          &#34;L&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">          &#34;O&#34;: &#34;k8s&#34;,
+</span><span style="color:#f1fa8c">          &#34;OU&#34;: &#34;System&#34;
+</span><span style="color:#f1fa8c">      }
+</span><span style="color:#f1fa8c">  ]
+</span><span style="color:#f1fa8c">}
+</span><span style="color:#f1fa8c">EOF</span>
+</code></pre></div><p>如果 hosts 字段不为空则需要指定授权使用该证书的 IP 或域名列表，由于该证书后续被 etcd 集群和 kubernetes master 集群使用，所以上面分别指定了 etcd 集群、kubernetes master 集群的主机 IP 和 kubernetes 服务的服务 IP（一般是 kube-apiserver 指定的 service-cluster-ip-range 网段的第一个IP，如 10.254.0.1。hosts 中的内容可以为空，即使按照上面的配置，向集群中增加新节点后也不需要重新生成证书。</p>
 <p><strong>生成 kubernetes 证书和私钥</strong></p>
-
-<pre><code class="language-bash"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
-# ls kubernetes*
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes</span>
+<span style="color:#6272a4"># ls kubernetes*</span>
 kubernetes.csr  kubernetes-csr.json  kubernetes-key.pem  kubernetes.pem
-</code></pre>
-
-<h3 id="创建-admin-证书">创建 admin 证书</h3>
-
+</code></pre></div><h3 id="创建-admin-证书">创建 admin 证书</h3>
 <p><strong>创建 admin 证书签名请求文件</strong></p>
-
-<pre><code class="language-bash">cat &gt; admin-csr.json &lt;&lt; EOF
-{
-  &quot;CN&quot;: &quot;admin&quot;,
-  &quot;hosts&quot;: [],
-  &quot;key&quot;: {
-    &quot;algo&quot;: &quot;rsa&quot;,
-    &quot;size&quot;: 2048
-  },
-  &quot;names&quot;: [
-    {
-      &quot;C&quot;: &quot;CN&quot;,
-      &quot;ST&quot;: &quot;BeiJing&quot;,
-      &quot;L&quot;: &quot;BeiJing&quot;,
-      &quot;O&quot;: &quot;system:masters&quot;,
-      &quot;OU&quot;: &quot;System&quot;
-    }
-  ]
-}
-EOF
-</code></pre>
-
-<p>字段说明：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; admin-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+</span><span style="color:#f1fa8c">{
+</span><span style="color:#f1fa8c">  &#34;CN&#34;: &#34;admin&#34;,
+</span><span style="color:#f1fa8c">  &#34;hosts&#34;: [],
+</span><span style="color:#f1fa8c">  &#34;key&#34;: {
+</span><span style="color:#f1fa8c">    &#34;algo&#34;: &#34;rsa&#34;,
+</span><span style="color:#f1fa8c">    &#34;size&#34;: 2048
+</span><span style="color:#f1fa8c">  },
+</span><span style="color:#f1fa8c">  &#34;names&#34;: [
+</span><span style="color:#f1fa8c">    {
+</span><span style="color:#f1fa8c">      &#34;C&#34;: &#34;CN&#34;,
+</span><span style="color:#f1fa8c">      &#34;ST&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">      &#34;L&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">      &#34;O&#34;: &#34;system:masters&#34;,
+</span><span style="color:#f1fa8c">      &#34;OU&#34;: &#34;System&#34;
+</span><span style="color:#f1fa8c">    }
+</span><span style="color:#f1fa8c">  ]
+</span><span style="color:#f1fa8c">}
+</span><span style="color:#f1fa8c">EOF</span>
+</code></pre></div><p>字段说明：</p>
 <ul>
 <li>后续 kube-apiserver 使用 RBAC 对客户端(如 kubelet、kube-proxy、Pod)请求进行授权，kube-apiserver 预定义了一些 RBAC 使用的 RoleBindings，如 cluster-admin 将 Group system:masters 与 Role cluster-admin 绑定，该 Role 授予了调用kube-apiserver 的所有 API的权限；</li>
 <li>OU 指定该证书的 Group 为 system:masters，kubelet 使用该证书访问 kube-apiserver 时 ，由于证书被 CA 签名，所以认证通过，同时由于证书用户组为经过预授权的 system:masters，所以被授予访问所有 API 的权限；</li>
 </ul>
-
 <p><strong>生成 admin 证书和私钥</strong></p>
-
-<pre><code class="language-bash"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes admin-csr.json | cfssljson -bare admin
-# ls admin*
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes admin-csr.json | cfssljson -bare admin</span>
+<span style="color:#6272a4"># ls admin*</span>
 admin.csr  admin-csr.json  admin-key.pem  admin.pem
-</code></pre>
-
-<h3 id="创建-kube-proxy-证书">创建 kube-proxy 证书</h3>
-
+</code></pre></div><h3 id="创建-kube-proxy-证书">创建 kube-proxy 证书</h3>
 <p><strong>创建 kube-proxy 证书签名请求文件</strong></p>
-
-<pre><code class="language-bash">cat &gt; kube-proxy-csr.json &lt;&lt; EOF
-{
-  &quot;CN&quot;: &quot;system:kube-proxy&quot;,
-  &quot;hosts&quot;: [],
-  &quot;key&quot;: {
-    &quot;algo&quot;: &quot;rsa&quot;,
-    &quot;size&quot;: 2048
-  },
-  &quot;names&quot;: [
-    {
-      &quot;C&quot;: &quot;CN&quot;,
-      &quot;ST&quot;: &quot;BeiJing&quot;,
-      &quot;L&quot;: &quot;BeiJing&quot;,
-      &quot;O&quot;: &quot;k8s&quot;,
-      &quot;OU&quot;: &quot;System&quot;
-    }
-  ]
-}
-EOF
-</code></pre>
-
-<p>字段说明如下：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; kube-proxy-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+</span><span style="color:#f1fa8c">{
+</span><span style="color:#f1fa8c">  &#34;CN&#34;: &#34;system:kube-proxy&#34;,
+</span><span style="color:#f1fa8c">  &#34;hosts&#34;: [],
+</span><span style="color:#f1fa8c">  &#34;key&#34;: {
+</span><span style="color:#f1fa8c">    &#34;algo&#34;: &#34;rsa&#34;,
+</span><span style="color:#f1fa8c">    &#34;size&#34;: 2048
+</span><span style="color:#f1fa8c">  },
+</span><span style="color:#f1fa8c">  &#34;names&#34;: [
+</span><span style="color:#f1fa8c">    {
+</span><span style="color:#f1fa8c">      &#34;C&#34;: &#34;CN&#34;,
+</span><span style="color:#f1fa8c">      &#34;ST&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">      &#34;L&#34;: &#34;BeiJing&#34;,
+</span><span style="color:#f1fa8c">      &#34;O&#34;: &#34;k8s&#34;,
+</span><span style="color:#f1fa8c">      &#34;OU&#34;: &#34;System&#34;
+</span><span style="color:#f1fa8c">    }
+</span><span style="color:#f1fa8c">  ]
+</span><span style="color:#f1fa8c">}
+</span><span style="color:#f1fa8c">EOF</span>
+</code></pre></div><p>字段说明如下：</p>
 <ul>
 <li>CN 指定该证书的 User 为 system:kube-proxy；</li>
 <li>kube-apiserver 预定义的 RoleBinding cluster-admin 将User system:kube-proxy 与 Role system:node-proxier 绑定，该 Role 授予了调用 kube-apiserver Proxy 相关 API 的权限；</li>
 </ul>
-
 <p><strong>生成 kube-proxy 客户端证书和私钥</strong></p>
-
-<pre><code class="language-bash"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy
-# ls kube-proxy*
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy</span>
+<span style="color:#6272a4"># ls kube-proxy*</span>
 kube-proxy.csr  kube-proxy-csr.json  kube-proxy-key.pem  kube-proxy.pem
-</code></pre>
-
-<h2 id="校验证书">校验证书</h2>
-
+</code></pre></div><h2 id="校验证书">校验证书</h2>
 <p>以 kubernetes 证书为例</p>
-
 <p><strong>使用 openssl 命令校验</strong></p>
-
-<pre><code class="language-bash">openssl x509  -noout -text -in  kubernetes.pem
-</code></pre>
-
-<p>需要确认的信息如下：</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl x509  -noout -text -in  kubernetes.pem
+</code></pre></div><p>需要确认的信息如下：</p>
 <ul>
 <li>确认 Issuer 字段的内容和 ca-csr.json 一致；</li>
 <li>确认 Subject 字段的内容和 kubernetes-csr.json 一致；</li>
 <li>确认 X509v3 Subject Alternative Name 字段的内容和 kubernetes-csr.json 一致；</li>
 <li>确认 X509v3 Key Usage、Extended Key Usage 字段的内容和 ca-config.json 中 kubernetes profile 一致；</li>
 </ul>
-
 <p><strong>使用 fssl-certinfo 命令校验</strong></p>
-
-<pre><code class="language-bash">cfssl-certinfo -cert kubernetes.pem
-</code></pre>
-
-<h2 id="分发证书">分发证书</h2>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cfssl-certinfo -cert kubernetes.pem
+</code></pre></div><h2 id="分发证书">分发证书</h2>
 <p>将生成的证书和秘钥文件（后缀名为.pem）拷贝到所有机器的 <code>/etc/kubernetes/ssl</code> 目录下备用；</p>
-
-<pre><code class="language-bash">mkdir -p /etc/kubernetes/ssl
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir -p /etc/kubernetes/ssl
 cp *.pem /etc/kubernetes/ssl
-</code></pre>
-
+</code></pre></div>
 
                 
 
@@ -579,87 +500,79 @@ cp *.pem /etc/kubernetes/ssl
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

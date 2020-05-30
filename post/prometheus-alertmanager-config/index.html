@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -209,284 +209,218 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#安装配置-alertmanager">安装配置 Alertmanager</a></li>
-<li><a href="#alertmanager-集成邮件告警">Alertmanager 集成邮件告警</a></li>
-<li><a href="#alertmanager-集成企业微信告警">Alertmanager 集成企业微信告警</a></li>
-<li><a href="#alertmanager-集成-slack-告警">Alertmanager 集成 Slack 告警</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#安装配置-alertmanager">安装配置 Alertmanager</a></li>
+        <li><a href="#alertmanager-集成邮件告警">Alertmanager 集成邮件告警</a></li>
+        <li><a href="#alertmanager-集成企业微信告警">Alertmanager 集成企业微信告警</a></li>
+        <li><a href="#alertmanager-集成-slack-告警">Alertmanager 集成 Slack 告警</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>在 Prometheus Server 中支持基于 PromQL 创建告警规则，如果满足 PromQL 定义的规则，则会产生一条告警，而告警的后续处理流程则由 AlertManager 进行管理。在 AlertManager 中我们可以与邮件，Slack 等等内置的通知方式进行集成，也可以通过 Webhook 自定义告警处理方式。AlertManager 即 Prometheus 体系中的告警处理中心。</p>
-
+                <p>在 Prometheus Server 中支持基于 PromQL 创建告警规则，如果满足 PromQL 定义的规则，则会产生一条告警，而告警的后续处理流程则由 AlertManager 进行管理。在 AlertManager 中我们可以与邮件，Slack 等等内置的通知方式进行集成，也可以通过 Webhook 自定义告警处理方式。AlertManager 即 Prometheus 体系中的告警处理中心。</p>
 <h2 id="安装配置-alertmanager">安装配置 Alertmanager</h2>
-
 <p>告警能力在 Prometheus 的架构中被划分成两个独立的部分。如下所示，通过在 Prometheus 中定义 AlertRule（告警规则），Prometheus 会周期性的对告警规则进行计算，如果满足告警触发条件就会向 Alertmanager 发送告警信息。</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/dlfoee.jpg" alt="prometheus告警图" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/dlfoee.jpg" alt="prometheus告警图"></p>
 <p>首先我们需要从<a href="https://github.com/prometheus/alertmanager/releases">Alertmanager下载页</a>下载我们需要安装的版本，这里我们选择则安装的prometheus版本是 v0.16.1的最新版本。</p>
-
-<pre><code class="language-bash">$ wget https://github.com/prometheus/alertmanager/releases/download/v0.16.1/alertmanager-0.16.1.linux-amd64.tar.gz
-</code></pre>
-
-<p>解压并安装 alertmanager 服务：</p>
-
-<pre><code class="language-bash">$ tar xf alertmanager-0.16.1.linux-amd64.tar.gz -C /srv/
-$ cd /srv/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ wget https://github.com/prometheus/alertmanager/releases/download/v0.16.1/alertmanager-0.16.1.linux-amd64.tar.gz
+</code></pre></div><p>解压并安装 alertmanager 服务：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ tar xf alertmanager-0.16.1.linux-amd64.tar.gz -C /srv/
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/
 $ mv alertmanager-0.16.1.linux-amd64/ alertmanager
 $ mkdir -pv /srv/alertmanager/data
 $ chown -R prometheus.prometheus /srv/alertmanager
-</code></pre>
+</code></pre></div><p>创建 alertmanager 系统服务启动文件: <code>/usr/lib/systemd/system/alertmanager.service</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Alertmanager
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>network.target
 
-<p>创建 alertmanager 系统服务启动文件: <code>/usr/lib/systemd/system/alertmanager.service</code></p>
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Type</span><span style="color:#ff79c6">=</span>simple
+<span style="color:#8be9fd;font-style:italic">User</span><span style="color:#ff79c6">=</span>prometheus
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/srv/alertmanager/alertmanager <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --config.file<span style="color:#ff79c6">=</span>/srv/alertmanager/alertmanager.yml <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --storage.path<span style="color:#ff79c6">=</span>/srv/alertmanager/data
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
 
-<pre><code class="language-bash">[Unit]
-Description=Alertmanager
-After=network.target
-
-[Service]
-Type=simple
-User=prometheus
-ExecStart=/srv/alertmanager/alertmanager \
-  --config.file=/srv/alertmanager/alertmanager.yml \
-  --storage.path=/srv/alertmanager/data
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-</code></pre>
-
-<p>完整服务启动文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/service/alertmanager.service">alertmanager.service</a></p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+</code></pre></div><p>完整服务启动文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/service/alertmanager.service">alertmanager.service</a></p>
 <p>准备 alertmanager 配置文件：<code>/srv/alertmanager/alertmanager.yml</code></p>
-
-<pre><code class="language-bash">global:
-  smtp_smarthost: 'smtp.163.com:25'
-  smtp_from: 'xx@163.com'
-  smtp_auth_username: 'xx@163.com'
-  smtp_auth_password: 'xx'
-  smtp_require_tls: false
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">global:
+  smtp_smarthost: <span style="color:#f1fa8c">&#39;smtp.163.com:25&#39;</span>
+  smtp_from: <span style="color:#f1fa8c">&#39;xx@163.com&#39;</span>
+  smtp_auth_username: <span style="color:#f1fa8c">&#39;xx@163.com&#39;</span>
+  smtp_auth_password: <span style="color:#f1fa8c">&#39;xx&#39;</span>
+  smtp_require_tls: <span style="color:#8be9fd;font-style:italic">false</span>
 
 templates:
-  - '/srv/alertmanager/template/*.tmpl'
+  - <span style="color:#f1fa8c">&#39;/srv/alertmanager/template/*.tmpl&#39;</span>
 
 route:
-  group_by: ['alertname','cluster','service']
+  group_by: <span style="color:#ff79c6">[</span><span style="color:#f1fa8c">&#39;alertname&#39;</span>,<span style="color:#f1fa8c">&#39;cluster&#39;</span>,<span style="color:#f1fa8c">&#39;service&#39;</span><span style="color:#ff79c6">]</span>
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 10m
-  receiver: 'default-receiver'
+  receiver: <span style="color:#f1fa8c">&#39;default-receiver&#39;</span>
 
 receivers:
-- name: 'default-receiver'
+- name: <span style="color:#f1fa8c">&#39;default-receiver&#39;</span>
   email_configs:
-  - to: 'xx@qq.com'
-    html: '{{ template &quot;alert.html&quot; . }}'
-    headers: { Subject: &quot;Prometheus 告警测试邮件&quot; }
-</code></pre>
-
-<blockquote>
+  - to: <span style="color:#f1fa8c">&#39;xx@qq.com&#39;</span>
+    html: <span style="color:#f1fa8c">&#39;{{ template &#34;alert.html&#34; . }}&#39;</span>
+    headers: <span style="color:#ff79c6">{</span> Subject: <span style="color:#f1fa8c">&#34;Prometheus 告警测试邮件&#34;</span> <span style="color:#ff79c6">}</span>
+</code></pre></div><blockquote>
 <p>该文件只是一个邮件报警的示例文件，不影响正常业务的使用，如果需要对业务进行调整可以根据实际情况做修改</p>
 </blockquote>
-
 <p>完整 Alertmanager 配置文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/config/alertmanager/alertmanager.yml">alertmanager.yml</a></p>
-
 <p>启动 alertmanager 服务：</p>
-
-<pre><code class="language-bash">$ systemctl daemon-reload
-$ systemctl enable alertmanager.service
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl daemon-reload
+$ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> alertmanager.service
 $ systemctl start alertmanager.service
 $ systemctl status alertmanager.service
-</code></pre>
-
-<p>安装完成后可以访问 alertmanager 的UI界面：<a href="http://localhost:9030">http://localhost:9030</a></p>
-
+</code></pre></div><p>安装完成后可以访问 alertmanager 的UI界面：http://localhost:9030</p>
 <p>配置 Prometheus 集成 Alertmanager，需要修改 prometheus 的配置文件，增加 Alertmanager 的相关配置，具体内容如下所示：</p>
-
-<pre><code class="language-bash">...
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">...
 alerting:
   alertmanagers:
   - static_configs:
-    - targets: [&quot;localhost:9093&quot;]
+    - targets: <span style="color:#ff79c6">[</span><span style="color:#f1fa8c">&#34;localhost:9093&#34;</span><span style="color:#ff79c6">]</span>
 ...
-</code></pre>
-
-<p>修改完成后重启 prometheus 服务即可。</p>
-
+</code></pre></div><p>修改完成后重启 prometheus 服务即可。</p>
 <h2 id="alertmanager-集成邮件告警">Alertmanager 集成邮件告警</h2>
-
 <p>Alertmanager 集成邮件告警首先需要准备好邮件的相关模板，这里我们选择用<a href="https://github.com/prometheus/alertmanager/blob/master/template/default.tmpl">官方默认的模板</a>,直接下载下来就能使用，不用做任何的修改。因为之前我们在配置 Alertmanager 的时候配置了模板的具体存放位置，这里直接将该模板下载到此目录下即可,目录不存在需要手动创建该目录：</p>
-
-<pre><code class="language-bash">$ mkdir -pv /srv/alertmanager/template/
-$ cd /srv/alertmanager/template/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir -pv /srv/alertmanager/template/
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/alertmanager/template/
 $ wget https://raw.githubusercontent.com/prometheus/alertmanager/master/template/default.tmpl
 $ chown -R prometheus.prometheus /srv/alertmanager
-</code></pre>
-
-<p>之前 Alertmanager 的配置文件中已经贴出了针对邮件的相关配置，具体如下：</p>
-
-<pre><code class="language-bash">global:
-  smtp_smarthost: 'smtp.163.com:25'
-  smtp_from: 'xx@163.com'
-  smtp_auth_username: 'xx@163.com'
-  smtp_auth_password: 'xx'
-  smtp_require_tls: false
+</code></pre></div><p>之前 Alertmanager 的配置文件中已经贴出了针对邮件的相关配置，具体如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">global:
+  smtp_smarthost: <span style="color:#f1fa8c">&#39;smtp.163.com:25&#39;</span>
+  smtp_from: <span style="color:#f1fa8c">&#39;xx@163.com&#39;</span>
+  smtp_auth_username: <span style="color:#f1fa8c">&#39;xx@163.com&#39;</span>
+  smtp_auth_password: <span style="color:#f1fa8c">&#39;xx&#39;</span>
+  smtp_require_tls: <span style="color:#8be9fd;font-style:italic">false</span>
 
 templates:
-  - '/srv/alertmanager/template/*.tmpl'
+  - <span style="color:#f1fa8c">&#39;/srv/alertmanager/template/*.tmpl&#39;</span>
 
 route:
-  group_by: ['alertname','cluster','service']
+  group_by: <span style="color:#ff79c6">[</span><span style="color:#f1fa8c">&#39;alertname&#39;</span>,<span style="color:#f1fa8c">&#39;cluster&#39;</span>,<span style="color:#f1fa8c">&#39;service&#39;</span><span style="color:#ff79c6">]</span>
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 10m
-  receiver: 'default-receiver'
+  receiver: <span style="color:#f1fa8c">&#39;default-receiver&#39;</span>
   
 receivers:
-- name: 'default-receiver'
+- name: <span style="color:#f1fa8c">&#39;default-receiver&#39;</span>
   email_configs:
-  - to: 'xx@qq.com'
-    html: '{{ template &quot;alert.html&quot; . }}'
-    headers: { Subject: &quot;Prometheus 告警测试邮件&quot; }
-</code></pre>
-
-<p>配置文件准备好后，还需要创建报警规则文件，这个是在 prometheus 里配置的，例如我们写一个关于 node_exporter 的告警规则，如下：</p>
-
-<pre><code class="language-bash">groups:
+  - to: <span style="color:#f1fa8c">&#39;xx@qq.com&#39;</span>
+    html: <span style="color:#f1fa8c">&#39;{{ template &#34;alert.html&#34; . }}&#39;</span>
+    headers: <span style="color:#ff79c6">{</span> Subject: <span style="color:#f1fa8c">&#34;Prometheus 告警测试邮件&#34;</span> <span style="color:#ff79c6">}</span>
+</code></pre></div><p>配置文件准备好后，还需要创建报警规则文件，这个是在 prometheus 里配置的，例如我们写一个关于 node_exporter 的告警规则，如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">groups:
 - name: hostStatsAlert
   rules:
   - alert: InstanceDown
-    expr: up == 0
-    for: 1m
+    expr: <span style="color:#8be9fd;font-style:italic">up</span> <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>
+    <span style="color:#ff79c6">for</span>: 1m
     labels:
       severity: page
     annotations:
-      summary: &quot;Instance {{$labels.instance}} down&quot;
-      description: &quot;{{$labels.instance}} of job {{$labels.job}} has been down for more than 5 minutes.&quot;
-</code></pre>
-
-<p>同时我们还是可以自定义告警规则的，我这里有几个关于主机相关指标的告警规则，可以参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alert-rules/node-stats-alert.rules">node-stats-alert.rules</a>，告警规则准备好后需要在 prometheus 里指定规则相关文件，如下所示（只做参考）：</p>
-
-<pre><code class="language-bash">rule_files:
-  - &quot;alert.rules&quot;
-</code></pre>
-
-<p>配置文件修改完成后，需要重新启动 alertmanager 和 prometheus 服务，之后就可以尝试停掉 node_exporter 服务查看是否可以实现邮件告警。</p>
-
+      summary: <span style="color:#f1fa8c">&#34;Instance {{</span><span style="color:#8be9fd;font-style:italic">$labels</span><span style="color:#f1fa8c">.instance}} down&#34;</span>
+      description: <span style="color:#f1fa8c">&#34;{{</span><span style="color:#8be9fd;font-style:italic">$labels</span><span style="color:#f1fa8c">.instance}} of job {{</span><span style="color:#8be9fd;font-style:italic">$labels</span><span style="color:#f1fa8c">.job}} has been down for more than 5 minutes.&#34;</span>
+</code></pre></div><p>同时我们还是可以自定义告警规则的，我这里有几个关于主机相关指标的告警规则，可以参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alert-rules/node-stats-alert.rules">node-stats-alert.rules</a>，告警规则准备好后需要在 prometheus 里指定规则相关文件，如下所示（只做参考）：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rule_files:
+  - <span style="color:#f1fa8c">&#34;alert.rules&#34;</span>
+</code></pre></div><p>配置文件修改完成后，需要重新启动 alertmanager 和 prometheus 服务，之后就可以尝试停掉 node_exporter 服务查看是否可以实现邮件告警。</p>
 <h2 id="alertmanager-集成企业微信告警">Alertmanager 集成企业微信告警</h2>
-
 <p>Alertmanager 的企业微信告警和邮件告警配置类似，在配置微信告警前需要准备一个微信企业号，创建自己的告警应用，并准备一些参数，配置企业微信告警需要准备的参数具体如下：</p>
-
-<pre><code class="language-bash">wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'(默认)
-to_party: '部门id'
-agent_id: '应用id'
-corp_id: '维信企业号ID'
-api_secret: '自己创建应用的 secret'
-</code></pre>
-
-<p>准备维信告警模板：</p>
-
-<pre><code class="language-bash">{{ define &quot;wechat.default.message&quot; }}
-{{ if gt (len .Alerts.Firing) 0 -}}
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wechat_api_url: <span style="color:#f1fa8c">&#39;https://qyapi.weixin.qq.com/cgi-bin/&#39;</span><span style="color:#ff79c6">(</span>默认<span style="color:#ff79c6">)</span>
+to_party: <span style="color:#f1fa8c">&#39;部门id&#39;</span>
+agent_id: <span style="color:#f1fa8c">&#39;应用id&#39;</span>
+corp_id: <span style="color:#f1fa8c">&#39;维信企业号ID&#39;</span>
+api_secret: <span style="color:#f1fa8c">&#39;自己创建应用的 secret&#39;</span>
+</code></pre></div><p>准备维信告警模板：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">{{</span> define <span style="color:#f1fa8c">&#34;wechat.default.message&#34;</span> <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> <span style="color:#ff79c6">if</span> gt <span style="color:#ff79c6">(</span>len .Alerts.Firing<span style="color:#ff79c6">)</span> <span style="color:#bd93f9">0</span> -<span style="color:#ff79c6">}}</span>
 Alerts Firing:
-{{ range .Alerts}}
-告警级别: {{ .Labels.severity }}
-告警类型: {{ .Labels.alertname }}
-故障主机: {{ .Labels.instance }}
-告警主题: {{ .Annotations.summary }}
-告警详情: {{ .Annotations.description }}
-触发时间: {{ .StartsAt.Format &quot;2006-01-02 15:04:05&quot; }}
-{{- end }}
-{{- end }}
-{{ if gt (len .Alerts.Resolved) 0 -}}
+<span style="color:#ff79c6">{{</span> range .Alerts<span style="color:#ff79c6">}}</span>
+告警级别: <span style="color:#ff79c6">{{</span> .Labels.severity <span style="color:#ff79c6">}}</span>
+告警类型: <span style="color:#ff79c6">{{</span> .Labels.alertname <span style="color:#ff79c6">}}</span>
+故障主机: <span style="color:#ff79c6">{{</span> .Labels.instance <span style="color:#ff79c6">}}</span>
+告警主题: <span style="color:#ff79c6">{{</span> .Annotations.summary <span style="color:#ff79c6">}}</span>
+告警详情: <span style="color:#ff79c6">{{</span> .Annotations.description <span style="color:#ff79c6">}}</span>
+触发时间: <span style="color:#ff79c6">{{</span> .StartsAt.Format <span style="color:#f1fa8c">&#34;2006-01-02 15:04:05&#34;</span> <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span>- end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span>- end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> <span style="color:#ff79c6">if</span> gt <span style="color:#ff79c6">(</span>len .Alerts.Resolved<span style="color:#ff79c6">)</span> <span style="color:#bd93f9">0</span> -<span style="color:#ff79c6">}}</span>
 Alerts Resolved:
-{{ range .Alerts}}
-告警级别: {{ .Labels.severity }}
-告警类型: {{ .Labels.alertname }}
-故障主机: {{ .Labels.instance }}
-告警主题: {{ .Annotations.summary }}
-触发时间: {{ .StartsAt.Format &quot;2006-01-02 15:04:05&quot; }}
-恢复时间: {{ .EndsAt.Format &quot;2006-01-02 15:04:05&quot; }}
-{{- end }}
-{{- end }}
-{{- end }}
-</code></pre>
-
-<p>具体模板文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alertmanager-tmpl/wechat.tmpl">wechat.tmpl</a></p>
-
+<span style="color:#ff79c6">{{</span> range .Alerts<span style="color:#ff79c6">}}</span>
+告警级别: <span style="color:#ff79c6">{{</span> .Labels.severity <span style="color:#ff79c6">}}</span>
+告警类型: <span style="color:#ff79c6">{{</span> .Labels.alertname <span style="color:#ff79c6">}}</span>
+故障主机: <span style="color:#ff79c6">{{</span> .Labels.instance <span style="color:#ff79c6">}}</span>
+告警主题: <span style="color:#ff79c6">{{</span> .Annotations.summary <span style="color:#ff79c6">}}</span>
+触发时间: <span style="color:#ff79c6">{{</span> .StartsAt.Format <span style="color:#f1fa8c">&#34;2006-01-02 15:04:05&#34;</span> <span style="color:#ff79c6">}}</span>
+恢复时间: <span style="color:#ff79c6">{{</span> .EndsAt.Format <span style="color:#f1fa8c">&#34;2006-01-02 15:04:05&#34;</span> <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span>- end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span>- end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span>- end <span style="color:#ff79c6">}}</span>
+</code></pre></div><p>具体模板文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alertmanager-tmpl/wechat.tmpl">wechat.tmpl</a></p>
 <blockquote>
 <p>需要说明的是之前下载的官方模板文件已经包含了微信企业的相关配置，但是输出信息不是很友好，建议按照上面的内容对其进行修改即可</p>
 </blockquote>
-
 <p>模板文件准备完成后还需要修改 alertmanager 的配置文件，增加对企业微信告警的支持：</p>
-
-<pre><code class="language-bash">global:
-  wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">global:
+  wechat_api_url: <span style="color:#f1fa8c">&#39;https://qyapi.weixin.qq.com/cgi-bin/&#39;</span>
 ...
 receivers:
-- name: 'wechat'
+- name: <span style="color:#f1fa8c">&#39;wechat&#39;</span>
   wechat_configs:
-  - send_resolved: true
-    to_party: 'xx'
-    agent_id: 'xx'
-    corp_id: 'xx'
-    api_secret: 'xx'
-</code></pre>
-
-<p>配置文件修改后重启 prometheus 和 alertmanager 服务即可。</p>
-
+  - send_resolved: <span style="color:#8be9fd;font-style:italic">true</span>
+    to_party: <span style="color:#f1fa8c">&#39;xx&#39;</span>
+    agent_id: <span style="color:#f1fa8c">&#39;xx&#39;</span>
+    corp_id: <span style="color:#f1fa8c">&#39;xx&#39;</span>
+    api_secret: <span style="color:#f1fa8c">&#39;xx&#39;</span>
+</code></pre></div><p>配置文件修改后重启 prometheus 和 alertmanager 服务即可。</p>
 <h2 id="alertmanager-集成-slack-告警">Alertmanager 集成 Slack 告警</h2>
-
 <p>Alertmanager 的 Slack 告警和微信告警配置类似，在配置 slack 告警前需要注册一个 slack 账号和对应的频道，具体怎么搞，超出了本文档的范围，还请自行百度或者谷歌吧。</p>
-
 <p>准备 slack 告警模板：</p>
-
-<pre><code class="language-bash">{{ define &quot;__single_message_title&quot; }}{{ range .Alerts.Firing }}{{ .Labels.alertname }} @ {{ .Annotations.identifier }}{{ end }}{{ range .Alerts.Resolved }}{{ .Labels.alertname }} @ {{ .Annotations.identifier }}{{ end }}{{ end }}
-{{ define &quot;custom_title&quot; }}[{{ .Status | toUpper }}{{ if eq .Status &quot;firing&quot; }}:{{ .Alerts.Firing | len }}{{ end }}] {{ if or (and (eq (len .Alerts.Firing) 1) (eq (len .Alerts.Resolved) 0)) (and (eq (len .Alerts.Firing) 0) (eq (len .Alerts.Resolved) 1)) }}{{ template &quot;__single_message_title&quot; . }}{{ end }}{{ end }}
-{{ define &quot;custom_slack_message&quot; }}
-{{ if or (and (eq (len .Alerts.Firing) 1) (eq (len .Alerts.Resolved) 0)) (and (eq (len .Alerts.Firing) 0) (eq (len .Alerts.Resolved) 1)) }}
-{{ range .Alerts.Firing }}{{ .Annotations.description }}{{ end }}{{ range .Alerts.Resolved }}{{ .Annotations.description }}{{ end }}
-{{ else }}
-{{ if gt (len .Alerts.Firing) 0 }}
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">{{</span> define <span style="color:#f1fa8c">&#34;__single_message_title&#34;</span> <span style="color:#ff79c6">}}{{</span> range .Alerts.Firing <span style="color:#ff79c6">}}{{</span> .Labels.alertname <span style="color:#ff79c6">}}</span> @ <span style="color:#ff79c6">{{</span> .Annotations.identifier <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}{{</span> range .Alerts.Resolved <span style="color:#ff79c6">}}{{</span> .Labels.alertname <span style="color:#ff79c6">}}</span> @ <span style="color:#ff79c6">{{</span> .Annotations.identifier <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> define <span style="color:#f1fa8c">&#34;custom_title&#34;</span> <span style="color:#ff79c6">}}[{{</span> .Status | toUpper <span style="color:#ff79c6">}}{{</span> <span style="color:#ff79c6">if</span> eq .Status <span style="color:#f1fa8c">&#34;firing&#34;</span> <span style="color:#ff79c6">}}</span>:<span style="color:#ff79c6">{{</span> .Alerts.Firing | len <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}]</span> <span style="color:#ff79c6">{{</span> <span style="color:#ff79c6">if</span> or <span style="color:#ff79c6">(</span>and <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Firing<span style="color:#ff79c6">)</span> 1<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Resolved<span style="color:#ff79c6">)</span> 0<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">(</span>and <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Firing<span style="color:#ff79c6">)</span> 0<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Resolved<span style="color:#ff79c6">)</span> 1<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">}}{{</span> template <span style="color:#f1fa8c">&#34;__single_message_title&#34;</span> . <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> define <span style="color:#f1fa8c">&#34;custom_slack_message&#34;</span> <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> <span style="color:#ff79c6">if</span> or <span style="color:#ff79c6">(</span>and <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Firing<span style="color:#ff79c6">)</span> 1<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Resolved<span style="color:#ff79c6">)</span> 0<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">(</span>and <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Firing<span style="color:#ff79c6">)</span> 0<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">(</span>eq <span style="color:#ff79c6">(</span>len .Alerts.Resolved<span style="color:#ff79c6">)</span> 1<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> range .Alerts.Firing <span style="color:#ff79c6">}}{{</span> .Annotations.description <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}{{</span> range .Alerts.Resolved <span style="color:#ff79c6">}}{{</span> .Annotations.description <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> <span style="color:#ff79c6">else</span> <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> <span style="color:#ff79c6">if</span> gt <span style="color:#ff79c6">(</span>len .Alerts.Firing<span style="color:#ff79c6">)</span> <span style="color:#bd93f9">0</span> <span style="color:#ff79c6">}}</span>
 *Alerts Firing:*
-{{ range .Alerts.Firing }}- {{ .Annotations.identifier }}: {{ .Annotations.description }}
-{{ end }}{{ end }}
-{{ if gt (len .Alerts.Resolved) 0 }}
+<span style="color:#ff79c6">{{</span> range .Alerts.Firing <span style="color:#ff79c6">}}</span>- <span style="color:#ff79c6">{{</span> .Annotations.identifier <span style="color:#ff79c6">}}</span>: <span style="color:#ff79c6">{{</span> .Annotations.description <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> end <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> <span style="color:#ff79c6">if</span> gt <span style="color:#ff79c6">(</span>len .Alerts.Resolved<span style="color:#ff79c6">)</span> <span style="color:#bd93f9">0</span> <span style="color:#ff79c6">}}</span>
 *Alerts Resolved:*
-{{ range .Alerts.Resolved }}- {{ .Annotations.identifier }}: {{ .Annotations.description }}
-{{ end }}{{ end }}
-{{ end }}
-{{ end }}
-</code></pre>
-
-<p>完整 salck 模板文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alertmanager-tmpl/slack.tmpl">slack.tmpl</a></p>
-
+<span style="color:#ff79c6">{{</span> range .Alerts.Resolved <span style="color:#ff79c6">}}</span>- <span style="color:#ff79c6">{{</span> .Annotations.identifier <span style="color:#ff79c6">}}</span>: <span style="color:#ff79c6">{{</span> .Annotations.description <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> end <span style="color:#ff79c6">}}{{</span> end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> end <span style="color:#ff79c6">}}</span>
+<span style="color:#ff79c6">{{</span> end <span style="color:#ff79c6">}}</span>
+</code></pre></div><p>完整 salck 模板文件参见<a href="https://github.com/yeaheo/prometheus-huang/blob/master/alertmanager-tmpl/slack.tmpl">slack.tmpl</a></p>
 <blockquote>
 <p>需要说明的是之前下载的官方模板文件已经包含了salck的相关配置，但是输出信息不是很友好，建议直接下载上面模板文件并将其放在模板目录下</p>
 </blockquote>
-
 <p>配置 salck 告警：</p>
-
-<pre><code class="language-bash">...
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">...
 receivers:
-- name: 'slack-channel'
+- name: <span style="color:#f1fa8c">&#39;slack-channel&#39;</span>
   slack_configs:
-  - channel: #xx  (频道)
-    api_url: 'https://hooks.slack.com/services/TGGQZ8GPN/BGGRF1XNG/xx'
-    icon_url: 'https://avatars3.githubusercontent.com/u/3380462'
-    send_resolved: true
-    title: '{{ template &quot;custom_title&quot; . }}'
-    text: '{{ template &quot;custom_slack_message&quot; . }}'
-</code></pre>
-
-<p>配置文件修改后重启 prometheus 和 alertmanager 服务即可。</p>
-
+  - channel: <span style="color:#6272a4">#xx  (频道)</span>
+    api_url: <span style="color:#f1fa8c">&#39;https://hooks.slack.com/services/TGGQZ8GPN/BGGRF1XNG/xx&#39;</span>
+    icon_url: <span style="color:#f1fa8c">&#39;https://avatars3.githubusercontent.com/u/3380462&#39;</span>
+    send_resolved: <span style="color:#8be9fd;font-style:italic">true</span>
+    title: <span style="color:#f1fa8c">&#39;{{ template &#34;custom_title&#34; . }}&#39;</span>
+    text: <span style="color:#f1fa8c">&#39;{{ template &#34;custom_slack_message&#34; . }}&#39;</span>
+</code></pre></div><p>配置文件修改后重启 prometheus 和 alertmanager 服务即可。</p>
 <p>cheers!!!</p>
 
 
@@ -552,87 +486,79 @@ receivers:
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

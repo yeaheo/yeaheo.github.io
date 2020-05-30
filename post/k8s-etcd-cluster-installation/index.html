@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,172 +213,119 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li>
-<ul>
-<li><a href="#部署-etcd-集群">部署 etcd 集群</a></li>
-<li><a href="#创建-etcd-的-systemd-unit-文件">创建 etcd 的 systemd unit 文件</a></li>
-<li><a href="#创建-etcd-配置文件">创建 etcd 配置文件</a></li>
-<li><a href="#启动-etcd-服务">启动 etcd 服务</a></li>
-<li><a href="#验证-etcd-服务">验证 etcd 服务</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>kuberntes 集群使用 etcd 存储所有数据,本部分我们介绍部署一个三节点的高可用 etcd 集群，这三个节点复用kubernetes master机器。</p>
-
+                <p>kuberntes 集群使用 etcd 存储所有数据,本部分我们介绍部署一个三节点的高可用 etcd 集群，这三个节点复用kubernetes master机器。</p>
 <p>三个 etcd 节点如下所示：</p>
-
-<pre><code class="language-bash">etcd-0 | 192.168.8.66 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">etcd-0 | 192.168.8.66 
 etcd-1 | 192.168.8.67 
 etcd-2 | 192.168.8.68 
-</code></pre>
-
-<p><strong>TLS认证文件</strong></p>
-
+</code></pre></div><p><strong>TLS认证文件</strong></p>
 <p>在这里，我们需要为 etcd 集群创建加密通信的 TLS 证书，为了方便我们在这里复用以前创建的 kubernetes 证书。具体证书配置如下所示：</p>
-
-<pre><code class="language-bash">cd /root/ssl
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /root/ssl
 cp ca.pem kubernetes-key.pem kubernetes.pem /etc/kubernetes/ssl
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p>kubernetes 证书的 hosts 字段列表中包含上面三台机器的 IP，否则后续证书校验会失败。</p>
 </blockquote>
-
 <h3 id="部署-etcd-集群">部署 etcd 集群</h3>
-
 <p><code>etcd</code> 软件下载地址：<a href="https://github.com/coreos/etcd/releases">https://github.com/coreos/etcd/releases</a>，我们可以下载最新版的 <code>etcd</code> 软件包。</p>
-
 <p>下载并安装 etcd 二进制软件包</p>
-
-<pre><code class="language-bash">wget https://github.com/coreos/etcd/releases/download/v3.2.18/etcd-v3.2.18-linux-amd64.tar.gz
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://github.com/coreos/etcd/releases/download/v3.2.18/etcd-v3.2.18-linux-amd64.tar.gz
 tar -xvf etcd-v3.2.18-linux-amd64.tar.gz
 mv etcd-v3.2.18-linux-amd64/etcd* /usr/local/bin
-</code></pre>
-
-<p>或者也可以用 yum 直接安装</p>
-
-<pre><code class="language-bash">yum -y install etcd
-</code></pre>
-
-<p>若使用yum安装，默认 etcd 命令将在 <code>/usr/bin</code> 目录下，注意修改下面的 <code>etcd.service</code> 文件中的启动命令地址为 <code>/usr/bin/etcd</code>。</p>
-
+</code></pre></div><p>或者也可以用 yum 直接安装</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">yum -y install etcd
+</code></pre></div><p>若使用yum安装，默认 etcd 命令将在 <code>/usr/bin</code> 目录下，注意修改下面的 <code>etcd.service</code> 文件中的启动命令地址为 <code>/usr/bin/etcd</code>。</p>
 <h3 id="创建-etcd-的-systemd-unit-文件">创建 etcd 的 systemd unit 文件</h3>
-
-<p>我们需要手动创建 <code>etcd</code> 的系统服务文件 <code>etcd.service</code>，修改后的文件如下所示：
-&gt; 注意替换 IP 地址为你自己的 etcd 集群的主机 IP。</p>
-
-<pre><code class="language-bash">cat /usr/lib/systemd/system/etcd.service
-</code></pre>
-
-<p>文件内容如下：</p>
-
-<pre><code class="language-bash">[Unit]
-Description=Etcd Server
-After=network.target
-After=network-online.target
-Wants=network-online.target
-Documentation=https://github.com/coreos
+<p>我们需要手动创建 <code>etcd</code> 的系统服务文件 <code>etcd.service</code>，修改后的文件如下所示：</p>
+<blockquote>
+<p>注意替换 IP 地址为你自己的 etcd 集群的主机 IP。</p>
+</blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /usr/lib/systemd/system/etcd.service
+</code></pre></div><p>文件内容如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Etcd Server
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>network.target
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>network-online.target
+<span style="color:#8be9fd;font-style:italic">Wants</span><span style="color:#ff79c6">=</span>network-online.target
+<span style="color:#8be9fd;font-style:italic">Documentation</span><span style="color:#ff79c6">=</span>https://github.com/coreos
   
-[Service]
-Type=notify
-WorkingDirectory=/var/lib/etcd/
-EnvironmentFile=-/etc/etcd/etcd.conf
-ExecStart=/usr/local/bin/etcd \
-  --name ${ETCD_NAME} \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  --peer-cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --peer-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  --trusted-ca-file=/etc/kubernetes/ssl/ca.pem \
-  --peer-trusted-ca-file=/etc/kubernetes/ssl/ca.pem \
-  --initial-advertise-peer-urls ${ETCD_INITIAL_ADVERTISE_PEER_URLS} \
-  --listen-peer-urls ${ETCD_LISTEN_PEER_URLS} \
-  --listen-client-urls ${ETCD_LISTEN_CLIENT_URLS},http://127.0.0.1:2379 \
-  --advertise-client-urls ${ETCD_ADVERTISE_CLIENT_URLS} \
-  --initial-cluster-token ${ETCD_INITIAL_CLUSTER_TOKEN} \
-  --initial-cluster infra1=https://192.168.8.66:2380,infra2=https://192.168.8.67:2380,infra3=https://192.168.8.68:2380 \
-  --initial-cluster-state new \
-  --data-dir=${ETCD_DATA_DIR}
-Restart=on-failure
-RestartSec=5
-LimitNOFILE=65536
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Type</span><span style="color:#ff79c6">=</span>notify
+<span style="color:#8be9fd;font-style:italic">WorkingDirectory</span><span style="color:#ff79c6">=</span>/var/lib/etcd/
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/etcd/etcd.conf
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/usr/local/bin/etcd <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --name <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">ETCD_NAME</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --cert-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --key-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes-key.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --peer-cert-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --peer-key-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes-key.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --trusted-ca-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --peer-trusted-ca-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --initial-advertise-peer-urls <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">ETCD_INITIAL_ADVERTISE_PEER_URLS</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --listen-peer-urls <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">ETCD_LISTEN_PEER_URLS</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --listen-client-urls <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">ETCD_LISTEN_CLIENT_URLS</span><span style="color:#f1fa8c">}</span>,http://127.0.0.1:2379 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --advertise-client-urls <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">ETCD_ADVERTISE_CLIENT_URLS</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --initial-cluster-token <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">ETCD_INITIAL_CLUSTER_TOKEN</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --initial-cluster <span style="color:#8be9fd;font-style:italic">infra1</span><span style="color:#ff79c6">=</span>https://192.168.8.66:2380,infra2<span style="color:#ff79c6">=</span>https://192.168.8.67:2380,infra3<span style="color:#ff79c6">=</span>https://192.168.8.68:2380 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --initial-cluster-state new <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>  --data-dir<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">ETCD_DATA_DIR</span><span style="color:#f1fa8c">}</span>
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
+<span style="color:#8be9fd;font-style:italic">RestartSec</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">5</span>
+<span style="color:#8be9fd;font-style:italic">LimitNOFILE</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">65536</span>
  
-[Install]
-WantedBy=multi-user.target
-</code></pre>
-
-<p>参数说明：</p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+</code></pre></div><p>参数说明：</p>
 <ul>
 <li>指定 etcd 的工作目录为 <code>/var/lib/etcd</code>，数据目录为 <code>/var/lib/etcd</code>，需在启动服务前创建这个目录，否则启动服务的时候会报错。</li>
 <li>为了保证通信安全，需要指定 etcd 的公私钥(cert-file和key-file)、Peers 通信的公私钥和 CA 证书(peer-cert-file、peer-key-file、peer-trusted-ca-file)、客户端的CA证书（trusted-ca-file）；</li>
 <li>创建 kubernetes.pem 证书时使用的 kubernetes-csr.json 文件的 hosts 字段包含所有 etcd 节点的IP，否则证书校验会出错；</li>
 <li><code>--initial-cluster-state</code> 值为 <code>new</code> 时，<code>--name</code> 的参数值必须位于 <code>--initial-cluster</code> 列表中；</li>
 </ul>
-
 <p>完整 <code>Systemd Unit</code> 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/etcd.service">etcd.service</a></p>
-
 <h3 id="创建-etcd-配置文件">创建 etcd 配置文件</h3>
-
 <p>etcd 配置文件 <code>/etc/etcd/etcd.conf</code> 也需要我们自己创建，具体内容如下：</p>
-
-<pre><code class="language-bash">cat /etc/etcd/etcd.conf
-</code></pre>
-
-<p>内容如下：</p>
-
-<pre><code class="language-bash"># [member]
-ETCD_NAME=infra1
-ETCD_DATA_DIR=&quot;/var/lib/etcd&quot;
-ETCD_LISTEN_PEER_URLS=&quot;https://192.168.8.66:2380&quot;
-ETCD_LISTEN_CLIENT_URLS=&quot;https://192.168.8.66:2379&quot;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /etc/etcd/etcd.conf
+</code></pre></div><p>内容如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># [member]</span>
+<span style="color:#8be9fd;font-style:italic">ETCD_NAME</span><span style="color:#ff79c6">=</span>infra1
+<span style="color:#8be9fd;font-style:italic">ETCD_DATA_DIR</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;/var/lib/etcd&#34;</span>
+<span style="color:#8be9fd;font-style:italic">ETCD_LISTEN_PEER_URLS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:2380&#34;</span>
+<span style="color:#8be9fd;font-style:italic">ETCD_LISTEN_CLIENT_URLS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:2379&#34;</span>
   
-# [cluster]
-ETCD_INITIAL_ADVERTISE_PEER_URLS=&quot;https://192.168.8.66:2380&quot;
-ETCD_INITIAL_CLUSTER_TOKEN=&quot;etcd-cluster&quot;
-ETCD_ADVERTISE_CLIENT_URLS=&quot;https://192.168.8.66:2379&quot;
-</code></pre>
-
-<p>这是 192.168.8.66 节点的配置，其他两个 etcd 节点只要将上面的 IP 地址改成相应节点的 IP 地址即可。</p>
-
+<span style="color:#6272a4"># [cluster]</span>
+<span style="color:#8be9fd;font-style:italic">ETCD_INITIAL_ADVERTISE_PEER_URLS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:2380&#34;</span>
+<span style="color:#8be9fd;font-style:italic">ETCD_INITIAL_CLUSTER_TOKEN</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;etcd-cluster&#34;</span>
+<span style="color:#8be9fd;font-style:italic">ETCD_ADVERTISE_CLIENT_URLS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:2379&#34;</span>
+</code></pre></div><p>这是 192.168.8.66 节点的配置，其他两个 etcd 节点只要将上面的 IP 地址改成相应节点的 IP 地址即可。</p>
 <p><code>ETCD_NAME</code> 需换成对应节点的 infra1/2/3。</p>
-
 <p>其他两个节点的配置同上，只是对应 IP 地址和节点名称不同而已，需要同时启动 etcd 服务。</p>
-
 <p>完整 <code>etcd</code> 配置文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/etcd.conf">etcd.conf</a></p>
-
 <h3 id="启动-etcd-服务">启动 etcd 服务</h3>
-
 <p>在所有的节点重复以下的步骤，直到所有机器的 etcd 服务都已启动。</p>
-
-<pre><code class="language-bash">systemctl daemon-reload
-systemctl enable etcd
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
+systemctl <span style="color:#8be9fd;font-style:italic">enable</span> etcd
 systemctl start etcd
 systemctl status etcd
-</code></pre>
-
-<h3 id="验证-etcd-服务">验证 etcd 服务</h3>
-
+</code></pre></div><h3 id="验证-etcd-服务">验证 etcd 服务</h3>
 <p>当所有节点的 etcd 服务启动后需要验证 etcd 服务，需要指定相关证书，具体参考如下：</p>
-
-<pre><code class="language-bash">[root@k8s-master etcd]# etcdctl --ca-file=/etc/kubernetes/ssl/ca.pem \
---cert-file=/etc/kubernetes/ssl/kubernetes.pem \
---key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-cluster-health
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master etcd<span style="color:#ff79c6">]</span><span style="color:#6272a4"># etcdctl --ca-file=/etc/kubernetes/ssl/ca.pem \</span>
+--cert-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>--key-file<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kubernetes-key.pem <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>cluster-health
 member 95dd0da5615b5497 is healthy: got healthy result from https://192.168.8.68:2379
 member b62851294b10fff1 is healthy: got healthy result from https://192.168.8.66:2379
 member d50b60d4b4a4a0f5 is healthy: got healthy result from https://192.168.8.67:2379
 cluster is healthy
-</code></pre>
-
-<p>结果最后一行为 <code>cluster is healthy</code> 时表示集群服务正常。</p>
+</code></pre></div><p>结果最后一行为 <code>cluster is healthy</code> 时表示集群服务正常。</p>
 
 
                 
@@ -443,87 +390,79 @@ cluster is healthy
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -209,112 +209,74 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#卸载旧版本-docker">卸载旧版本 Docker</a></li>
-<li><a href="#准备-docker-yum-仓库">准备 Docker yum 仓库</a></li>
-<li><a href="#安装-docker-社区版本">安装 Docker 社区版本</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#卸载旧版本-docker">卸载旧版本 Docker</a></li>
+        <li><a href="#准备-docker-yum-仓库">准备 Docker yum 仓库</a></li>
+        <li><a href="#安装-docker-社区版本">安装 Docker 社区版本</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>本次安装的 docker 客户端是 CE 版本，具体安装教程可以参考官方文档： <a href="https://docs.docker.com/glossary/?term=installation">Docker Installation</a></p>
-
+                <p>本次安装的 docker 客户端是 CE 版本，具体安装教程可以参考官方文档： <a href="https://docs.docker.com/glossary/?term=installation">Docker Installation</a></p>
 <h2 id="卸载旧版本-docker">卸载旧版本 Docker</h2>
-
 <p>如果要重新安装 Docker ，首先需要在安装之前卸载之前安装过的 Docker 版本，具体卸载过程可参考如下:</p>
-
-<pre><code class="language-bash">$ yum remove docker docker-common docker-selinux docker-engine
-</code></pre>
-
-<h2 id="准备-docker-yum-仓库">准备 Docker yum 仓库</h2>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum remove docker docker-common docker-selinux docker-engine
+</code></pre></div><h2 id="准备-docker-yum-仓库">准备 Docker yum 仓库</h2>
 <p>因为直接需要用 yum 安装 docker，所以先要安装一些依赖软件包：</p>
-
-<pre><code class="language-bash">$ yum install -y yum-utils device-mapper-persistent-data lvm2
-</code></pre>
-
-<p>添加  repo 软件源：</p>
-
-<pre><code class="language-bash">$ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-</code></pre>
-
-<blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum install -y yum-utils device-mapper-persistent-data lvm2
+</code></pre></div><p>添加  repo 软件源：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+</code></pre></div><blockquote>
 <p>Enable the edge and testing repositories. These repositories are included in the docker.repo file above but are disabled by default. You can enable them alongside the stable repository.</p>
 </blockquote>
-
-<pre><code class="language-bash">$ yum-config-manager --enable docker-ce-edge
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum-config-manager --enable docker-ce-edge
 $ yum-config-manager --enable docker-ce-testing
-</code></pre>
-
-<p>当然，我们也可以禁用某些版本：</p>
-
-<pre><code class="language-bash">$ yum-config-manager --disable docker-ce-edge
-</code></pre>
-
-<blockquote>
+</code></pre></div><p>当然，我们也可以禁用某些版本：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum-config-manager --disable docker-ce-edge
+</code></pre></div><blockquote>
 <p>以上这些配置都是非必需的，直接引入repo源就可以直接安装 docker</p>
 </blockquote>
-
 <h2 id="安装-docker-社区版本">安装 Docker 社区版本</h2>
-
 <p>引入 repo 源后直接安装即可：</p>
-
-<pre><code class="language-bash">$ yum -y install docker-ce
-</code></pre>
-
-<p>默认是安装 docker 社区版的最新版本，如果需要安装其他版本可以通过以下命令查看可用的版本：</p>
-
-<pre><code class="language-bash">$ yum list docker-ce.x86_64  --showduplicates | sort -r
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum -y install docker-ce
+</code></pre></div><p>默认是安装 docker 社区版的最新版本，如果需要安装其他版本可以通过以下命令查看可用的版本：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum list docker-ce.x86_64  --showduplicates | sort -r
 Loading mirror speeds from cached hostfile
 docker-ce.x86_64            17.06.0.ce-1.el7.centos            docker-ce-stable 
 docker-ce.x86_64            17.06.0.ce-1.el7.centos            @docker-ce-stable
 docker-ce.x86_64            17.03.2.ce-1.el7.centos            docker-ce-stable 
 docker-ce.x86_64            17.03.1.ce-1.el7.centos            docker-ce-stable 
 docker-ce.x86_64            17.03.0.ce-1.el7.centos            docker-ce-stable 
-</code></pre>
-
-<p>安装某个具体的版本可以参考下面的命令：</p>
-
-<pre><code class="language-bash">$ yum install docker-ce-&lt;VERSION&gt;
-</code></pre>
-
-<p>启动 Docker 服务：</p>
-
-<pre><code class="language-bash">$ systemctl start docker
-</code></pre>
-
-<p>设置 Docker 开机自启动：</p>
-
-<pre><code class="language-bash">$ systemctl enable docker
-</code></pre>
-
-<p>至此， docker 的社区版本已经安装完成，我们可以利用如下命令查看 docker 的具体版本：</p>
-
-<pre><code class="language-bash">$ docker version 
+</code></pre></div><p>安装某个具体的版本可以参考下面的命令：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum install docker-ce-&lt;VERSION&gt;
+</code></pre></div><p>启动 Docker 服务：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start docker
+</code></pre></div><p>设置 Docker 开机自启动：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> docker
+</code></pre></div><p>至此， docker 的社区版本已经安装完成，我们可以利用如下命令查看 docker 的具体版本：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker version 
 Client:
  Version:           18.09.1
  API version:       1.39
  Go version:        go1.10.6
  Git commit:        4c52b90
- Built:             Wed Jan  9 19:35:23 2019
+ Built:             Wed Jan  <span style="color:#bd93f9">9</span> 19:35:23 <span style="color:#bd93f9">2019</span>
  OS/Arch:           linux/amd64
- Experimental:      false
+ Experimental:      <span style="color:#8be9fd;font-style:italic">false</span>
 
 Server: Docker Engine - Community
  Engine:
   Version:          18.09.1
-  API version:      1.39 (minimum version 1.12)
+  API version:      1.39 <span style="color:#ff79c6">(</span>minimum version 1.12<span style="color:#ff79c6">)</span>
   Go version:       go1.10.6
   Git commit:       4c52b90
-  Built:            Wed Jan  9 19:02:44 2019
+  Built:            Wed Jan  <span style="color:#bd93f9">9</span> 19:02:44 <span style="color:#bd93f9">2019</span>
   OS/Arch:          linux/amd64
-  Experimental:     false
-</code></pre>
-
+  Experimental:     <span style="color:#8be9fd;font-style:italic">false</span>
+</code></pre></div>
 
                 
 
@@ -378,87 +340,79 @@ Server: Docker Engine - Community
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

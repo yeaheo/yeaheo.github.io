@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -209,65 +209,54 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#关于-pass-工具">关于 PASS 工具</a></li>
-<li><a href="#安装-pass-工具">安装 PASS 工具</a></li>
-<li><a href="#初始化-pass">初始化 PASS</a></li>
-<li><a href="#储存密码">储存密码</a></li>
-<li><a href="#查看密码">查看密码</a></li>
-<li><a href="#密码相关操作">密码相关操作</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#关于-pass-工具">关于 PASS 工具</a></li>
+        <li><a href="#安装-pass-工具">安装 PASS 工具</a></li>
+        <li><a href="#初始化-pass">初始化 PASS</a></li>
+        <li><a href="#储存密码">储存密码</a></li>
+        <li><a href="#查看密码">查看密码</a></li>
+        <li><a href="#密码相关操作">密码相关操作</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<h2 id="关于-pass-工具">关于 PASS 工具</h2>
-
+                <h2 id="关于-pass-工具">关于 PASS 工具</h2>
 <p>PASS 是 Linux 上的一个简单的命令行密码管理器，它将密码存储在一个 gpg 加密后的文件里。这些加密后的文件很好地组织按目录结构存放，现在密码管理器还是比较普遍的，其实这些密码管理器一般分为两种，一种是基于GUI，另一种是基于CLI的，而pass这款是基于CLI的密码管理器。
 pass安装完成后，所有密码都存在于 <code>~/.password-store</code> 中，它提供了添加、编辑、生成和检索密码等简单命令。它是一个非常简短和简单的 shell 脚本。 它能够临时将密码放在剪贴板上，并使用 git 跟踪密码的修改。它是一个很小的 shell 脚本，它还使用了少量的默认工具比如 gnupg、tree 和 git，同时还有活跃的社区为它提供 GUI 和扩展。</p>
-
 <h2 id="安装-pass-工具">安装 PASS 工具</h2>
-
 <p>本次我们选择的安装环境是CentOS7，其他系统的安装方法类似，这里不再详细说明。
 对于基于 RHEL/CentOS 的操作系统, 使用 yum 包管理器命令来安装它:</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# yum -y install epel-release
-[root@ns1 ~]# yum -y install pass
-</code></pre>
-
-<p>安装好 pass 后，就可以开始使用和配置它了。首先，由于 pass 依赖于 gpg 来对我们的密码进行加密并以安全的方式进行存储，我们必须准备好一个 gpg 密钥对。如果没有 gpg 密钥对，可以在终端输入以下命令进行创建:</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# gpg --gen-key
-</code></pre>
-
-<p>具体过程如下:</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# gpg --gen-key
-gpg (GnuPG) 2.0.22; Copyright (C) 2013 Free Software Foundation, Inc.
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># yum -y install epel-release</span>
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># yum -y install pass</span>
+</code></pre></div><p>安装好 pass 后，就可以开始使用和配置它了。首先，由于 pass 依赖于 gpg 来对我们的密码进行加密并以安全的方式进行存储，我们必须准备好一个 gpg 密钥对。如果没有 gpg 密钥对，可以在终端输入以下命令进行创建:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --gen-key</span>
+</code></pre></div><p>具体过程如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --gen-key</span>
+gpg <span style="color:#ff79c6">(</span>GnuPG<span style="color:#ff79c6">)</span> 2.0.22; Copyright <span style="color:#ff79c6">(</span>C<span style="color:#ff79c6">)</span> <span style="color:#bd93f9">2013</span> Free Software Foundation, Inc.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 
-Please select what kind of key you want:
-   (1) RSA and RSA (default)
-   (2) DSA and Elgamal
-   (3) DSA (sign only)
-   (4) RSA (sign only)
-Your selection? 1
-RSA keys may be between 1024 and 4096 bits long.
-What keysize do you want? (2048) 4096
-Requested keysize is 4096 bits
+Please <span style="color:#ff79c6">select</span> what kind of key you want:
+   <span style="color:#ff79c6">(</span>1<span style="color:#ff79c6">)</span> RSA and RSA <span style="color:#ff79c6">(</span>default<span style="color:#ff79c6">)</span>
+   <span style="color:#ff79c6">(</span>2<span style="color:#ff79c6">)</span> DSA and Elgamal
+   <span style="color:#ff79c6">(</span>3<span style="color:#ff79c6">)</span> DSA <span style="color:#ff79c6">(</span>sign only<span style="color:#ff79c6">)</span>
+   <span style="color:#ff79c6">(</span>4<span style="color:#ff79c6">)</span> RSA <span style="color:#ff79c6">(</span>sign only<span style="color:#ff79c6">)</span>
+Your selection? <span style="color:#bd93f9">1</span>
+RSA keys may be between <span style="color:#bd93f9">1024</span> and <span style="color:#bd93f9">4096</span> bits long.
+What keysize <span style="color:#ff79c6">do</span> you want? <span style="color:#ff79c6">(</span>2048<span style="color:#ff79c6">)</span> <span style="color:#bd93f9">4096</span>
+Requested keysize is <span style="color:#bd93f9">4096</span> bits
 Please specify how long the key should be valid.
-         0 = key does not expire
-      &lt;n&gt;  = key expires in n days
-      &lt;n&gt;w = key expires in n weeks
-      &lt;n&gt;m = key expires in n months
-      &lt;n&gt;y = key expires in n years
-Key is valid for? (0) 
+         <span style="color:#8be9fd;font-style:italic">0</span> <span style="color:#ff79c6">=</span> key does not expire
+      &lt;n&gt;  <span style="color:#ff79c6">=</span> key expires in n days
+      &lt;n&gt;w <span style="color:#ff79c6">=</span> key expires in n weeks
+      &lt;n&gt;m <span style="color:#ff79c6">=</span> key expires in n months
+      &lt;n&gt;y <span style="color:#ff79c6">=</span> key expires in n years
+Key is valid <span style="color:#ff79c6">for</span>? <span style="color:#ff79c6">(</span>0<span style="color:#ff79c6">)</span> 
 Key does not expire at all
-Is this correct? (y/N) y
+Is this correct? <span style="color:#ff79c6">(</span>y/N<span style="color:#ff79c6">)</span> y
 
 GnuPG needs to construct a user ID to identify your key.
 
@@ -275,104 +264,82 @@ Real name: cxnicxncx
 Email address: xxxx@gmail.com
 Comment: abc
 You selected this USER-ID:
-    &quot;cxnicxncx (abc) &lt;xxxx@gmail.com&gt;&quot;
+    <span style="color:#f1fa8c">&#34;cxnicxncx (abc) &lt;xxxx@gmail.com&gt;&#34;</span>
 
-Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+Change <span style="color:#ff79c6">(</span>N<span style="color:#ff79c6">)</span>ame, <span style="color:#ff79c6">(</span>C<span style="color:#ff79c6">)</span>omment, <span style="color:#ff79c6">(</span>E<span style="color:#ff79c6">)</span>mail or <span style="color:#ff79c6">(</span>O<span style="color:#ff79c6">)</span>kay/<span style="color:#ff79c6">(</span>Q<span style="color:#ff79c6">)</span>uit? o
 You need a Passphrase to protect your secret key.
 
 We need to generate a lot of random bytes. It is a good idea to perform
-some other action (type on the keyboard, move the mouse, utilize the
-disks) during the prime generation; this gives the random number
+some other action <span style="color:#ff79c6">(</span><span style="color:#8be9fd;font-style:italic">type</span> on the keyboard, move the mouse, utilize the
+disks<span style="color:#ff79c6">)</span> during the prime generation; this gives the random number
 generator a better chance to gain enough entropy.
 We need to generate a lot of random bytes. It is a good idea to perform
-some other action (type on the keyboard, move the mouse, utilize the
-disks) during the prime generation; this gives the random number
+some other action <span style="color:#ff79c6">(</span><span style="color:#8be9fd;font-style:italic">type</span> on the keyboard, move the mouse, utilize the
+disks<span style="color:#ff79c6">)</span> during the prime generation; this gives the random number
 generator a better chance to gain enough entropy.
 gpg: key D9F7BEE7 marked as ultimately trusted
 public and secret key created and signed.
 
 gpg: checking the trustdb
-gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
-gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gpg: <span style="color:#bd93f9">3</span> marginal<span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">)</span> needed, <span style="color:#bd93f9">1</span> complete<span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">)</span> needed, PGP trust model
+gpg: depth: <span style="color:#bd93f9">0</span>  valid:   <span style="color:#bd93f9">1</span>  signed:   <span style="color:#bd93f9">0</span>  trust: 0-, 0q, 0n, 0m, 0f, 1u
 pub   4096R/D9F7BEE7 2018-03-07
-      Key fingerprint = 5524 E87F D75E E4A0 4BCD  EFE3 474B E193 D9F7 BEE7
-uid                  cxnicxncx (abc) &lt;xxxx@gmail.com&gt;
+      Key <span style="color:#8be9fd;font-style:italic">fingerprint</span> <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">5524</span> E87F D75E E4A0 4BCD  EFE3 474B E193 D9F7 BEE7
+uid                  cxnicxncx <span style="color:#ff79c6">(</span>abc<span style="color:#ff79c6">)</span> &lt;xxxx@gmail.com&gt;
 sub   4096R/76250E20 2018-03-07
-</code></pre>
-
-<p>查看生成的密钥对：</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# gpg --list-key
+</code></pre></div><p>查看生成的密钥对：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --list-key</span>
 /root/.gnupg/pubring.gpg
 ------------------------
 pub   4096R/D9F7BEE7 2018-03-07
-uid                  cxnicxncx (abc) &lt;xxxx@gmail.com&gt;
+uid                  cxnicxncx <span style="color:#ff79c6">(</span>abc<span style="color:#ff79c6">)</span> &lt;xxxx@gmail.com&gt;
 sub   4096R/76250E20 2018-03-07
-</code></pre>
-
-<h2 id="初始化-pass">初始化 PASS</h2>
-
+</code></pre></div><h2 id="初始化-pass">初始化 PASS</h2>
 <p>如果你已经有了 GPG 密钥对，请通过运行以下命令初始化本地密码存储，你可以使用 email-id 或 gpg-id 初始化。
 查看gpg密钥对可以参考：</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# gpg --list-key
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --list-key</span>
 /root/.gnupg/pubring.gpg
 ------------------------
 pub   4096R/D9F7BEE7 2018-03-07
-uid                  cxnicxncx (abc) &lt;yeah6066@gmail.com&gt;
+uid                  cxnicxncx <span style="color:#ff79c6">(</span>abc<span style="color:#ff79c6">)</span> &lt;yeah6066@gmail.com&gt;
 sub   4096R/76250E20 2018-03-07
-</code></pre>
-
-<p><strong>初始化密码仓库:</strong></p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass init cxnicxncx  # cxnicxncx为gpg-id 
-Password store initialized for cxnicxncx
-</code></pre>
-
-<p>上述命令将在 ~/.password-store 目录下创建一个密码存储区。
+</code></pre></div><p><strong>初始化密码仓库:</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass init cxnicxncx  # cxnicxncx为gpg-id</span> 
+Password store initialized <span style="color:#ff79c6">for</span> cxnicxncx
+</code></pre></div><p>上述命令将在 ~/.password-store 目录下创建一个密码存储区。
 pass 命令提供了简单的语法来管理密码。 我们一个个来看，如何添加、编辑、生成和检索密码。</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass ls
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass ls</span>
 Password Store
 └── yeah
 或：
-[root@ns1 ~]# pass show
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass show</span>
 Password Store
 └── yeah
 或：
-[root@ns1 ~]# pass
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass</span>
 Password Store
 └── yeah
-</code></pre>
-
-<h2 id="储存密码">储存密码</h2>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass edit abc
+</code></pre></div><h2 id="储存密码">储存密码</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass edit abc</span>
 这会打开默认文本编辑器，我么只需要输入密码就可以了。输入的内容会用 gpg 加密并存储为密码仓库目录中的 abc.gpg 文件。
-[root@ns1 ~]# pass
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass</span>
 Password Store
 ├── abc
 └── yeah
-</code></pre>
-
-<p>其实我们也可以通过以分组的形式储存密码，例如将邮箱账号放到email文件夹内，将ssh账号放到ssh目录下：</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass insert email/abcd@gmail.com
+</code></pre></div><p>其实我们也可以通过以分组的形式储存密码，例如将邮箱账号放到email文件夹内，将ssh账号放到ssh目录下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert email/abcd@gmail.com</span>
 mkdir: created directory ‘/root/.password-store/email’
-Enter password for email/abcd@gmail.com: 
-Retype password for email/abcd@gmail.com: 
-[root@ns1 ~]# pass insert email/abcd@live.com
-Enter password for email/abcd@live.com: 
-Retype password for email/abcd@live.com: 
-[root@ns1 ~]# pass insert 124-ssh/dev
+Enter password <span style="color:#ff79c6">for</span> email/abcd@gmail.com: 
+Retype password <span style="color:#ff79c6">for</span> email/abcd@gmail.com: 
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert email/abcd@live.com</span>
+Enter password <span style="color:#ff79c6">for</span> email/abcd@live.com: 
+Retype password <span style="color:#ff79c6">for</span> email/abcd@live.com: 
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert 124-ssh/dev</span>
 mkdir: created directory ‘/root/.password-store/124-ssh’
-Enter password for 124-ssh/dev: 
-Retype password for 124-ssh/dev: 
-</code></pre>
-
-<p>查看：</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass
+Enter password <span style="color:#ff79c6">for</span> 124-ssh/dev: 
+Retype password <span style="color:#ff79c6">for</span> 124-ssh/dev: 
+</code></pre></div><p>查看：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass</span>
 Password Store
 ├── 124-ssh
 │   └── dev
@@ -381,71 +348,46 @@ Password Store
 │   ├── abcd@gmail.com
 │   └── abcd@live.com
 └── yeah
-</code></pre>
-
-<h2 id="查看密码">查看密码</h2>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass abc
+</code></pre></div><h2 id="查看密码">查看密码</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass abc</span>
 Lv_000abc%2018
-[root@ns1 ~]# pass email/abcd@gmail.com
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass email/abcd@gmail.com</span>
 abc
-</code></pre>
-
-<p>需要注意的是当要查看密码时需要输入创建gpg密钥对时的密码。
+</code></pre></div><p>需要注意的是当要查看密码时需要输入创建gpg密钥对时的密码。
 <strong>复制密码到剪切板</strong></p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass -c abc
-Copied abc to clipboard. Will clear in 45 seconds.
-</code></pre>
-
-<h2 id="密码相关操作">密码相关操作</h2>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass -c abc</span>
+Copied abc to clipboard. Will clear in <span style="color:#bd93f9">45</span> seconds.
+</code></pre></div><h2 id="密码相关操作">密码相关操作</h2>
 <p><strong>创建新密码</strong></p>
-
 <p>如果你想生成一些比较难以猜测的密码用于代替原有的奇怪密码，可以通过其内部的 pwgen功能来实现。</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass generate abc 15
-An entry already exists for abc. Overwrite it? [y/N] y
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass generate abc 15</span>
+An entry already exists <span style="color:#ff79c6">for</span> abc. Overwrite it? <span style="color:#ff79c6">[</span>y/N<span style="color:#ff79c6">]</span> y
 The generated password to abc is:
-T%a2G~L^dPb:dg'
-</code></pre>
-
-<p>若希望密码只包含字母和数字则可以是使用 <code>--no-symbols</code> 选项。生成的密码会显示在屏幕上。也可以通过 <code>--clip</code> 或 <code>-c</code> 选项让 pass 把密码直接拷贝到剪切板中。</p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass generate -n abc 15 
-An entry already exists for abc. Overwrite it? [y/N] y
+T%a2G~L^dPb:dg&#39;
+</code></pre></div><p>若希望密码只包含字母和数字则可以是使用 <code>--no-symbols</code> 选项。生成的密码会显示在屏幕上。也可以通过 <code>--clip</code> 或 <code>-c</code> 选项让 pass 把密码直接拷贝到剪切板中。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass generate -n abc 15</span> 
+An entry already exists <span style="color:#ff79c6">for</span> abc. Overwrite it? <span style="color:#ff79c6">[</span>y/N<span style="color:#ff79c6">]</span> y
 The generated password to abc is:
 MTrCm54wPO3H6Mp
-</code></pre>
-
-<p><strong>编辑现有的密码</strong></p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass edit yeah
-</code></pre>
-
-<p><strong>移除密码</strong></p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass rm abc
-Are you sure you would like to delete abc? [y/N] y
+</code></pre></div><p><strong>编辑现有的密码</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass edit yeah</span>
+</code></pre></div><p><strong>移除密码</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass rm abc</span>
+Are you sure you would like to delete abc? <span style="color:#ff79c6">[</span>y/N<span style="color:#ff79c6">]</span> y
 removed ‘/root/.password-store/abc.gpg’
-</code></pre>
-
-<p><strong>保存详细信息</strong></p>
-
-<pre><code class="language-bash">[root@ns1 ~]# pass insert abc -m
+</code></pre></div><p><strong>保存详细信息</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert abc -m</span>
 Enter contents of abc and press Ctrl+D when finished:
 
 chxiuhcnxikcnx     
 name: echo.lv
 info: ssh
 
-[root@ns1 ~]# pass abc
+<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass abc</span>
 chxiuhcnxikcnx
 name: echo.lv
 info: ssh
-</code></pre>
-
-<p>参考链接：<a href="https://linux.cn/article-9407-1.html">https://linux.cn/article-9407-1.html</a></p>
+</code></pre></div><p>参考链接：<a href="https://linux.cn/article-9407-1.html">https://linux.cn/article-9407-1.html</a></p>
 
 
                 
@@ -510,87 +452,79 @@ info: ssh
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

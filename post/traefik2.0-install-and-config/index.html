@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -217,49 +217,30 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#traefik-2-0-部署环境说明">Traefik 2.0 部署环境说明</a></li>
-<li><a href="#kubernetes-部署-traefik">Kubernetes 部署 Traefik</a>
-<ul>
-<li><a href="#创建-crd-资源">创建 CRD 资源</a></li>
-<li><a href="#创建-traefik-配置文件">创建 Traefik 配置文件</a></li>
-<li><a href="#创建-rbac-资源">创建 RBAC 资源</a></li>
-<li><a href="#执行-traefik-部署文件">执行 Traefik 部署文件</a></li>
-<li><a href="#部署-svc-文件">部署 SVC 文件</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#traefik-20-部署环境说明">Traefik 2.0 部署环境说明</a></li>
+        <li><a href="#kubernetes-部署-traefik">Kubernetes 部署 Traefik</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>以前简单介绍了一下 Traefik 2.0 的新特性，这里我试着在已经存在的 Kubernetes 集群中部署 Traefik 2.0 ,需要注意的是新版本的 Traefik 在配置 Ingress 的路由规则的时候是通过自定义的 CRD 对象来实现的，并不像 <code>1.0+</code> 版本使用 Kubernetes 的 <code>annotations</code>来完成路由规则配置。下面将介绍如何在 Kubernetes 环境下部署并配置 Traefik v2.0。</p>
-
-<h2 id="traefik-2-0-部署环境说明">Traefik 2.0 部署环境说明</h2>
-
+                <p>以前简单介绍了一下 Traefik 2.0 的新特性，这里我试着在已经存在的 Kubernetes 集群中部署 Traefik 2.0 ,需要注意的是新版本的 Traefik 在配置 Ingress 的路由规则的时候是通过自定义的 CRD 对象来实现的，并不像 <code>1.0+</code> 版本使用 Kubernetes 的 <code>annotations</code>来完成路由规则配置。下面将介绍如何在 Kubernetes 环境下部署并配置 Traefik v2.0。</p>
+<h2 id="traefik-20-部署环境说明">Traefik 2.0 部署环境说明</h2>
 <p>本次部署的 Traefik 2.0 的 Kubernetes 集群版本及其版本如下:</p>
-
-<pre><code class="language-bash">Traefik 版本     2.0.6
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Traefik 版本     2.0.6
 Kubernetes 版本  v1.15.3
-</code></pre>
-
-<h2 id="kubernetes-部署-traefik">Kubernetes 部署 Traefik</h2>
-
+</code></pre></div><h2 id="kubernetes-部署-traefik">Kubernetes 部署 Traefik</h2>
 <p>为了方便大家参考，我整理了一下配置清单文件，并上传到了 GitHub 上，具体地址可以参考: <a href="https://github.com/yeaheo/traefik2.0">https://github.com/yeaheo/traefik2.0</a> 欢迎大家借鉴。</p>
-
 <blockquote>
 <p>本次部署的 namespace 我选择的是 traefik，可以根据自己实际情况做修改</p>
 </blockquote>
-
 <h3 id="创建-crd-资源">创建 CRD 资源</h3>
-
 <p>在 Traefik 2.0 版本以后后，它开始使用 CRD（Custom Resource Definition）来完成路由规则配置，所以需要提前创建 CRD 资源</p>
-
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-crd.yaml)，直接应用即可:</p>
-
-<pre><code class="language-bash"># IngressRoute
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># IngressRoute</span>
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -274,7 +255,7 @@ spec:
   scope: Namespaced
 
 ---
-# IngressRouteTCP
+<span style="color:#6272a4"># IngressRouteTCP</span>
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -289,7 +270,7 @@ spec:
   scope: Namespaced
 
 ---
-# MiddleWares
+<span style="color:#6272a4"># MiddleWares</span>
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -304,7 +285,7 @@ spec:
   scope: Namespaced
 
 ---
-# TLSOption
+<span style="color:#6272a4"># TLSOption</span>
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -317,20 +298,12 @@ spec:
     plural: tlsoptions
     singular: tlsoption
   scope: Namespaced
-</code></pre>
-
-<p>部署：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f traefik-crd.yaml
-</code></pre>
-
-<h3 id="创建-traefik-配置文件">创建 Traefik 配置文件</h3>
-
+</code></pre></div><p>部署：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-crd.yaml
+</code></pre></div><h3 id="创建-traefik-配置文件">创建 Traefik 配置文件</h3>
 <p>由于 Traefik 配置很多，通过 CLI 定义不是很方便，一般时候选择将其配置选项放到配置文件中，然后存入 ConfigMap，将其挂入 Traefik 中。</p>
-
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-config.yaml)，直接应用即可:</p>
-
-<pre><code class="language-bash">kind: ConfigMap
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kind: ConfigMap
 apiVersion: v1
 metadata:
   name: traefik-config
@@ -338,31 +311,31 @@ metadata:
 data:
   traefik.yaml: |-
     serversTransport:
-      insecureSkipVerify: true
+      insecureSkipVerify: <span style="color:#8be9fd;font-style:italic">true</span>
     api:
-      insecure: true
-      dashboard: true
-      debug: true
+      insecure: <span style="color:#8be9fd;font-style:italic">true</span>
+      dashboard: <span style="color:#8be9fd;font-style:italic">true</span>
+      debug: <span style="color:#8be9fd;font-style:italic">true</span>
     metrics:
-      prometheus: &quot;&quot;
+      prometheus: <span style="color:#f1fa8c">&#34;&#34;</span>
     entryPoints:
       web:
-        address: &quot;:80&quot;
+        address: <span style="color:#f1fa8c">&#34;:80&#34;</span>
       websecure:
-        address: &quot;:443&quot;
+        address: <span style="color:#f1fa8c">&#34;:443&#34;</span>
     providers:
-      kubernetesCRD: &quot;&quot;
+      kubernetesCRD: <span style="color:#f1fa8c">&#34;&#34;</span>
     log:
-      filePath: &quot;&quot;
+      filePath: <span style="color:#f1fa8c">&#34;&#34;</span>
       level: error
       format: json
     accessLog:
-      filePath: &quot;&quot;
+      filePath: <span style="color:#f1fa8c">&#34;&#34;</span>
       format: json
-      bufferingSize: 0
+      bufferingSize: <span style="color:#bd93f9">0</span>
       filters:
-        retryAttempts: true
-        minDuration: 20
+        retryAttempts: <span style="color:#8be9fd;font-style:italic">true</span>
+        minDuration: <span style="color:#bd93f9">20</span>
       fields:
         defaultMode: keep
         names:
@@ -373,24 +346,15 @@ data:
             User-Agent: redact
             Authorization: drop
             Content-Type: keep
-</code></pre>
-
-<p>部署：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f traefik-config.yaml
-</code></pre>
-
-<blockquote>
+</code></pre></div><p>部署：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-config.yaml
+</code></pre></div><blockquote>
 <p>如果需要修改 Traefik 的配置，可以通过修改此文件再 <code>apply</code> 即可</p>
 </blockquote>
-
 <h3 id="创建-rbac-资源">创建 RBAC 资源</h3>
-
 <p>Kubernetes 在 1.6 版本中引入了基于角色的访问控制（RBAC）策略，方便对 Kubernetes 资源和 API 进行细粒度控制。Traefik 需要一定的权限，所以这里提前创建好 Traefik ServiceAccount 并分配一定的权限。</p>
-
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-config.yaml)，直接应用即可:</p>
-
-<pre><code class="language-bash">apiVersion: v1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: traefik-ingress-controller
@@ -402,7 +366,7 @@ metadata:
   name: traefik-ingress-controller
 rules:
   - apiGroups:
-      - &quot;&quot;
+      - <span style="color:#f1fa8c">&#34;&#34;</span>
     resources:
       - services
       - endpoints
@@ -470,34 +434,19 @@ subjects:
 - kind: ServiceAccount
   name: traefik-ingress-controller
   namespace: traefik
-</code></pre>
-
-<p>部署：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f traefik-rbac.yaml
-</code></pre>
-
-<h3 id="执行-traefik-部署文件">执行 Traefik 部署文件</h3>
-
+</code></pre></div><p>部署：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-rbac.yaml
+</code></pre></div><h3 id="执行-traefik-部署文件">执行 Traefik 部署文件</h3>
 <blockquote>
 <p>需要说明的是，我部署时用的是 <code>DaemonSet</code> 的方式部署，并且将其指定到了带有 <code>app=traefik-ingress</code> 的节点上，部署时需要根据实际情况而定，要谨慎</p>
 </blockquote>
-
 <p><strong>设置节点标签:</strong></p>
-
-<pre><code class="language-bash">$ kubectl label nodes node-10.200.100.215 app=traefik-ingress
-</code></pre>
-
-<p>如果需要删除节点标签可以使用如下命令:</p>
-
-<pre><code class="language-bash">kubectl label nodes node-10.200.100.215 app-
-</code></pre>
-
-<p>用 DaemonSet 方式部署，便于在多服务器间扩展，用 hostport 方式占用服务器 80、443 端口，方便流量进入。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl label nodes node-10.200.100.215 <span style="color:#8be9fd;font-style:italic">app</span><span style="color:#ff79c6">=</span>traefik-ingress
+</code></pre></div><p>如果需要删除节点标签可以使用如下命令:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl label nodes node-10.200.100.215 app-
+</code></pre></div><p>用 DaemonSet 方式部署，便于在多服务器间扩展，用 hostport 方式占用服务器 80、443 端口，方便流量进入。</p>
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-deploy.yaml)，直接应用即可:</p>
-
-<pre><code class="language-bash">---
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -516,19 +465,19 @@ spec:
         k8s-app: traefik
     spec:
       serviceAccountName: traefik-ingress-controller
-      terminationGracePeriodSeconds: 1
+      terminationGracePeriodSeconds: <span style="color:#bd93f9">1</span>
       containers:
         - image: traefik:latest
           name: traefik-ingress-lb
           ports:
             - name: web
-              containerPort: 80
-              hostPort: 80
+              containerPort: <span style="color:#bd93f9">80</span>
+              hostPort: <span style="color:#bd93f9">80</span>
             - name: websecure
-              containerPort: 443
-              hostPort: 443
+              containerPort: <span style="color:#bd93f9">443</span>
+              hostPort: <span style="color:#bd93f9">443</span>
             - name: admin
-              containerPort: 8080
+              containerPort: <span style="color:#bd93f9">8080</span>
           resources:
             limits:
               cpu: 500m
@@ -543,30 +492,23 @@ spec:
               add:
                 - NET_BIND_SERVICE
           args:
-            - --configfile=/config/traefik.yaml
+            - --configfile<span style="color:#ff79c6">=</span>/config/traefik.yaml
           volumeMounts:
-            - mountPath: &quot;/config&quot;
-              name: &quot;config&quot;
+            - mountPath: <span style="color:#f1fa8c">&#34;/config&#34;</span>
+              name: <span style="color:#f1fa8c">&#34;config&#34;</span>
       volumes:
         - name: config
           configMap:
             name: traefik-config 
       tolerations:
-        - operator: &quot;Exists&quot;
+        - operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
       nodeSelector:
-        app: &quot;traefik-ingress&quot;
-</code></pre>
-
-<p>部署：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f traefik-deploy.yaml
-</code></pre>
-
-<h3 id="部署-svc-文件">部署 SVC 文件</h3>
-
+        app: <span style="color:#f1fa8c">&#34;traefik-ingress&#34;</span>
+</code></pre></div><p>部署：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-deploy.yaml
+</code></pre></div><h3 id="部署-svc-文件">部署 SVC 文件</h3>
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-svc.yaml)，直接应用即可:</p>
-
-<pre><code class="language-bash">apiVersion: v1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
 kind: Service
 metadata:
   name: traefik
@@ -574,28 +516,20 @@ metadata:
 spec:
   ports:
     - name: web
-      port: 80
+      port: <span style="color:#bd93f9">80</span>
     - name: websecure
-      port: 443
+      port: <span style="color:#bd93f9">443</span>
     - name: admin
-      port: 8080
+      port: <span style="color:#bd93f9">8080</span>
   selector:
     k8s-app: traefik
-</code></pre>
-
-<p>部署：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f traefik-svc.yaml
-</code></pre>
-
-<p>至此， Traefik 2.0 就部署完成了，接下来就是对其特性进行简单测试了。</p>
-
-<pre><code class="language-bash">$ kubectl -n traefik get pods
+</code></pre></div><p>部署：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-svc.yaml
+</code></pre></div><p>至此， Traefik 2.0 就部署完成了，接下来就是对其特性进行简单测试了。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl -n traefik get pods
 NAME                               READY   STATUS    RESTARTS   AGE
-traefik-ingress-controller-cx788   1/1     Running   1          1d
-</code></pre>
-
-<blockquote>
+traefik-ingress-controller-cx788   1/1     Running   <span style="color:#bd93f9">1</span>          1d
+</code></pre></div><blockquote>
 <p>上述所有资源的配置情况均已测试为主，如果需要上生产需要根据实际情况做资源优化配置和取舍</p>
 </blockquote>
 
@@ -662,87 +596,79 @@ traefik-ingress-controller-cx788   1/1     Running   1          1d
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

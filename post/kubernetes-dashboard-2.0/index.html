@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -209,26 +209,19 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#新版兼容性问题">新版兼容性问题</a></li>
-<li><a href="#部署-dashboard-2-0">部署 Dashboard 2.0</a>
-<ul>
-<li><a href="#为-dashboard-签发证书及密钥">为 dashboard 签发证书及密钥</a></li>
-<li><a href="#准备-dashboard-配置清单部署文件">准备 dashboard 配置清单部署文件</a></li>
-</ul></li>
-<li><a href="#创建访问-dashboard-的用户">创建访问 Dashboard 的用户</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#新版兼容性问题">新版兼容性问题</a></li>
+        <li><a href="#部署-dashboard-20">部署 Dashboard 2.0</a></li>
+        <li><a href="#创建访问-dashboard-的用户">创建访问 Dashboard 的用户</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<h2 id="新版兼容性问题">新版兼容性问题</h2>
-
+                <h2 id="新版兼容性问题">新版兼容性问题</h2>
 <p>因为 Kubernetes 本身更新速度比较快，Kubernetes API 在版本之间差异也是比较大的，这就导致了某些功能在新版的 Dashboard 中不能正常展示，具体兼容性如下表所示：</p>
-
 <table>
 <thead>
 <tr>
@@ -242,7 +235,6 @@
 <th align="center">v 1.15</th>
 </tr>
 </thead>
-
 <tbody>
 <tr>
 <td align="center">版本兼容性</td>
@@ -256,68 +248,42 @@
 </tr>
 </tbody>
 </table>
-
 <ul>
 <li>✕ 表示不支持的版本范围;</li>
 <li>✓ 表示完全支持的版本范围;</li>
 <li>? 表示由于Kubernetes API版本之间的重大更改，某些功能可能无法在仪表板中正常运行;</li>
 </ul>
-
 <p>本次部署新版 Dashboard 2.0 用的是 v1.15.3 的集群版本，具体集群规格如下：</p>
-
-<pre><code class="language-bash">$ kubectl get nodes
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl get nodes
 NAME                    STATUS   ROLES    AGE   VERSION
 master-10.200.100.216   Ready    master   14d   v1.15.3
 node-10.200.100.214     Ready    &lt;none&gt;   14d   v1.15.3
 node-10.200.100.215     Ready    &lt;none&gt;   14d   v1.15.3
-</code></pre>
-
-<h2 id="部署-dashboard-2-0">部署 Dashboard 2.0</h2>
-
+</code></pre></div><h2 id="部署-dashboard-20">部署 Dashboard 2.0</h2>
 <p>Kubernetes Dashboard 的 GitHub 地址：<a href="https://github.com/kubernetes/dashboard">https://github.com/kubernetes/dashboard</a> ,如果后续安装过程中出现问题可以参考相关资料说明，这里不再一一赘述。</p>
-
 <p>新版 Dashboard 2.0 的部署清单文件：<a href="https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml">recommended.yaml</a> 可以直接进行下载再做相应修改。</p>
-
 <blockquote>
 <p>需要说明的是旧版本的 dashboard 的命名空间默认为 <code>kube-system</code>而新版本的 dashboard 具有独立的命名空间 <code>kubernetes-dashboard</code> 我们可以提前创建</p>
 </blockquote>
-
 <h3 id="为-dashboard-签发证书及密钥">为 dashboard 签发证书及密钥</h3>
-
 <p>在新版本中，dashboard 默认会启用 https 的认证，具体认证方式有：<code>TLS</code>、<code>token</code> 和 <code>username/passwd</code></p>
-
 <p>当我们部署完成后，我们用 https 访问 dashboard 时可能会报证书的相关问题，所以还是建议大家先为 dashboard 创建自签证书再部署 dashboard，这里我用 <code>openssl</code>工具生成自签证书，具体过程如下：</p>
-
-<pre><code class="language-bash">$ mkdir /certs
-$ openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj &quot;/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard&quot;
-## 利用 key 和私钥生成证书
-$ openssl x509 -req -sha256 -days 365 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
-</code></pre>
-
-<p>也可以用集群自有 CA 签发证书：</p>
-
-<pre><code class="language-bash">$ openssl x509 -req -in certs/dashboard.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out certs/dashboard.crt -days 365
-</code></pre>
-
-<p>证书签发完成后，查看 <code>/certs</code> :</p>
-
-<pre><code class="language-bash">$ ls /certs/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /certs
+$ openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj <span style="color:#f1fa8c">&#34;/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard&#34;</span>
+<span style="color:#6272a4">## 利用 key 和私钥生成证书</span>
+$ openssl x509 -req -sha256 -days <span style="color:#bd93f9">365</span> -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
+</code></pre></div><p>也可以用集群自有 CA 签发证书：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ openssl x509 -req -in certs/dashboard.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out certs/dashboard.crt -days <span style="color:#bd93f9">365</span>
+</code></pre></div><p>证书签发完成后，查看 <code>/certs</code> :</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ls /certs/
 dashboard.crt  dashboard.csr  dashboard.key
-</code></pre>
-
-<p>在 K8S 集群中创建 <code>kubernetes-dashboard</code> 命名空间并创建相应的 <code>secret</code></p>
-
-<pre><code class="language-bash">$ kubectl create ns kubernetes-dashboard
-$ kubectl create secret generic kubernetes-dashboard-certs --from-file=/certs -n kubernetes-dashboard
-</code></pre>
-
-<h3 id="准备-dashboard-配置清单部署文件">准备 dashboard 配置清单部署文件</h3>
-
+</code></pre></div><p>在 K8S 集群中创建 <code>kubernetes-dashboard</code> 命名空间并创建相应的 <code>secret</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl create ns kubernetes-dashboard
+$ kubectl create secret generic kubernetes-dashboard-certs --from-file<span style="color:#ff79c6">=</span>/certs -n kubernetes-dashboard
+</code></pre></div><h3 id="准备-dashboard-配置清单部署文件">准备 dashboard 配置清单部署文件</h3>
 <p>上述 <a href="https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml">recommended.yaml</a>文件是一个整体，里面定义了新版 dashboard 2.0 的所有配置，但是我还是建议将其拆分开来，一是为了美观大方，条理清楚；二是为了便于维护。我将其整理了一下放在了 <a href="https://github.com/yeaheo/kubernetes-dashboard/tree/master/deploy">GitHub</a> 上，有兴趣的同学可以做参考。</p>
-
 <p>这里我基本没有做什么修改，只是做了拆分，要说修改就是将 dashboard 的 service 的类型改为了 <code>NodePort</code>类型，方便进行测试：</p>
-
-<pre><code class="language-bash">kind: Service
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kind: Service
 apiVersion: v1
 metadata:
   labels:
@@ -326,17 +292,14 @@ metadata:
   namespace: kubernetes-dashboard
 spec:
   ports:
-    - port: 443
-      targetPort: 8443
+    - port: <span style="color:#bd93f9">443</span>
+      targetPort: <span style="color:#bd93f9">8443</span>
   selector:
     k8s-app: kubernetes-dashboard
   type: NodePort
-</code></pre>
-
-<p>配置文件修改完成后直接部署即可：</p>
-
-<pre><code class="language-bash">$ git clone https://github.com/yeaheo/kubernetes-dashboard.git
-$ cd kubernetes-dashboard/deploy
+</code></pre></div><p>配置文件修改完成后直接部署即可：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ git clone https://github.com/yeaheo/kubernetes-dashboard.git
+$ <span style="color:#8be9fd;font-style:italic">cd</span> kubernetes-dashboard/deploy
 $ kubectl apply -f .
 deployment.apps/kubernetes-dashboard configured
 ingress.extensions/kubernetes-dashboard-ingress configured
@@ -352,26 +315,20 @@ secret/kubernetes-dashboard-csrf configured
 secret/kubernetes-dashboard-key-holder configured
 configmap/kubernetes-dashboard-settings configured
 service/kubernetes-dashboard configured
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p>在 kubernetes 1.11 版本之后，Heapster 被 Metrics Server 替换后，dashboard 无法从 Heapster 获取集群 Metrics，转而使用 Metrics Server 获取集群 Metrics，而 Dashboard 2.0 为此多了一个 <code>dashboard-metrics-scraper</code> 容器专门用来获取这些指标</p>
 </blockquote>
-
 <h2 id="创建访问-dashboard-的用户">创建访问 Dashboard 的用户</h2>
-
 <p>Kubernetes Dashboard 2.0 配置完成后默认采用 HTTPS 方式访问，并配合 kubeconfig 文件或者 token 进行登录的，所以，接下来需要搞一个具有权限的用户登录 dashboard。</p>
-
 <p>具有集群权限的用户清单文件(dashboard-admin-user.yaml)：</p>
-
-<pre><code class="language-bash">---
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: dashboard-admin-sa
   namespace: kubernetes-dashboard
   labels:
-    kubernetes.io/cluster-service: &quot;true&quot;
+    kubernetes.io/cluster-service: <span style="color:#f1fa8c">&#34;true&#34;</span>
     addonmanager.kubernetes.io/mode: Reconcile
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -380,7 +337,7 @@ metadata:
   name: dashboard-admin-sa
   namespace: kubernetes-dashboard
   annotations:
-    rbac.authorization.kubernetes.io/autoupdate: &quot;true&quot;
+    rbac.authorization.kubernetes.io/autoupdate: <span style="color:#f1fa8c">&#34;true&#34;</span>
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -389,32 +346,17 @@ subjects:
 - kind: ServiceAccount
   name: dashboard-admin-sa
   namespace: kubernetes-dashboard
-</code></pre>
-
-<p>执行该文件：</p>
-
-<pre><code class="language-bash">$ kubectl apply -f dashboard-admin-user.yaml
-</code></pre>
-
-<p>获取该用户 token：</p>
-
-<pre><code class="language-bash">kubectl -n kubernetes-dashboard get secret -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name==&quot;dashboard-admin-sa&quot;)].data}{.token}{end}' | base64 -d
-</code></pre>
-
-<p>用上述输出的字符就可以登录 dashboard 了，这里配置的是管理员权限。</p>
-
+</code></pre></div><p>执行该文件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f dashboard-admin-user.yaml
+</code></pre></div><p>获取该用户 token：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl -n kubernetes-dashboard get secret -o <span style="color:#8be9fd;font-style:italic">jsonpath</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#39;{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name==&#34;dashboard-admin-sa&#34;)].data}{.token}{end}&#39;</span> | base64 -d
+</code></pre></div><p>用上述输出的字符就可以登录 dashboard 了，这里配置的是管理员权限。</p>
 <p>新版 dashboard 的 UI 如下图所示，看起来清爽了许多：</p>
-
 <p>常规模式：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/dfd947fb.png" alt="web-1" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/dfd947fb.png" alt="web-1"></p>
 <p>暗黑模式：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/997c5528.png" alt="web-2" /></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/997c5528.png" alt="web-2"></p>
 <p>新版 Dashboard 2.0 的功能和以前版本功能几乎没什么区别，但是 UI 变的更加清爽了，而且速度也快了。欢迎各位喜欢搞事的同学尝鲜，嘿嘿。</p>
-
 <blockquote>
 <p>在部署完成后，用 NodePort 方式在 Chrome 浏览器访问时总是提示证书错误，其他浏览器没问题，这个可能和新版 Dashboard 机制有关，然后改用 Ingress 代理后端 https 服务就没问题了，所以还是建议用 Ingress 暴露该服务</p>
 </blockquote>
@@ -482,87 +424,79 @@ subjects:
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

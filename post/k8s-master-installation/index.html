@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,185 +213,136 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#部署-msater-节点相关服务">部署 msater 节点相关服务</a>
-<ul>
-<li><a href="#配置-kube-apiserver-服务">配置 kube-apiserver 服务</a></li>
-<li><a href="#配置-kube-controller-manager-服务">配置 kube-controller-manager 服务</a></li>
-<li><a href="#配置-kube-scheduler-服务">配置 kube-scheduler 服务</a></li>
-<li><a href="#验证-master-节点相关功能是否正常">验证 master 节点相关功能是否正常</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#部署-msater-节点相关服务">部署 msater 节点相关服务</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>kubernetes master 节点包含的组件包括以下几个部分：</p>
-
-<pre><code class="language-bash">1、 kube-apiserver
+                <p>kubernetes master 节点包含的组件包括以下几个部分：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">1、 kube-apiserver
 2、 kube-scheduler
 3、 kube-controller-manager
-</code></pre>
-
-<p>本次部署我们将三个组件安装在一台机器上，<code>kube-scheduler</code>、<code>kube-controller-manager</code> 和 <code>kube-apiserver</code> 三者的功能紧密相关；同时只能有一个 <code>kube-scheduler</code>、<code>kube-controller-manager</code> 进程处于工作状态，如果运行多个，则需要通过选举产生一个 leader；</p>
-
+</code></pre></div><p>本次部署我们将三个组件安装在一台机器上，<code>kube-scheduler</code>、<code>kube-controller-manager</code> 和 <code>kube-apiserver</code> 三者的功能紧密相关；同时只能有一个 <code>kube-scheduler</code>、<code>kube-controller-manager</code> 进程处于工作状态，如果运行多个，则需要通过选举产生一个 leader；</p>
 <p>master 节点上没有部署 <code>flannel</code> 网络插件，如果想要在 master 节点上也能访问 ClusterIP，请参考下一节部署 node节点中的配置 Flanneld 部分。</p>
-
 <p><strong>TLS证书文件</strong></p>
-
 <p>以下pem证书文件我们在创建TLS证书和秘钥这一步中已经创建过了，<code>token.csv</code> 文件在创建 <code>kubeconfig</code> 文件的时候已经创建，具体证书如下：</p>
-
-<pre><code class="language-bash">[root@ceph-node1 ~]# ls /etc/kubernetes/ssl/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ls /etc/kubernetes/ssl/</span>
 admin-key.pem  admin.pem  ca-key.pem  ca.pem  kube-proxy-key.pem  kube-proxy.pem  kubernetes-key.pem  kubernetes.pem
-</code></pre>
-
-<h2 id="部署-msater-节点相关服务">部署 msater 节点相关服务</h2>
-
+</code></pre></div><h2 id="部署-msater-节点相关服务">部署 msater 节点相关服务</h2>
 <p>我们在安装 kubectl 工具的时候已经下载了 kubernetes server 的软件包，可以直接使用已经下载的软件部署 master 节点。这里有两种安装方式，具体如下：</p>
-
 <p><strong>方式一：</strong></p>
-
 <p>从 github release 页面下载发布版 tar 包 ，解压后再执行下载脚本，执行脚本后相关文件就会自动下载，但是由于网络的问题，我在测试的时候总是下载失败，所以采用了第二种安装方式。</p>
-
 <p>GitHub 下载地址：<a href="https://github.com/kubernetes/kubernetes/releases">https://github.com/kubernetes/kubernetes/releases</a></p>
-
-<pre><code class="language-bash">wget https://github.com/kubernetes/kubernetes/releases/download/v1.9.6/kubernetes.tar.gz
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://github.com/kubernetes/kubernetes/releases/download/v1.9.6/kubernetes.tar.gz
 tar -xzvf kubernetes.tar.gz
-cd kubernetes
+<span style="color:#8be9fd;font-style:italic">cd</span> kubernetes
 ./cluster/get-kube-binaries.sh
-</code></pre>
-
-<p><strong>方式二：</strong></p>
-
+</code></pre></div><p><strong>方式二：</strong></p>
 <p>从 CHANGELOG 页面 下载 client 或 server tarball 文件。</p>
-
 <blockquote>
 <p>server 的 tar 包 kubernetes-server-linux-amd64.tar.gz 已经包含了 client(kubectl) 二进制文件，所以不用单独下载kubernetes-client-linux-amd64.tar.gz 文件；</p>
 </blockquote>
-
-<pre><code class="language-bash">wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
 tar -xzvf kubernetes-server-linux-amd64.tar.gz
-cd kubernetes
+<span style="color:#8be9fd;font-style:italic">cd</span> kubernetes
 tar -xzvf  kubernetes-src.tar.gz
-</code></pre>
-
-<p>将二进制文件拷贝到指定路径:</p>
-
-<pre><code class="language-bash">cp -r server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /usr/local/bin/
-</code></pre>
-
-<h3 id="配置-kube-apiserver-服务">配置 kube-apiserver 服务</h3>
-
+</code></pre></div><p>将二进制文件拷贝到指定路径:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cp -r server/bin/<span style="color:#ff79c6">{</span>kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet<span style="color:#ff79c6">}</span> /usr/local/bin/
+</code></pre></div><h3 id="配置-kube-apiserver-服务">配置 kube-apiserver 服务</h3>
 <p><strong>创建 kube-apiserver 的 systemd unit 文件</strong></p>
-
 <p>我们需要自己创建 kube-apiserver 的服务启动文件 <code>/usr/lib/systemd/system/kube-apiserver.service</code>，具体内容如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /usr/lib/systemd/system/kube-apiserver.service
+</code></pre></div><p>具体内容如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Kubernetes API Service
+<span style="color:#8be9fd;font-style:italic">Documentation</span><span style="color:#ff79c6">=</span>https://github.com/GoogleCloudPlatform/kubernetes
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>network.target
+<span style="color:#8be9fd;font-style:italic">After</span><span style="color:#ff79c6">=</span>etcd.service
 
-<pre><code class="language-bash">cat /usr/lib/systemd/system/kube-apiserver.service
-</code></pre>
-
-<p>具体内容如下：</p>
-
-<pre><code class="language-bash">[Unit]
-Description=Kubernetes API Service
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-After=network.target
-After=etcd.service
-
-[Service]
-EnvironmentFile=-/etc/kubernetes/config
-EnvironmentFile=-/etc/kubernetes/apiserver
-ExecStart=/usr/local/bin/kube-apiserver \
-        $KUBE_LOGTOSTDERR \
-        $KUBE_LOG_LEVEL \
-        $KUBE_ETCD_SERVERS \
-        $KUBE_API_ADDRESS \
-        $KUBE_API_PORT \
-        $KUBELET_PORT \
-        $KUBE_ALLOW_PRIV \
-        $KUBE_SERVICE_ADDRESSES \
-        $KUBE_ADMISSION_CONTROL \
-        $KUBE_API_ARGS
-Restart=on-failure
-Type=notify
-LimitNOFILE=65536
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/config
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/apiserver
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/usr/local/bin/kube-apiserver <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_LOGTOSTDERR</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_LOG_LEVEL</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_ETCD_SERVERS</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_API_ADDRESS</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_API_PORT</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBELET_PORT</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_ALLOW_PRIV</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_SERVICE_ADDRESSES</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_ADMISSION_CONTROL</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_API_ARGS</span>
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
+<span style="color:#8be9fd;font-style:italic">Type</span><span style="color:#ff79c6">=</span>notify
+<span style="color:#8be9fd;font-style:italic">LimitNOFILE</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">65536</span>
  
-[Install]
-WantedBy=multi-user.target
-</code></pre>
-
-<p>完整 <code>Systemd Unit</code> 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-apiserver.service">kube-apiserver.service</a></p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+</code></pre></div><p>完整 <code>Systemd Unit</code> 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-apiserver.service">kube-apiserver.service</a></p>
 <p><strong>创建 <code>/etc/kubernetes/config</code> 配置文件</strong></p>
-
-<pre><code class="language-bash">###
-# kubernetes system config
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">###</span>
+<span style="color:#6272a4"># kubernetes system config</span>
 #
-# The following values are used to configure various aspects of all
-# kubernetes services, including
+<span style="color:#6272a4"># The following values are used to configure various aspects of all</span>
+<span style="color:#6272a4"># kubernetes services, including</span>
 #
-#   kube-apiserver.service
-#   kube-controller-manager.service
-#   kube-scheduler.service
-#   kubelet.service
-#   kube-proxy.service
-# logging to stderr means we get it in the systemd journal
-KUBE_LOGTOSTDERR=&quot;--logtostderr=true&quot;
+<span style="color:#6272a4">#   kube-apiserver.service</span>
+<span style="color:#6272a4">#   kube-controller-manager.service</span>
+<span style="color:#6272a4">#   kube-scheduler.service</span>
+<span style="color:#6272a4">#   kubelet.service</span>
+<span style="color:#6272a4">#   kube-proxy.service</span>
+<span style="color:#6272a4"># logging to stderr means we get it in the systemd journal</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_LOGTOSTDERR</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--logtostderr=true&#34;</span>
 
-# journal message level, 0 is debug
-KUBE_LOG_LEVEL=&quot;--v=0&quot;
+<span style="color:#6272a4"># journal message level, 0 is debug</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_LOG_LEVEL</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--v=0&#34;</span>
   
-# Should this cluster be allowed to run privileged docker containers
-KUBE_ALLOW_PRIV=&quot;--allow-privileged=true&quot;
+<span style="color:#6272a4"># Should this cluster be allowed to run privileged docker containers</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_ALLOW_PRIV</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--allow-privileged=true&#34;</span>
   
-# How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER=&quot;--master=http://192.168.8.66:8080&quot;
-</code></pre>
-
-<p>完整全局配置文件，参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/config">config</a></p>
-
+<span style="color:#6272a4"># How the controller-manager, scheduler, and proxy find the apiserver</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_MASTER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--master=http://192.168.8.66:8080&#34;</span>
+</code></pre></div><p>完整全局配置文件，参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/config">config</a></p>
 <blockquote>
 <p>该配置文件同时被kube-apiserver、kube-controller-manager、kube-scheduler、kubelet、kube-proxy使用。所以我们需要将该文件复制到node所在机器上。</p>
 </blockquote>
-
 <p><strong>创建 <code>/etc/kubernetes/apiserver</code> 配置文件</strong></p>
-
-<pre><code class="language-bash">###
-## kubernetes system config
-##
-## The following values are used to configure the kube-apiserver
-##
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">###</span>
+<span style="color:#6272a4">## kubernetes system config</span>
+<span style="color:#6272a4">##</span>
+<span style="color:#6272a4">## The following values are used to configure the kube-apiserver</span>
+<span style="color:#6272a4">##</span>
 #
-## The address on the local server to listen to.
-#KUBE_API_ADDRESS=&quot;--insecure-bind-address=sz-pg-oam-docker-test-001.tendcloud.com&quot;
-KUBE_API_ADDRESS=&quot;--advertise-address=192.168.8.66 --bind-address=192.168.8.66 --insecure-bind-address=192.168.8.66&quot;
+<span style="color:#6272a4">## The address on the local server to listen to.</span>
+<span style="color:#6272a4">#KUBE_API_ADDRESS=&#34;--insecure-bind-address=sz-pg-oam-docker-test-001.tendcloud.com&#34;</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_API_ADDRESS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--advertise-address=192.168.8.66 --bind-address=192.168.8.66 --insecure-bind-address=192.168.8.66&#34;</span>
  
 #
-## The port on the local server to listen on.
-#KUBE_API_PORT=&quot;--port=8080&quot;
+<span style="color:#6272a4">## The port on the local server to listen on.</span>
+<span style="color:#6272a4">#KUBE_API_PORT=&#34;--port=8080&#34;</span>
 #
-## Port minions listen on
-#KUBELET_PORT=&quot;--kubelet-port=10250&quot;
+<span style="color:#6272a4">## Port minions listen on</span>
+<span style="color:#6272a4">#KUBELET_PORT=&#34;--kubelet-port=10250&#34;</span>
 #
-## Comma separated list of nodes in the etcd cluster
-KUBE_ETCD_SERVERS=&quot;--etcd-servers=https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379&quot;
+<span style="color:#6272a4">## Comma separated list of nodes in the etcd cluster</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_ETCD_SERVERS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--etcd-servers=https://192.168.8.66:2379,https://192.168.8.67:2379,https://192.168.8.68:2379&#34;</span>
   
 #
-## Address range to use for services
-KUBE_SERVICE_ADDRESSES=&quot;--service-cluster-ip-range=10.254.0.0/16&quot;
+<span style="color:#6272a4">## Address range to use for services</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_SERVICE_ADDRESSES</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--service-cluster-ip-range=10.254.0.0/16&#34;</span>
 #
-## default admission control policies
-KUBE_ADMISSION_CONTROL=&quot;--admission-control=DefaultStorageClass,NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota&quot;
+<span style="color:#6272a4">## default admission control policies</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_ADMISSION_CONTROL</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--admission-control=DefaultStorageClass,NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota&#34;</span>
  
-#--enable-bootstrap-token-auth --token-auth-file=/etc/kubernetes/token.csv 
-## Add your own!
-KUBE_API_ARGS=&quot;--authorization-mode=Node,RBAC  --runtime-config=rbac.authorization.k8s.io/v1beta1 --kubelet-https=true  --enable-bootstrap-token-auth --token-auth-file=/etc/kubernetes/token.csv --service-node-port-range=30000-32767 --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem --enable-swagger-ui=true --apiserver-count=3 --audit-log-maxage=30 --audit-log-maxbackup=3 --audit-log-maxsize=100 --audit-log-path=/var/lib/audit.log --event-ttl=1h&quot;
-</code></pre>
-
-<p><strong>参数说明</strong></p>
-
+<span style="color:#6272a4">#--enable-bootstrap-token-auth --token-auth-file=/etc/kubernetes/token.csv</span> 
+<span style="color:#6272a4">## Add your own!</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_API_ARGS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--authorization-mode=Node,RBAC  --runtime-config=rbac.authorization.k8s.io/v1beta1 --kubelet-https=true  --enable-bootstrap-token-auth --token-auth-file=/etc/kubernetes/token.csv --service-node-port-range=30000-32767 --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem --enable-swagger-ui=true --apiserver-count=3 --audit-log-maxage=30 --audit-log-maxbackup=3 --audit-log-maxsize=100 --audit-log-path=/var/lib/audit.log --event-ttl=1h&#34;</span>
+</code></pre></div><p><strong>参数说明</strong></p>
 <ul>
 <li><code>--enable-bootstrap-token-auth</code> 该参数在 <code>v1.9</code> 版本已经成为正式的启动参数，但是在 <code>v1.6</code> 版本及以前的版本该参数为 <code>--experimental-bootstrap-token-auth</code>，<code>v1.7</code> 版本同 <code>v1.6</code> 版本， <code>v1.8</code> 版本同 <code>v1.9</code> 版本；</li>
 <li>如果中途修改过 <code>--service-cluster-ip-range</code> 地址，则必须将 default 命名空间的 kubernetes 的 service 给删除，使用命令 <code>kubectl delete service kubernetes</code>，然后系统会自动用新的ip重建这个service。</li>
@@ -405,156 +356,109 @@ KUBE_API_ARGS=&quot;--authorization-mode=Node,RBAC  --runtime-config=rbac.author
 <li><code>--runtime-config</code> 配置为 <code>rbac.authorization.k8s.io/v1beta1</code>，表示运行时的 <code>apiVersion</code>；</li>
 <li><code>--service-cluster-ip-range</code> 指定 <code>Service Cluster IP</code> 地址段，该地址段不能路由可达；</li>
 </ul>
-
 <p>缺省情况下 kubernetes 对象保存在 etcd <code>/registry</code> 路径下，可以通过 <code>--etcd-prefix</code> 参数进行调整；</p>
-
-<p>如果需要开通 http 的无认证的接口，则可以增加以下两个参数：<code>--insecure-port=8080</code><code>--insecure-bind-address=127.0.0.1</code>但是在生产环境上不要绑定到非 127.0.0.1 的地址上。</p>
-
+<p>如果需要开通 http 的无认证的接口，则可以增加以下两个参数：<code>--insecure-port=8080 ``--insecure-bind-address=127.0.0.1</code>但是在生产环境上不要绑定到非 127.0.0.1 的地址上。</p>
 <p>完整 <code>apiserver</code> 配置文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/apiserver">apiserver</a></p>
-
 <p><strong>启动 kube-apiserver 服务</strong></p>
-
-<pre><code class="language-bash">systemctl daemon-reload
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
 systemctl start kube-apiserver
-systemctl enable kube-apiserver
+systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kube-apiserver
 systemctl status kube-apiserver
-</code></pre>
-
-<h3 id="配置-kube-controller-manager-服务">配置 kube-controller-manager 服务</h3>
-
+</code></pre></div><h3 id="配置-kube-controller-manager-服务">配置 kube-controller-manager 服务</h3>
 <p><strong>创建 kube-controller-manager 的 systemd unit 文件</strong></p>
-
 <p>我们需要自己创建 kube-apiserver 的服务启动文件 <code>/usr/lib/systemd/system/kube-controller-manager.service</code>，具体内容如下:</p>
-
-<pre><code class="language-bash">cat /usr/lib/systemd/system/kube-controller-manager.service
-</code></pre>
-
-<p>具体内容如下：</p>
-
-<pre><code class="language-bash">[Unit]
-Description=Kubernetes Controller Manager
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /usr/lib/systemd/system/kube-controller-manager.service
+</code></pre></div><p>具体内容如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Kubernetes Controller Manager
+<span style="color:#8be9fd;font-style:italic">Documentation</span><span style="color:#ff79c6">=</span>https://github.com/GoogleCloudPlatform/kubernetes
   
-[Service]
-EnvironmentFile=-/etc/kubernetes/config
-EnvironmentFile=-/etc/kubernetes/controller-manager
-ExecStart=/usr/local/bin/kube-controller-manager \
-        $KUBE_LOGTOSTDERR \
-        $KUBE_LOG_LEVEL \
-        $KUBE_MASTER \
-        $KUBE_CONTROLLER_MANAGER_ARGS
-Restart=on-failure
-LimitNOFILE=65536
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/config
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/controller-manager
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/usr/local/bin/kube-controller-manager <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_LOGTOSTDERR</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_LOG_LEVEL</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_MASTER</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>        <span style="color:#8be9fd;font-style:italic">$KUBE_CONTROLLER_MANAGER_ARGS</span>
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
+<span style="color:#8be9fd;font-style:italic">LimitNOFILE</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">65536</span>
   
-[Install]
-WantedBy=multi-user.target
-</code></pre>
-
-<p>完整 <code>Systemd Unit</code> 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-controller-manager.service">kube-controller-manager.service</a></p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+</code></pre></div><p>完整 <code>Systemd Unit</code> 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-controller-manager.service">kube-controller-manager.service</a></p>
 <p><strong>创建 <code>/etc/kubernetes/controller-manager</code> 配置文件</strong></p>
-
-<pre><code class="language-bash">###
-# The following values are used to configure the kubernetes controller-manager
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">###</span>
+<span style="color:#6272a4"># The following values are used to configure the kubernetes controller-manager</span>
   
-# defaults from config and apiserver should be adequate
+<span style="color:#6272a4"># defaults from config and apiserver should be adequate</span>
   
-# Add your own!
-KUBE_CONTROLLER_MANAGER_ARGS=&quot;--address=127.0.0.1 --service-cluster-ip-range=10.254.0.0/16 --cluster-name=kubernetes --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem  --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem --root-ca-file=/etc/kubernetes/ssl/ca.pem --leader-elect=true&quot;
-</code></pre>
-
-<p><strong>参数说明</strong></p>
-
+<span style="color:#6272a4"># Add your own!</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_CONTROLLER_MANAGER_ARGS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--address=127.0.0.1 --service-cluster-ip-range=10.254.0.0/16 --cluster-name=kubernetes --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem  --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem --root-ca-file=/etc/kubernetes/ssl/ca.pem --leader-elect=true&#34;</span>
+</code></pre></div><p><strong>参数说明</strong></p>
 <ul>
 <li><code>--service-cluster-ip-range</code> 参数指定 Cluster 中 Service 的CIDR范围，该网络在各 Node 间必须路由不可达，必须和 kube-apiserver 中的参数一致；</li>
 <li><code>--cluster-signing-*</code> 指定的证书和私钥文件用来签名为 TLS BootStrap 创建的证书和私钥;</li>
 <li><code>--root-ca-file</code> 用来对 kube-apiserver 证书进行校验，指定该参数后，才会在Pod 容器的 ServiceAccount 中放置该 CA 证书文件；</li>
-<li><code>--address</code> 值必须为 127.0.0.1，因为当前 kube-apiserver 期望 scheduler 和 ontroller-manager 在同一台机器，否则会报错：“scheduler Unhealthy Get <a href="http://127.0.0.1:10251/healthz:">http://127.0.0.1:10251/healthz:</a> &ldquo;dial tcp 127.0.0.1:10251: getsockopt: connection refused &ldquo;</li>
+<li><code>--address</code> 值必须为 127.0.0.1，因为当前 kube-apiserver 期望 scheduler 和 ontroller-manager 在同一台机器，否则会报错：“scheduler Unhealthy Get http://127.0.0.1:10251/healthz: &ldquo;dial tcp 127.0.0.1:10251: getsockopt: connection refused &quot;</li>
 </ul>
-
 <p>完整 <code>controller-manager</code> 配置文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/controller-manager">controller-manager</a></p>
-
 <p><strong>启动 kube-controller-manager 服务</strong></p>
-
-<pre><code class="language-bash">systemctl daemon-reload
-systemctl enable kube-controller-manager
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
+systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kube-controller-manager
 systemctl start kube-controller-manager
 systemctl status kube-controller-manager
-</code></pre>
-
-<h3 id="配置-kube-scheduler-服务">配置 kube-scheduler 服务</h3>
-
+</code></pre></div><h3 id="配置-kube-scheduler-服务">配置 kube-scheduler 服务</h3>
 <p><strong>创建 kube-scheduler 的 Systemd Unit 文件</strong></p>
-
 <p>我们需要自己创建 kube-scheduler 的服务启动文件 <code>/usr/lib/systemd/system/kube-scheduler.service</code>，具体内容如下:</p>
-
-<pre><code class="language-bash">cat /usr/lib/systemd/system/kube-scheduler.service
-</code></pre>
-
-<p>具体内容如下：</p>
-
-<pre><code class="language-bash">[Unit]
-Description=Kubernetes Scheduler Plugin
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /usr/lib/systemd/system/kube-scheduler.service
+</code></pre></div><p>具体内容如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">Description</span><span style="color:#ff79c6">=</span>Kubernetes Scheduler Plugin
+<span style="color:#8be9fd;font-style:italic">Documentation</span><span style="color:#ff79c6">=</span>https://github.com/GoogleCloudPlatform/kubernetes
  
-[Service]
-EnvironmentFile=-/etc/kubernetes/config
-EnvironmentFile=-/etc/kubernetes/scheduler
-ExecStart=/usr/local/bin/kube-scheduler \
-            $KUBE_LOGTOSTDERR \
-            $KUBE_LOG_LEVEL \
-            $KUBE_MASTER \
-            $KUBE_SCHEDULER_ARGS
-Restart=on-failure
-LimitNOFILE=65536
+<span style="color:#ff79c6">[</span>Service<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/config
+<span style="color:#8be9fd;font-style:italic">EnvironmentFile</span><span style="color:#ff79c6">=</span>-/etc/kubernetes/scheduler
+<span style="color:#8be9fd;font-style:italic">ExecStart</span><span style="color:#ff79c6">=</span>/usr/local/bin/kube-scheduler <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBE_LOGTOSTDERR</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBE_LOG_LEVEL</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBE_MASTER</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>            <span style="color:#8be9fd;font-style:italic">$KUBE_SCHEDULER_ARGS</span>
+<span style="color:#8be9fd;font-style:italic">Restart</span><span style="color:#ff79c6">=</span>on-failure
+<span style="color:#8be9fd;font-style:italic">LimitNOFILE</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">65536</span>
 
-[Install]
-WantedBy=multi-user.target
-</code></pre>
-
-<p>完整 Systemd Unit 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-scheduler.service">kube-scheduler.service</a></p>
-
+<span style="color:#ff79c6">[</span>Install<span style="color:#ff79c6">]</span>
+<span style="color:#8be9fd;font-style:italic">WantedBy</span><span style="color:#ff79c6">=</span>multi-user.target
+</code></pre></div><p>完整 Systemd Unit 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/systemd/kube-scheduler.service">kube-scheduler.service</a></p>
 <p><strong>创建 <code>/etc/kubernetes/scheduler</code> 文件</strong></p>
-
-<pre><code class="language-bash">###
-# kubernetes scheduler config
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">###</span>
+<span style="color:#6272a4"># kubernetes scheduler config</span>
  
-# default config should be adequate
+<span style="color:#6272a4"># default config should be adequate</span>
 
-# Add your own!
-KUBE_SCHEDULER_ARGS=&quot;--leader-elect=true --address=127.0.0.1&quot;
-</code></pre>
-
-<p><strong>参数说明</strong></p>
-
+<span style="color:#6272a4"># Add your own!</span>
+<span style="color:#8be9fd;font-style:italic">KUBE_SCHEDULER_ARGS</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;--leader-elect=true --address=127.0.0.1&#34;</span>
+</code></pre></div><p><strong>参数说明</strong></p>
 <ul>
 <li><code>--address</code> 值必须为 127.0.0.1，因为当前 kube-apiserver 期望 scheduler 和 controller-manager 在同一台机器</li>
 </ul>
-
 <p>完整 <code>scheduler</code> 配置文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/scheduler">scheduler</a></p>
-
 <p><strong>启动 kube-scheduler 服务</strong></p>
-
-<pre><code class="language-bash">systemctl daemon-reload
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
 systemctl start kube-scheduler
-systemctl enable kube-scheduler
+systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kube-scheduler
 systemctl status kube-scheduler
-</code></pre>
-
-<h3 id="验证-master-节点相关功能是否正常">验证 master 节点相关功能是否正常</h3>
-
+</code></pre></div><h3 id="验证-master-节点相关功能是否正常">验证 master 节点相关功能是否正常</h3>
 <p>master 节点上的服务安装完成后，我们需要进一步验证其功能是否能正藏工作，具体参考如下：</p>
-
-<pre><code class="language-bash">[root@k8s-master system]# kubectl get componentstatus 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master system<span style="color:#ff79c6">]</span><span style="color:#6272a4"># kubectl get componentstatus</span> 
 NAME                 STATUS    MESSAGE              ERROR
 scheduler            Healthy   ok                   
 controller-manager   Healthy   ok                   
-etcd-2               Healthy   {&quot;health&quot;: &quot;true&quot;}   
-etcd-1               Healthy   {&quot;health&quot;: &quot;true&quot;}   
-etcd-0               Healthy   {&quot;health&quot;: &quot;true&quot;}
-</code></pre>
-
-<p>从上面可以知道，我们部署的 master 节点基本服务都可以正常工作。</p>
+etcd-2               Healthy   <span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;health&#34;</span>: <span style="color:#f1fa8c">&#34;true&#34;</span><span style="color:#ff79c6">}</span>   
+etcd-1               Healthy   <span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;health&#34;</span>: <span style="color:#f1fa8c">&#34;true&#34;</span><span style="color:#ff79c6">}</span>   
+etcd-0               Healthy   <span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;health&#34;</span>: <span style="color:#f1fa8c">&#34;true&#34;</span><span style="color:#ff79c6">}</span>
+</code></pre></div><p>从上面可以知道，我们部署的 master 节点基本服务都可以正常工作。</p>
 
 
                 
@@ -619,87 +523,79 @@ etcd-0               Healthy   {&quot;health&quot;: &quot;true&quot;}
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

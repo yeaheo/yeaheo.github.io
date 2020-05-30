@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,245 +213,172 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li>
-<ul>
-<li><a href="#部署-consul-server1">部署 consul-server1</a></li>
-<li><a href="#部署-consul-server2">部署 consul-server2</a></li>
-<li><a href="#部署-consul-server3">部署 consul-server3</a></li>
-<li><a href="#部署-consul-client1">部署 consul-client1</a></li>
-<li><a href="#查看集群状态">查看集群状态</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>Consul 是 HashiCorp 公司推出的开源工具，用于实现分布式系统的服务发现与配置。Consul 是分布式的、高可用的、 可横向扩展的。它具备以下特性:</p>
-
+                <p>Consul 是 HashiCorp 公司推出的开源工具，用于实现分布式系统的服务发现与配置。Consul 是分布式的、高可用的、 可横向扩展的。它具备以下特性:</p>
 <ul>
-<li><p><strong>服务发现</strong>: Consul 提供了通过 DNS 或者 HTTP 接口的方式来注册服务和发现服务。一些外部的服务通过 Consul很容易的找到它所依赖的服务。</p></li>
-
-<li><p><strong>健康检测</strong>: Consul 的 Client 提供了健康检查的机制，可以通过用来避免流量被转发到有故障的服务上。</p></li>
-
-<li><p><strong>Key/Value存储</strong>: 应用程序可以根据自己的需要使用Consul提供的Key/Value存储。 Consul提供了简单易用的HTTP接口，结合其他工具可以实现动态配置、功能标记、领袖选举等等功能。</p></li>
-
-<li><p><strong>多数据中心</strong>: Consul支持开箱即用的多数据中心. 这意味着用户不需要担心需要建立额外的抽象层让业务扩展到多个区域。</p></li>
+<li>
+<p><strong>服务发现</strong>: Consul 提供了通过 DNS 或者 HTTP 接口的方式来注册服务和发现服务。一些外部的服务通过 Consul很容易的找到它所依赖的服务。</p>
+</li>
+<li>
+<p><strong>健康检测</strong>: Consul 的 Client 提供了健康检查的机制，可以通过用来避免流量被转发到有故障的服务上。</p>
+</li>
+<li>
+<p><strong>Key/Value存储</strong>: 应用程序可以根据自己的需要使用Consul提供的Key/Value存储。 Consul提供了简单易用的HTTP接口，结合其他工具可以实现动态配置、功能标记、领袖选举等等功能。</p>
+</li>
+<li>
+<p><strong>多数据中心</strong>: Consul支持开箱即用的多数据中心. 这意味着用户不需要担心需要建立额外的抽象层让业务扩展到多个区域。</p>
+</li>
 </ul>
-
 <p>Consul 各组件架构图如下图所示：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/q43egM.jpg" alt="Consul 基本架构图" /></p>
-
-<p>Consul 官方站点：<a href="https://www.consul.io">https://www.consul.io</a></p>
-
-<p>Consul GitHub 站点：<a href="https://github.com/hashicorp/consul">https://github.com/hashicorp/consul</a></p>
-
-<p>Consul 官方镜像：<a href="https://hub.docker.com/r/_/consul/">https://hub.docker.com/r/_/consul/</a></p>
-
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/q43egM.jpg" alt="Consul 基本架构图"></p>
+<p>Consul 官方站点：https://www.consul.io</p>
+<p>Consul GitHub 站点：https://github.com/hashicorp/consul</p>
+<p>Consul 官方镜像：https://hub.docker.com/r/_/consul/</p>
 <p>Consul 官方镜像 Dockerfile 文件可以参考：<a href="https://github.com/hashicorp/docker-consul/blob/3e9120657c15e2f208e3cf16a698f1bb3bee3cdd/0.X/Dockerfile">consul dockerfile</a></p>
-
 <p>本文档主要部署基于三个 server 和 一个 node 的 consul 集群，集群机器环境如下：</p>
-
 <pre><code>consul-server1  172.16.8.120
 consul-server2  172.16.8.121
 consul-server3  172.16.8.122
 consul-client1  172.16.8.110
-</code></pre>
-
-<p>安装和配置 docker 这里不再赘述，具体安装过程参见官方文档：<a href="https://docs.docker.com/glossary/?term=installation">Docker Installation</a></p>
-
-<p>默认 docker 拉取镜像用的是 docker hub ，在国内拉取镜像速度非常慢，建议配置 docker 镜像加速器，具体配置过程参见：<a href="https://yeaheo.com/post/docker-image-accelerator-installation">https://yeaheo.com/post/docker-image-accelerator-installation</a></p>
-
+</code></pre><p>安装和配置 docker 这里不再赘述，具体安装过程参见官方文档：<a href="https://docs.docker.com/glossary/?term=installation">Docker Installation</a></p>
+<p>默认 docker 拉取镜像用的是 docker hub ，在国内拉取镜像速度非常慢，建议配置 docker 镜像加速器，具体配置过程参见：https://yeaheo.com/post/docker-image-accelerator-installation</p>
 <p>上述配置完成后，开始用 docker 部署 consul 集群，具体过程参考如下：</p>
-
 <p>在所有机器上拉取相关镜像：</p>
-
-<pre><code class="language-bash">👍 ~ docker pull consul:latest
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker pull consul:latest
 👍 ~ docker pull gliderlabs/registrator:latest
-</code></pre>
-
-<p>Consul 默认常用的端口如下：</p>
-
-<pre><code class="language-bash">dns       8600.
+</code></pre></div><p>Consul 默认常用的端口如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">dns       8600.
 http      8500.
 https     disabled
 rpc       8400.
 serf_lan  8301.
 serf_wan  8302.
 server    8300.
-</code></pre>
-
-<p>为了更友好的利用这些端口，建议容器的网络模式选择 <code>--net=host</code> 模式。</p>
-
+</code></pre></div><p>为了更友好的利用这些端口，建议容器的网络模式选择 <code>--net=host</code> 模式。</p>
 <h3 id="部署-consul-server1">部署 consul-server1</h3>
-
 <p>在该主机上执行如下命令启动相关容器：</p>
-
-<pre><code class="language-bash">👍 ~ docker run -d --name=consul-server1 \
-     --net=host \
-     --restart=always \
-     -h consul-server1 \
-     consul agent \
-     -server \
-     -bind=172.16.8.120 \
-     -bootstrap-expect=2 \
-     -node=consul-server1 \
-     -data-dir=/tmp/data-dir \
-     -client 0.0.0.0 \
-     -ui
-</code></pre>
-
-<p>查看容器启动日志可以参考如下命令：</p>
-
-<pre><code class="language-bash">👍 ~ docker logs -f consul-server1
-</code></pre>
-
-<blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker run -d --name<span style="color:#ff79c6">=</span>consul-server1 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --net<span style="color:#ff79c6">=</span>host <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --restart<span style="color:#ff79c6">=</span>always <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -h consul-server1 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     consul agent <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -server <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -bind<span style="color:#ff79c6">=</span>172.16.8.120 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -bootstrap-expect<span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -node<span style="color:#ff79c6">=</span>consul-server1 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -data-dir<span style="color:#ff79c6">=</span>/tmp/data-dir <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -client 0.0.0.0 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -ui
+</code></pre></div><p>查看容器启动日志可以参考如下命令：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker logs -f consul-server1
+</code></pre></div><blockquote>
 <p>因为使用了<code>-bootstrap-expect=2</code> 参数，所以当 <code>server</code> 数量达到 <code>3</code> 个之前 consul 是不会引导集群的，当然也不会选出某一个 <code>leader</code></p>
 </blockquote>
-
 <p>至此，consul-server1 部署基本完成。</p>
-
 <h3 id="部署-consul-server2">部署 consul-server2</h3>
-
 <p>和部署 consul-server1 类似，部署 consul-server2 时利用如下命令即可：</p>
-
-<pre><code class="language-bash">👍 ~ docker run -d --name=consul-server2 \
-     --net=host \
-     --restart=always \
-     -h consul-server2 \
-     consul agent \
-     -server \
-     -bind=172.16.8.121 \
-     -join=172.16.8.120 \
-     -bootstrap-expect=2 \
-     -node=consul-server2 \
-     -data-dir=/tmp/data-dir \
-     -client 0.0.0.0 \
-     -ui
-</code></pre>
-
-<p>查看容器启动日志可以参考如下命令：</p>
-
-<pre><code class="language-bash">👍 ~ docker logs -f consul-server1
-</code></pre>
-
-<p>至此，consul-server2 部署基本完成。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker run -d --name<span style="color:#ff79c6">=</span>consul-server2 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --net<span style="color:#ff79c6">=</span>host <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --restart<span style="color:#ff79c6">=</span>always <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -h consul-server2 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     consul agent <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -server <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -bind<span style="color:#ff79c6">=</span>172.16.8.121 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -join<span style="color:#ff79c6">=</span>172.16.8.120 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -bootstrap-expect<span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -node<span style="color:#ff79c6">=</span>consul-server2 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -data-dir<span style="color:#ff79c6">=</span>/tmp/data-dir <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -client 0.0.0.0 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -ui
+</code></pre></div><p>查看容器启动日志可以参考如下命令：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker logs -f consul-server1
+</code></pre></div><p>至此，consul-server2 部署基本完成。</p>
 <h3 id="部署-consul-server3">部署 consul-server3</h3>
-
 <p>和部署 consul-server1 类似，部署 consul-server3 时利用如下命令即可：</p>
-
-<pre><code class="language-bash">👍 ~ docker run -d --name=consul-server3 \
-     --net=host \
-     --restart=always \
-     -h consul-server3 \
-     consul agent \
-     -server \
-     -bind=172.16.8.122 \
-     -join=172.16.8.120 \
-     -bootstrap-expect=2 \
-     -node=consul-server3 \
-     -data-dir=/tmp/data-dir \
-     -client 0.0.0.0 \
-     -ui
-</code></pre>
-
-<p>查看容器启动日志可以参考如下命令：</p>
-
-<pre><code class="language-bash">👍 ~ docker logs -f consul-server1
-</code></pre>
-
-<p>至此，consul-server3 部署基本完成。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker run -d --name<span style="color:#ff79c6">=</span>consul-server3 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --net<span style="color:#ff79c6">=</span>host <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --restart<span style="color:#ff79c6">=</span>always <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -h consul-server3 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     consul agent <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -server <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -bind<span style="color:#ff79c6">=</span>172.16.8.122 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -join<span style="color:#ff79c6">=</span>172.16.8.120 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -bootstrap-expect<span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -node<span style="color:#ff79c6">=</span>consul-server3 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -data-dir<span style="color:#ff79c6">=</span>/tmp/data-dir <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -client 0.0.0.0 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -ui
+</code></pre></div><p>查看容器启动日志可以参考如下命令：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker logs -f consul-server1
+</code></pre></div><p>至此，consul-server3 部署基本完成。</p>
 <p>当三个 server 主机启动后， consul 就可以引导整个集群了，并且三个 server 之间通过 GRAF 机制选举出一个 leader 角色用来维护整个集群功能。集体选举过程可以通过日志查看到。</p>
-
 <p>日志实例可以参考下面内容：</p>
-
-<pre><code class="language-bash">  ...
-  2018/10/29 04:03:09 [ERR] agent: Coordinate update error: No cluster leader
-  2018/10/29 04:03:18 [ERR] agent: failed to sync remote state: No cluster leader
-  2018/10/29 04:03:38 [ERR] agent: Coordinate update error: No cluster leader
-  2018/10/29 04:03:40 [INFO] serf: EventMemberJoin: consul-server3 10.200.100.218
-  2018/10/29 04:03:40 [INFO] consul: Adding LAN server consul-server3 (Addr: tcp/10.200.100.218:8300) (DC: dc1)
-  2018/10/29 04:03:40 [INFO] consul: Existing Raft peers reported by consul-server3, disabling bootstrap mode
-  2018/10/29 04:03:40 [INFO] serf: EventMemberJoin: consul-server3.dc1 172.16.8.122
-  2018/10/29 04:03:40 [INFO] consul: Handled member-join event for server &quot;consul-server3.dc1&quot; in area &quot;wan&quot;
-  2018/10/29 04:03:48 [DEBUG] raft-net: 10.200.100.231:8300 accepted connection from: 10.200.100.218:37071
-  2018/10/29 04:03:48 [WARN] raft: Failed to get previous log: 1 log not found (last: 0)
-  2018/10/29 04:03:48 [INFO] consul: New leader elected: consul-server3
-  2018/10/29 04:03:48 [INFO] agent: Synced node info
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">  ...
+  2018/10/29 04:03:09 <span style="color:#ff79c6">[</span>ERR<span style="color:#ff79c6">]</span> agent: Coordinate update error: No cluster leader
+  2018/10/29 04:03:18 <span style="color:#ff79c6">[</span>ERR<span style="color:#ff79c6">]</span> agent: failed to sync remote state: No cluster leader
+  2018/10/29 04:03:38 <span style="color:#ff79c6">[</span>ERR<span style="color:#ff79c6">]</span> agent: Coordinate update error: No cluster leader
+  2018/10/29 04:03:40 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> serf: EventMemberJoin: consul-server3 10.200.100.218
+  2018/10/29 04:03:40 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> consul: Adding LAN server consul-server3 <span style="color:#ff79c6">(</span>Addr: tcp/10.200.100.218:8300<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">(</span>DC: dc1<span style="color:#ff79c6">)</span>
+  2018/10/29 04:03:40 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> consul: Existing Raft peers reported by consul-server3, disabling bootstrap mode
+  2018/10/29 04:03:40 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> serf: EventMemberJoin: consul-server3.dc1 172.16.8.122
+  2018/10/29 04:03:40 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> consul: Handled member-join event <span style="color:#ff79c6">for</span> server <span style="color:#f1fa8c">&#34;consul-server3.dc1&#34;</span> in area <span style="color:#f1fa8c">&#34;wan&#34;</span>
+  2018/10/29 04:03:48 <span style="color:#ff79c6">[</span>DEBUG<span style="color:#ff79c6">]</span> raft-net: 10.200.100.231:8300 accepted connection from: 10.200.100.218:37071
+  2018/10/29 04:03:48 <span style="color:#ff79c6">[</span>WARN<span style="color:#ff79c6">]</span> raft: Failed to get previous log: <span style="color:#bd93f9">1</span> log not found <span style="color:#ff79c6">(</span>last: 0<span style="color:#ff79c6">)</span>
+  2018/10/29 04:03:48 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> consul: New leader elected: consul-server3
+  2018/10/29 04:03:48 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> agent: Synced node info
   ...
-</code></pre>
-
-<h3 id="部署-consul-client1">部署 consul-client1</h3>
-
+</code></pre></div><h3 id="部署-consul-client1">部署 consul-client1</h3>
 <p>其实，部署 client 和部署 server 类似，都是通过 <code>consul agent</code> 来部署，只是他们在 consul 层面扮演的角色不同而已。</p>
-
 <p>部署 consul-client 用如下命令即可：</p>
-
-<pre><code class="language-bash">👍 ~ docker run -d --name=consul-client1 \
-     --net=host \
-     --restart=always \
-     -h consul-client1 \
-     consul agent \
-     -bind=172.16.8.110 \
-     -retry-join=172.16.8.120 \
-     -node=consul-client1 \
-     -client 0.0.0.0 \
-     -ui
-</code></pre>
-
-<p>查看 clinet 日志参考：</p>
-
-<pre><code class="language-bash">👍 ~ docker logs -f consul-client1
-</code></pre>
-
-<p>至此，consul 集群也就部署完成了，3 个 server 和 1 个 client。</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker run -d --name<span style="color:#ff79c6">=</span>consul-client1 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --net<span style="color:#ff79c6">=</span>host <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --restart<span style="color:#ff79c6">=</span>always <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -h consul-client1 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     consul agent <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -bind<span style="color:#ff79c6">=</span>172.16.8.110 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -retry-join<span style="color:#ff79c6">=</span>172.16.8.120 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -node<span style="color:#ff79c6">=</span>consul-client1 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -client 0.0.0.0 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     -ui
+</code></pre></div><p>查看 clinet 日志参考：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker logs -f consul-client1
+</code></pre></div><p>至此，consul 集群也就部署完成了，3 个 server 和 1 个 client。</p>
 <h3 id="查看集群状态">查看集群状态</h3>
-
 <p>我们可以用如下命令查看集群状态和成员：</p>
-
-<pre><code class="language-bash">👍 ~ docker exec consul-server1 consul members
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ docker <span style="color:#8be9fd;font-style:italic">exec</span> consul-server1 consul members
 Node            Address            Status  Type    Build  Protocol  DC   Segment
-consul-server1  172.16.8.120:8301  alive   server  1.3.0  2         dc1  &lt;all&gt;
-consul-server2  172.16.8.121:8301  alive   server  1.3.0  2         dc1  &lt;all&gt;
-consul-server3  172.16.8.122:8301  alive   server  1.3.0  2         dc1  &lt;all&gt;
-consul-client1  172.16.8.110:8301  alive   client  1.3.0  2         dc1  &lt;default&gt;
-</code></pre>
-
-<p>我们也可以通过 http 接口查看集群状态信息：</p>
-
-<pre><code class="language-bash"># 查看集群 leader
+consul-server1  172.16.8.120:8301  alive   server  1.3.0  <span style="color:#bd93f9">2</span>         dc1  &lt;all&gt;
+consul-server2  172.16.8.121:8301  alive   server  1.3.0  <span style="color:#bd93f9">2</span>         dc1  &lt;all&gt;
+consul-server3  172.16.8.122:8301  alive   server  1.3.0  <span style="color:#bd93f9">2</span>         dc1  &lt;all&gt;
+consul-client1  172.16.8.110:8301  alive   client  1.3.0  <span style="color:#bd93f9">2</span>         dc1  &lt;default&gt;
+</code></pre></div><p>我们也可以通过 http 接口查看集群状态信息：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 查看集群 leader</span>
 👍 ~ curl http://172.16.8.110:8500/v1/status/leader
-&quot;172.16.8.120:8300&quot;
+<span style="color:#f1fa8c">&#34;172.16.8.120:8300&#34;</span>
 
-# 查看集群成员
+<span style="color:#6272a4"># 查看集群成员</span>
 👍 ~ curl http://172.16.8.110:8500/v1/status/peers
-[&quot;172.16.8.120:8300&quot;,&quot;172.16.8.121:8300&quot;,&quot;172.16.8.122:8300&quot;]
+<span style="color:#ff79c6">[</span><span style="color:#f1fa8c">&#34;172.16.8.120:8300&#34;</span>,<span style="color:#f1fa8c">&#34;172.16.8.121:8300&#34;</span>,<span style="color:#f1fa8c">&#34;172.16.8.122:8300&#34;</span><span style="color:#ff79c6">]</span>
 
-# 查看某个服务
+<span style="color:#6272a4"># 查看某个服务</span>
 👍 ~ curl http://172.16.8.110:8500/v1/catalog/service/redis
 
-# 查看某个服务的健康状态
+<span style="color:#6272a4"># 查看某个服务的健康状态</span>
 👍 ~ curl http://172.16.8.110:8500/v1/health/service/nginx?passing
-</code></pre>
-
-<p>当然，我们也可以通过 consul 自带的 ui 界面查看集群信息，默人 ui 访问地址：<a href="http://172.16.8.120:8500">http://172.16.8.120:8500</a> ，具体页面参考如下：</p>
-
-<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/9ETA0M.jpg" alt="consul web ui" /></p>
-
-<p>至此，整个 consul 集群部署完成。如果需要其他方式部署 consul 集群可以查阅 consul 官方文档：<a href="https://www.consul.io/docs/install/index.html">https://www.consul.io/docs/install/index.html</a></p>
-
+</code></pre></div><p>当然，我们也可以通过 consul 自带的 ui 界面查看集群信息，默人 ui 访问地址：http://172.16.8.120:8500 ，具体页面参考如下：</p>
+<p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/9ETA0M.jpg" alt="consul web ui"></p>
+<p>至此，整个 consul 集群部署完成。如果需要其他方式部署 consul 集群可以查阅 consul 官方文档：https://www.consul.io/docs/install/index.html</p>
 <blockquote>
 <p>如果 consul 集群用在生产环境需要认真考虑数据持久性</p>
 </blockquote>
-
 <p>之后我们还需要用到 <code>registrator</code> 配合 <code>consul</code> 来实现服务自动注册和发现。</p>
 
 
@@ -517,87 +444,79 @@ consul-client1  172.16.8.110:8301  alive   client  1.3.0  2         dc1  &lt;def
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

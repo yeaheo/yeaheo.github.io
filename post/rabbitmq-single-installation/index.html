@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -213,132 +213,82 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li>
-<ul>
-<li><a href="#下载-rabbitmq-软件包">下载 RabbitMQ 软件包</a></li>
-<li><a href="#安装-rabbitmq">安装 RabbitMQ</a></li>
-<li><a href="#启动相关服务">启动相关服务</a></li>
-<li><a href="#准备-rabbitmq-配置文件">准备 RabbitMQ 配置文件</a></li>
-<li><a href="#安装-web-插件">安装 web 插件</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p><strong>RabbitMQ</strong> 是由 LShift 提供的一个 Advanced Message Queuing Protocol (AMQP) 的开源实现，由以高性能、健壮以及可伸缩性出名的 Erlang 开发设计，因此也是继承了这些优点。</p>
-
+                <p><strong>RabbitMQ</strong> 是由 LShift 提供的一个 Advanced Message Queuing Protocol (AMQP) 的开源实现，由以高性能、健壮以及可伸缩性出名的 Erlang 开发设计，因此也是继承了这些优点。</p>
 <p>本文档旨在基于 Erlang 环境在 CentOS 7 系统上安装配置 RabbitMQ</p>
-
 <p>因为 RabbitMQ 是用 Erlang 开发实现的，所以在安装 RabbitMQ 之前需要先配置完成 Erlang 的开发环境，Erlang 的具体安装配置可以参考 <a href="https://github.com/yeaheo/hello-linux/blob/master/rabbitmq/rabbitmq-erlang-installation.md">rabbitmq-erlang-installation</a>。</p>
-
 <p>本次安装系统环境及版本如下所示：</p>
-
-<pre><code class="language-bash">$ cat /etc/redhat-release
-CentOS Linux release 7.5.1804 (Core)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat /etc/redhat-release
+CentOS Linux release 7.5.1804 <span style="color:#ff79c6">(</span>Core<span style="color:#ff79c6">)</span>
 
 $ uname -r
 3.10.0-862.el7.x86_64
 
 Erlang : 21.1
 RabbitMQ: v3.7.9
-</code></pre>
-
-<p>为了安装方便，本次安装方式选用 yum 的方式安装。</p>
-
+</code></pre></div><p>为了安装方便，本次安装方式选用 yum 的方式安装。</p>
 <blockquote>
 <p>erlang 与 centos，rabbitmq 与 erlang，这些都是有依赖关系的，不同版本会存在不兼容性，可能导致安装完成后无法启动的情况，如果遇到此情况，可以查看官方版本兼容性文档，rabbitmq 官方给出的与 erlang/OTP 的版本兼容要求可以参考 <a href="http://www.rabbitmq.com/which-erlang.htm">http://www.rabbitmq.com/which-erlang.htm</a></p>
 </blockquote>
-
 <p>RabbitMQ 的官方站点：<a href="https://www.rabbitmq.com">https://www.rabbitmq.com</a></p>
-
 <p>RabbitMQ 的官方下载地址：<a href="https://www.rabbitmq.com/download.html">https://www.rabbitmq.com/download.html</a></p>
-
 <p>本次我们在  CentOS 7 上安装 RabbitMQ 服务，更为详细的或者其他系统的安装过程可以参考官方文档：<a href="https://www.rabbitmq.com/download.html">https://www.rabbitmq.com/download.html</a></p>
-
 <h3 id="下载-rabbitmq-软件包">下载 RabbitMQ 软件包</h3>
-
-<pre><code class="language-bash">$ mkdir /opt/soft
-$ cd /opt/soft
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /opt/soft
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
 $ wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.9/rabbitmq-server-3.7.9-1.el7.noarch.rpm
-</code></pre>
+</code></pre></div><h3 id="安装-rabbitmq">安装 RabbitMQ</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rpm --import https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
 
-<h3 id="安装-rabbitmq">安装 RabbitMQ</h3>
-
-<pre><code class="language-bash">$ rpm --import https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
-
-# this example assumes the CentOS 7 version of the package
+<span style="color:#6272a4"># this example assumes the CentOS 7 version of the package</span>
 $ yum install rabbitmq-server-3.7.9-1.el7.noarch.rpm -y
-</code></pre>
-
-<blockquote>
+</code></pre></div><blockquote>
 <p>有时侯在安装的过程中会报错，这个可能是由于 RabbitMQ 和 Erlang 的版本问题，当我们遇到相关错误的时候，可以尝试更换版本。</p>
 </blockquote>
-
 <h3 id="启动相关服务">启动相关服务</h3>
-
-<pre><code class="language-bash">$ systemctl start rabbitmq-server
-$ systemctl enable rabbitmq-server
-</code></pre>
-
-<p>检查 RabbitMQ 服务的状态:</p>
-
-<pre><code class="language-bash">$ rabbitmqctl status
-</code></pre>
-
-<p>当 RabbitMQ 服务正常启动后，我们可以查看对应的日志，日志默认在 <code>/var/log/rabbitmq/</code>目录下。日志中给出了rabbitmq 启动的重要信息，如 node 名，$home 目录，cookie hash 值，日志文件，数据存储目录等，但是默认情况下没有配置文件的相关信息，我们需要手动创建配置文件</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start rabbitmq-server
+$ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq-server
+</code></pre></div><p>检查 RabbitMQ 服务的状态:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rabbitmqctl status
+</code></pre></div><p>当 RabbitMQ 服务正常启动后，我们可以查看对应的日志，日志默认在 <code>/var/log/rabbitmq/</code>目录下。日志中给出了rabbitmq 启动的重要信息，如 node 名，$home 目录，cookie hash 值，日志文件，数据存储目录等，但是默认情况下没有配置文件的相关信息，我们需要手动创建配置文件</p>
 <h3 id="准备-rabbitmq-配置文件">准备 RabbitMQ 配置文件</h3>
-
 <p>首先需要手动创建 <code>/etc/rabbitmq</code> 目录，然后把配置文件模板复制到此目录下：</p>
-
-<pre><code class="language-bash">$ mkdir /etc/rabbitmq
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /etc/rabbitmq
 $ cp /usr/share/doc/rabbitmq-server-3.7.9/rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
-</code></pre>
-
-<p>配置文件准备好后，就可以重启服务了：</p>
-
-<pre><code class="language-bash">$ systemctl restart rabbitmq-server.service
-</code></pre>
-
-<blockquote>
+</code></pre></div><p>配置文件准备好后，就可以重启服务了：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl restart rabbitmq-server.service
+</code></pre></div><blockquote>
 <p>另外还可以建环境配置文件：<code>/etc/rabbitmq/rabbitmq-env.conf</code></p>
 </blockquote>
-
 <h3 id="安装-web-插件">安装 web 插件</h3>
-
 <p>management plugin 默认就在 RabbitMQ 的发布版本中，enable即可：</p>
-
-<pre><code class="language-bash">$ rabbitmq-plugins enable rabbitmq_management
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rabbitmq-plugins <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq_management
 $ chown -R rabbitmq:rabbitmq /var/lib/rabbitmq/
-</code></pre>
-
-<p>安装完成后在浏览器访问 web ui：<a href="http://ip-address:15672/">http://ip-address:15672/</a></p>
-
+</code></pre></div><p>安装完成后在浏览器访问 web ui：<a href="http://ip-address:15672/">http://ip-address:15672/</a></p>
 <blockquote>
 <p>默认登陆账号密码均为 <code>guest</code> ,当我们首次登陆的时候会报错，报错信息类似：<code>User can only log in via localhost</code></p>
 </blockquote>
-
 <p>在这里 我们需要创建一个新的管理员账号：</p>
-
-<pre><code class="language-bash"># “rabbitmqctl add_user”添加账号，并设置密码
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># “rabbitmqctl add_user”添加账号，并设置密码</span>
 $ rabbitmqctl add_user mqadmin mqadmin
 
-# ”rabbitmqctl set_user_tags”设置账号的状态
+<span style="color:#6272a4"># ”rabbitmqctl set_user_tags”设置账号的状态</span>
 $ rabbitmqctl set_user_tags mqadmin administrator
 
-# “rabbitmqctl set_permissions”设置账号的权限
-$ rabbitmqctl set_permissions -p / mqadmin &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+<span style="color:#6272a4"># “rabbitmqctl set_permissions”设置账号的权限</span>
+$ rabbitmqctl set_permissions -p / mqadmin <span style="color:#f1fa8c">&#34;.*&#34;</span> <span style="color:#f1fa8c">&#34;.*&#34;</span> <span style="color:#f1fa8c">&#34;.*&#34;</span>
 
-# “rabbitmqctl list_users”列出账号
+<span style="color:#6272a4"># “rabbitmqctl list_users”列出账号</span>
 $ rabbitmqctl list_users
-</code></pre>
-
-<p>至此，就可以用新建的管理员账号登陆 WEB 页面了。</p>
+</code></pre></div><p>至此，就可以用新建的管理员账号登陆 WEB 页面了。</p>
 
 
                 
@@ -403,87 +353,79 @@ $ rabbitmqctl list_users
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         

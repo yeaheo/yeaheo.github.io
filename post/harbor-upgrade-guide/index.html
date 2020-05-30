@@ -96,11 +96,11 @@
                     
                         
                         <li>
-                            <a href="/categories/tech">TECH</a>
+                            <a href="/categories/tech">tech</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tools">TOOLS</a>
+                            <a href="/categories/tools">tools</a>
                         </li>
                         
                     
@@ -217,21 +217,18 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#升级-harbor">升级 Harbor</a></li>
-<li><a href="#回滚到旧版本">回滚到旧版本</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#升级-harbor">升级 Harbor</a></li>
+        <li><a href="#回滚到旧版本">回滚到旧版本</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<p>之前安装的 <code>harbor</code>版本是 <code>v1.6</code>的版本，由于在 <code>v1.7</code>版本中新增加了对 <code>helm</code>的支持，所以为了更充分的利用 harbor 镜像仓库，我们将进行一次升级，将 harbor 升级到目前最新的 <code>v1.7.1</code>版本。</p>
-
+                <p>之前安装的 <code>harbor</code>版本是 <code>v1.6</code>的版本，由于在 <code>v1.7</code>版本中新增加了对 <code>helm</code>的支持，所以为了更充分的利用 harbor 镜像仓库，我们将进行一次升级，将 harbor 升级到目前最新的 <code>v1.7.1</code>版本。</p>
 <p><code>v1.7</code>版本的 harbor 增加了许多新特性，具体如下：</p>
-
 <ul>
 <li>Support deploy Harbor with Helm Chart, enables the user to have high availability of Harbor services, refer to the <a href="https://github.com/goharbor/harbor/blob/release-1.7.0/docs/installation_guide.md">Installation and Configuration Guide</a>.</li>
 <li>Support on-demand Garbage Collection, enables the admin to configure run docker registry garbage collection manually or automatically with a cron schedule.</li>
@@ -239,18 +236,16 @@
 <li>Support Image Build History, makes it easy to see the contents of a container image, refer to the User Guide.</li>
 <li>Support Logger customization, enables the user to customize STDOUT / STDERR / FILE / DB logger of running jobs.</li>
 <li>Improve user experience of Helm Chart Repository:
-
 <ul>
 <li>Chart searching included in the global search results</li>
 <li>Show chart versions total number in the chart list</li>
 <li>Mark labels to helm charts</li>
 <li>The latest version can be downloaded as default one on the chart list view</li>
 <li>The chart can be deleted by deleting all the versions under it</li>
-</ul></li>
 </ul>
-
+</li>
+</ul>
 <p>Harbor 的升级有几方面需要注意：</p>
-
 <ul>
 <li>在升级之前需要先进行相关数据的备份工作</li>
 <li>本博客内容只适用于从v1.6.0迁移到当前版本，如果要从早期版本升级，请参阅发行版分支中的迁移指南以升级到v1.6.0，并按照本文档升级到更高版本</li>
@@ -258,128 +253,90 @@
 <li>从v1.6.0起，Harbor将数据库从MariaDB迁移到PostgreSQL，并将Harbor，Notary和Clair DB合并为一个</li>
 <li>有关数据库架构的更改，请参阅<a href="https://github.com/goharbor/harbor/blob/master/tools/migration/db/changelog.md">更改日志</a></li>
 </ul>
-
 <h2 id="升级-harbor">升级 Harbor</h2>
-
 <p>一些目录说明：</p>
-
 <ul>
 <li>备份文件目录： <code>/srv</code></li>
 <li>旧版本备份目录：<code>/srv/harbor_older</code></li>
 <li>旧版本数据备份目录：<code>/srv/database</code></li>
 <li>新版本软件下载目录：<code>/opt/soft</code></li>
 </ul>
-
 <p>首先，关闭现在运行的 Harbor 服务：</p>
-
-<pre><code class="language-bash">$ cd /srv/harbor
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
 $ docker-compose down
-Stopping harbor-jobservice  ... done
-Stopping nginx              ... done
-Stopping harbor-ui          ... done
-Stopping redis              ... done
-Stopping harbor-db          ... done
-Stopping harbor-adminserver ... done
-Stopping registry           ... done
-Stopping harbor-log         ... done
-Removing harbor-jobservice  ... done
-Removing nginx              ... done
-Removing harbor-ui          ... done
-Removing redis              ... done
-Removing harbor-db          ... done
-Removing harbor-adminserver ... done
-Removing registry           ... done
-Removing harbor-log         ... done
+Stopping harbor-jobservice  ... <span style="color:#ff79c6">done</span>
+Stopping nginx              ... <span style="color:#ff79c6">done</span>
+Stopping harbor-ui          ... <span style="color:#ff79c6">done</span>
+Stopping redis              ... <span style="color:#ff79c6">done</span>
+Stopping harbor-db          ... <span style="color:#ff79c6">done</span>
+Stopping harbor-adminserver ... <span style="color:#ff79c6">done</span>
+Stopping registry           ... <span style="color:#ff79c6">done</span>
+Stopping harbor-log         ... <span style="color:#ff79c6">done</span>
+Removing harbor-jobservice  ... <span style="color:#ff79c6">done</span>
+Removing nginx              ... <span style="color:#ff79c6">done</span>
+Removing harbor-ui          ... <span style="color:#ff79c6">done</span>
+Removing redis              ... <span style="color:#ff79c6">done</span>
+Removing harbor-db          ... <span style="color:#ff79c6">done</span>
+Removing harbor-adminserver ... <span style="color:#ff79c6">done</span>
+Removing registry           ... <span style="color:#ff79c6">done</span>
+Removing harbor-log         ... <span style="color:#ff79c6">done</span>
 Removing network harbor_harbor
-</code></pre>
-
-<p>升级之前需要先进行原版本的备份，避免升级失败可以自由回滚到旧版本：</p>
-
-<pre><code class="language-bash">$ mv harbor /srv/harbor_older
-</code></pre>
-
-<p>备份Harbor数据，Harbor 的数据目录默认为 <code>/data/database</code>：</p>
-
-<pre><code class="language-bash">$ cp -a /data/database /srv/database
-</code></pre>
-
-<p>从 <a href="[https://github.com/goharbor/harbor/releases](https://github.com/goharbor/harbor/releases)">Harbor版本下载页</a>下载最新版 Harbor 文件，这里我们直接下载离线安装包进行升级：</p>
-
-<pre><code class="language-bash">$ cd /opt/soft
+</code></pre></div><p>升级之前需要先进行原版本的备份，避免升级失败可以自由回滚到旧版本：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mv harbor /srv/harbor_older
+</code></pre></div><p>备份Harbor数据，Harbor 的数据目录默认为 <code>/data/database</code>：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cp -a /data/database /srv/database
+</code></pre></div><p>从 <a href="%5Bhttps://github.com/goharbor/harbor/releases%5D(https://github.com/goharbor/harbor/releases)">Harbor版本下载页</a>下载最新版 Harbor 文件，这里我们直接下载离线安装包进行升级：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
 $ wget https://storage.googleapis.com/harbor-releases/release-1.7.0/harbor-offline-installer-v1.7.1.tgz
-</code></pre>
-
-<p>在升级 Harbor 之前，先要进行迁移。迁移工具作为 docker 镜像提供，因此我们应该从 docker hub 中提取图像。在以下命令中将 [tag] 替换为需要升级的 Harbor 发行版本（例如v1.5.0）,这里我们用 <code>v1.7.1</code>版本的镜像：</p>
-
-<pre><code class="language-bash">$ docker pull goharbor/harbor-migrator:[tag]
+</code></pre></div><p>在升级 Harbor 之前，先要进行迁移。迁移工具作为 docker 镜像提供，因此我们应该从 docker hub 中提取图像。在以下命令中将 [tag] 替换为需要升级的 Harbor 发行版本（例如v1.5.0）,这里我们用 <code>v1.7.1</code>版本的镜像：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker pull goharbor/harbor-migrator:<span style="color:#ff79c6">[</span>tag<span style="color:#ff79c6">]</span>
 $ docker pull goharbor/harbor-migrator:v1.7.1
-</code></pre>
-
-<p>更新配置文件<code>harbor.cfg</code></p>
-
-<pre><code class="language-bash">$ docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:v1.7.1 --cfg up
-</code></pre>
-
-<blockquote>
+</code></pre></div><p>更新配置文件<code>harbor.cfg</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -it --rm -v <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">harbor_cfg</span><span style="color:#f1fa8c">}</span>:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:v1.7.1 --cfg up
+</code></pre></div><blockquote>
 <p>这里的 <code>${harbor_cfg}</code>指的是我们之前安装的 harbor 的配置文件全路径，例如之前 harbor 版本的安装路径为 <code>/srv/harbor</code>，那么这里的 <code>${harbor_cfg}</code>指的就是 <code>/srv/harbor/harbor.cfg</code></p>
 </blockquote>
-
 <p>以下是我的具体执行步骤，请参考：</p>
-
-<pre><code class="language-bash"># 备份harbor
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 备份harbor</span>
 $ mv /srv/harbor /srv/harbor_older
-$ cd /srv/harbor_older
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor_older
 
-# 备份harbor配置文件
+<span style="color:#6272a4"># 备份harbor配置文件</span>
 $ cp harbor.cfg harbor.cfg.bak
 
 $ docker run -it --rm -v /srv/harbor_older/harbor.cfg:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:v1.7.1 --cfg up
 Please backup before upgrade,
-Enter y to continue updating or n to abort: y
+Enter y to <span style="color:#ff79c6">continue</span> updating or n to abort: y
 The path of the migrated harbor.cfg is not set, the input file will be overwritten.
-input version: 1.6.0, migrator chain: ['1.7.0']
+input version: 1.6.0, migrator chain: <span style="color:#ff79c6">[</span><span style="color:#f1fa8c">&#39;1.7.0&#39;</span><span style="color:#ff79c6">]</span>
 migrating to version 1.7.0
 Written new values to /harbor-migration/harbor-cfg/harbor.cfg
-</code></pre>
-
-<p>执行完上述步骤后会生成一个新的 <code>harbor.cfg</code>文件，我们需要将此文件复制到新的 harbor 版本目录下：</p>
-
-<pre><code class="language-bash">$ tar xf /opt/soft/harbor-offline-installer-v1.7.1.tgz -C /srv/
+</code></pre></div><p>执行完上述步骤后会生成一个新的 <code>harbor.cfg</code>文件，我们需要将此文件复制到新的 harbor 版本目录下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ tar xf /opt/soft/harbor-offline-installer-v1.7.1.tgz -C /srv/
 $ cp -f /srv/harbor_older/harbor.cfg /srv/harbor/
-</code></pre>
-
-<p>配置文件更新完成后，就可以升级了，需要注意的是默认新版 harbor 不会启用 <code>chart repository service</code>，如果需要管理 <code>helm</code>，我们需要在安装时添加额外的参数，例如：</p>
-
-<pre><code class="language-bash">## 默认安装
-$ cd /srv/harbor
+</code></pre></div><p>配置文件更新完成后，就可以升级了，需要注意的是默认新版 harbor 不会启用 <code>chart repository service</code>，如果需要管理 <code>helm</code>，我们需要在安装时添加额外的参数，例如：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">## 默认安装</span>
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
 $ ./install.sh
 
-## 启动 chart repository service 服务
-$ cd /srv/harbor
+<span style="color:#6272a4">## 启动 chart repository service 服务</span>
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
 $ ./install.sh --with-chartmuseum
-</code></pre>
-
-<p>等待安装完成即可，安装完成后会有如下类似提示：</p>
-
-<pre><code class="language-bash">...
+</code></pre></div><p>等待安装完成即可，安装完成后会有如下类似提示：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">...
 ✔ ----Harbor has been installed and started successfully.----
 ...
-</code></pre>
-
-<h2 id="回滚到旧版本">回滚到旧版本</h2>
-
+</code></pre></div><h2 id="回滚到旧版本">回滚到旧版本</h2>
 <p>如果升级失败，我们可以按照如下过程回滚到旧版本：</p>
-
-<pre><code class="language-bash">$ cd /srv/harbor
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
 $ docker-compose down
-$ cd ..
+$ <span style="color:#8be9fd;font-style:italic">cd</span> ..
 $ rm -rf harbor
 $ mv harbor_older harbor
 $ cp -a /srv/database /data/
-$ cd /srv/harbor
+$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
 $ ./install.sh
-</code></pre>
-
+</code></pre></div>
 
                 
 
@@ -443,87 +400,79 @@ $ ./install.sh
                         
                         
                         
-                        <a href="/tags/docker" title="Docker">
-                            Docker
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/docker-compose" title="Docker-compose">
-                            Docker-compose
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/erlang" title="Erlang">
-                            Erlang
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/harbor" title="Harbor">
-                            Harbor
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/helm" title="Helm">
-                            Helm
+                        <a href="/tags/docker" title="docker">
+                            docker
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/ingress" title="Ingress">
-                            Ingress
+                        <a href="/tags/erlang" title="erlang">
+                            erlang
                         </a>
                         
                         
                         
-                        <a href="/tags/kubernetes" title="Kubernetes">
-                            Kubernetes
+                        <a href="/tags/harbor" title="harbor">
+                            harbor
                         </a>
                         
                         
                         
-                        <a href="/tags/marathon" title="Marathon">
-                            Marathon
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/mesos" title="Mesos">
-                            Mesos
+                        <a href="/tags/helm" title="helm">
+                            helm
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/prometheus" title="Prometheus">
-                            Prometheus
+                        <a href="/tags/ingress" title="ingress">
+                            ingress
                         </a>
                         
                         
                         
-                        <a href="/tags/rabbitmq" title="RabbitMQ">
-                            RabbitMQ
+                        <a href="/tags/kubernetes" title="kubernetes">
+                            kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/marathon" title="marathon">
+                            marathon
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/mesos" title="mesos">
+                            mesos
                         </a>
                         
                         
                         
                         
                         
-                        <a href="/tags/traefik" title="Traefik">
-                            Traefik
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/prometheus" title="prometheus">
+                            prometheus
                         </a>
+                        
+                        
+                        
+                        <a href="/tags/rabbitmq" title="rabbitmq">
+                            rabbitmq
+                        </a>
+                        
+                        
+                        
+                        
                         
                         
                         
