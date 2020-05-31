@@ -214,24 +214,28 @@
                 </header>
                 <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#创建tls证书及密钥">创建TLS证书及密钥</a>
       <ul>
-        <li><a href="#创建tls证书及密钥">创建TLS证书及密钥</a></li>
-        <li><a href="#校验证书">校验证书</a></li>
-        <li><a href="#分发证书">分发证书</a></li>
+        <li><a href="#安装证书制作工具-cfssl">安装证书制作工具-CFSSL</a></li>
+        <li><a href="#创建ca证书">创建CA证书</a></li>
+        <li><a href="#创建-kubernetes-证书">创建 kubernetes 证书</a></li>
+        <li><a href="#创建-admin-证书">创建 admin 证书</a></li>
+        <li><a href="#创建-kube-proxy-证书">创建 kube-proxy 证书</a></li>
       </ul>
     </li>
+    <li><a href="#校验证书">校验证书</a></li>
+    <li><a href="#分发证书">分发证书</a></li>
   </ul>
 </nav>
                 
                 <p>集群环境如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">k8s-master: 192.168.8.66
-k8s-nodes:  192.168.8.67 192.168.8.68
-k8s-harbor: 192.168.8.69
-</code></pre></div><h2 id="创建tls证书及密钥">创建TLS证书及密钥</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">k8s-master</span>: <span style="color:#bd93f9">192.168.8.66</span>
+<span style="color:#ff79c6">k8s-nodes</span>:  <span style="color:#bd93f9">192.168.8.67</span> <span style="color:#bd93f9">192.168.8.68</span>
+<span style="color:#ff79c6">k8s-harbor</span>: <span style="color:#bd93f9">192.168.8.69</span>
+</code></pre></div><h1 id="创建tls证书及密钥">创建TLS证书及密钥</h1>
 <p><code>kubernetes</code>系统的各组件需要使用 <code>TLS</code> 证书对通信进行加密，本文档使用 CloudFlare 的 PKI 工具集 <code>cfssl</code> 来生成 Certificate Authority (CA) 和其它证书；</p>
 <p>集群TLS认证需要的证书及密钥如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">admin-key.pem
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">admin-key.pem
 admin.pem
 ca-key.pem
 ca.pem
@@ -240,33 +244,33 @@ kube-proxy.pem
 kubernetes-key.pem
 kubernetes.pem
 </code></pre></div><p>集群各组件对证书的依赖如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># etcd：使用 ca.pem、kubernetes-key.pem、kubernetes.pem；</span>
-<span style="color:#6272a4"># kube-apiserver：使用 ca.pem、kubernetes-key.pem、kubernetes.pem；</span>
-<span style="color:#6272a4"># kubelet：使用 ca.pem；</span>
-<span style="color:#6272a4"># kube-proxy：使用 ca.pem、kube-proxy-key.pem、kube-proxy.pem；</span>
-<span style="color:#6272a4"># kubectl：使用 ca.pem、admin-key.pem、admin.pem；</span>
-<span style="color:#6272a4"># kube-controller-manager：使用 ca-key.pem、ca.pem</span>
-</code></pre></div><h3 id="安装证书制作工具-cfssl">安装证书制作工具-CFSSL</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">etcd</span>: 使用 ca.pem、kubernetes-key.pem、kubernetes.pem；
+<span style="color:#ff79c6">kube-apiserver</span>: 使用 ca.pem、kubernetes-key.pem、kubernetes.pem；
+<span style="color:#ff79c6">kubelet</span>: 使用 ca.pem；
+<span style="color:#ff79c6">kube-proxy</span>: 使用 ca.pem、kube-proxy-key.pem、kube-proxy.pem；
+<span style="color:#ff79c6">kubectl</span>: 使用 ca.pem、admin-key.pem、admin.pem；
+<span style="color:#ff79c6">kube-controller-manager</span>: 使用 ca-key.pem、ca.pem
+</code></pre></div><h2 id="安装证书制作工具-cfssl">安装证书制作工具-CFSSL</h2>
 <p>安装前需要在 <code>/etc/profile</code> 文件中配置 <code>GOPATH</code> 变量，内容如下：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">...
-<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">GOPATH</span><span style="color:#ff79c6">=</span>/usr/local/go
+➜ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">GOPATH</span><span style="color:#ff79c6">=</span>/usr/local/go
 ...
-<span style="color:#8be9fd;font-style:italic">source</span> /etc/profile
+➜ <span style="color:#8be9fd;font-style:italic">source</span> /etc/profile
 </code></pre></div><p>安装CFSSL</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go get -u github.com/cloudflare/cfssl/cmd/...
-$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$GOPATH</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ go get -u github.com/cloudflare/cfssl/cmd/...
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$GOPATH</span>
 /usr/local/go
-$ ls /usr/local/go/bin/
+➜ ls /usr/local/go/bin/
 cfssl  cfssl-bundle  cfssl-certinfo  cfssljson  cfssl-newkey  cfssl-scan  mkbundle  multirootca
-</code></pre></div><h3 id="创建ca证书">创建CA证书</h3>
+</code></pre></div><h2 id="创建ca证书">创建CA证书</h2>
 <p><strong>创建CA配置文件</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir /root/ssl
-<span style="color:#8be9fd;font-style:italic">cd</span> /root/ssl
-cfssl print-defaults config &gt; config.json
-cfssl print-defaults csr &gt; csr.json
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkdir /root/ssl
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /root/ssl
+➜ cfssl print-defaults config &gt; config.json
+➜ cfssl print-defaults csr &gt; csr.json
 <span style="color:#6272a4"># 根据config.json文件的格式创建如下的ca-config.json文件</span>
 <span style="color:#6272a4"># 过期时间设置成了 87600h</span>
-cat &gt; ca-config.json <span style="color:#f1fa8c">&lt;&lt;EOF
+➜ cat &gt; ca-config.json <span style="color:#f1fa8c">&lt;&lt;EOF
 </span><span style="color:#f1fa8c">{
 </span><span style="color:#f1fa8c">  &#34;signing&#34;: {
 </span><span style="color:#f1fa8c">    &#34;default&#34;: {
@@ -294,7 +298,7 @@ cat &gt; ca-config.json <span style="color:#f1fa8c">&lt;&lt;EOF
 <li><code>client auth</code>：表示server可以用该 CA 对client提供的证书进行验证；</li>
 </ul>
 <p><strong>创建 CA 证书签名请求</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; ca-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cat &gt; ca-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
 </span><span style="color:#f1fa8c">    {
 </span><span style="color:#f1fa8c">      &#34;CN&#34;: &#34;kubernetes&#34;,
 </span><span style="color:#f1fa8c">      &#34;key&#34;: {
@@ -318,12 +322,12 @@ cat &gt; ca-config.json <span style="color:#f1fa8c">&lt;&lt;EOF
 <li>&ldquo;O&rdquo;：Organization，kube-apiserver 从证书中提取该字段作为请求用户所属的组 (Group)；</li>
 </ul>
 <p><strong>生成 CA 证书和密钥</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
-$ ls ca*
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+➜ ls ca*
 ca-config.json  ca.csr  ca-csr.json  ca-key.pem  ca.pem
-</code></pre></div><h3 id="创建-kubernetes-证书">创建 kubernetes 证书</h3>
+</code></pre></div><h2 id="创建-kubernetes-证书">创建 kubernetes 证书</h2>
 <p><strong>创建 kubernetes 证书签名请求文件</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; kubernetes-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cat &gt; kubernetes-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
 </span><span style="color:#f1fa8c">{
 </span><span style="color:#f1fa8c">  &#34;CN&#34;: &#34;kubernetes&#34;,
 </span><span style="color:#f1fa8c">  &#34;hosts&#34;: [
@@ -356,12 +360,13 @@ ca-config.json  ca.csr  ca-csr.json  ca-key.pem  ca.pem
 </span><span style="color:#f1fa8c">EOF</span>
 </code></pre></div><p>如果 hosts 字段不为空则需要指定授权使用该证书的 IP 或域名列表，由于该证书后续被 etcd 集群和 kubernetes master 集群使用，所以上面分别指定了 etcd 集群、kubernetes master 集群的主机 IP 和 kubernetes 服务的服务 IP（一般是 kube-apiserver 指定的 service-cluster-ip-range 网段的第一个IP，如 10.254.0.1。hosts 中的内容可以为空，即使按照上面的配置，向集群中增加新节点后也不需要重新生成证书。</p>
 <p><strong>生成 kubernetes 证书和私钥</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes</span>
-<span style="color:#6272a4"># ls kubernetes*</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cfssl gencert -ca<span style="color:#ff79c6">=</span>ca.pem -ca-key<span style="color:#ff79c6">=</span>ca-key.pem -config<span style="color:#ff79c6">=</span>ca-config.json -profile<span style="color:#ff79c6">=</span>kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
+
+➜ ls kubernetes*
 kubernetes.csr  kubernetes-csr.json  kubernetes-key.pem  kubernetes.pem
-</code></pre></div><h3 id="创建-admin-证书">创建 admin 证书</h3>
+</code></pre></div><h2 id="创建-admin-证书">创建 admin 证书</h2>
 <p><strong>创建 admin 证书签名请求文件</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; admin-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cat &gt; admin-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
 </span><span style="color:#f1fa8c">{
 </span><span style="color:#f1fa8c">  &#34;CN&#34;: &#34;admin&#34;,
 </span><span style="color:#f1fa8c">  &#34;hosts&#34;: [],
@@ -386,12 +391,13 @@ kubernetes.csr  kubernetes-csr.json  kubernetes-key.pem  kubernetes.pem
 <li>OU 指定该证书的 Group 为 system:masters，kubelet 使用该证书访问 kube-apiserver 时 ，由于证书被 CA 签名，所以认证通过，同时由于证书用户组为经过预授权的 system:masters，所以被授予访问所有 API 的权限；</li>
 </ul>
 <p><strong>生成 admin 证书和私钥</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes admin-csr.json | cfssljson -bare admin</span>
-<span style="color:#6272a4"># ls admin*</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cfssl gencert -ca<span style="color:#ff79c6">=</span>ca.pem -ca-key<span style="color:#ff79c6">=</span>ca-key.pem -config<span style="color:#ff79c6">=</span>ca-config.json -profile<span style="color:#ff79c6">=</span>kubernetes admin-csr.json | cfssljson -bare admin
+
+➜ ls admin*
 admin.csr  admin-csr.json  admin-key.pem  admin.pem
-</code></pre></div><h3 id="创建-kube-proxy-证书">创建 kube-proxy 证书</h3>
+</code></pre></div><h2 id="创建-kube-proxy-证书">创建 kube-proxy 证书</h2>
 <p><strong>创建 kube-proxy 证书签名请求文件</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat &gt; kube-proxy-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cat &gt; kube-proxy-csr.json <span style="color:#f1fa8c">&lt;&lt; EOF
 </span><span style="color:#f1fa8c">{
 </span><span style="color:#f1fa8c">  &#34;CN&#34;: &#34;system:kube-proxy&#34;,
 </span><span style="color:#f1fa8c">  &#34;hosts&#34;: [],
@@ -416,13 +422,13 @@ admin.csr  admin-csr.json  admin-key.pem  admin.pem
 <li>kube-apiserver 预定义的 RoleBinding cluster-admin 将User system:kube-proxy 与 Role system:node-proxier 绑定，该 Role 授予了调用 kube-apiserver Proxy 相关 API 的权限；</li>
 </ul>
 <p><strong>生成 kube-proxy 客户端证书和私钥</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy</span>
-<span style="color:#6272a4"># ls kube-proxy*</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cfssl gencert -ca<span style="color:#ff79c6">=</span>ca.pem -ca-key<span style="color:#ff79c6">=</span>ca-key.pem -config<span style="color:#ff79c6">=</span>ca-config.json -profile<span style="color:#ff79c6">=</span>kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy
+➜ ls kube-proxy*
 kube-proxy.csr  kube-proxy-csr.json  kube-proxy-key.pem  kube-proxy.pem
-</code></pre></div><h2 id="校验证书">校验证书</h2>
+</code></pre></div><h1 id="校验证书">校验证书</h1>
 <p>以 kubernetes 证书为例</p>
 <p><strong>使用 openssl 命令校验</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl x509  -noout -text -in  kubernetes.pem
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ openssl x509  -noout -text -in  kubernetes.pem
 </code></pre></div><p>需要确认的信息如下：</p>
 <ul>
 <li>确认 Issuer 字段的内容和 ca-csr.json 一致；</li>
@@ -431,11 +437,11 @@ kube-proxy.csr  kube-proxy-csr.json  kube-proxy-key.pem  kube-proxy.pem
 <li>确认 X509v3 Key Usage、Extended Key Usage 字段的内容和 ca-config.json 中 kubernetes profile 一致；</li>
 </ul>
 <p><strong>使用 fssl-certinfo 命令校验</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cfssl-certinfo -cert kubernetes.pem
-</code></pre></div><h2 id="分发证书">分发证书</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cfssl-certinfo -cert kubernetes.pem
+</code></pre></div><h1 id="分发证书">分发证书</h1>
 <p>将生成的证书和秘钥文件（后缀名为.pem）拷贝到所有机器的 <code>/etc/kubernetes/ssl</code> 目录下备用；</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir -p /etc/kubernetes/ssl
-cp *.pem /etc/kubernetes/ssl
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkdir -p /etc/kubernetes/ssl
+➜ cp *.pem /etc/kubernetes/ssl
 </code></pre></div>
 
                 
@@ -450,7 +456,7 @@ cp *.pem /etc/kubernetes/ssl
                     
                     
                     <li class="next">
-                        <a href="/post/k8s-create-kubeconfig/" data-toggle="tooltip" data-placement="top" title="Kubernetes集群创建配置文件">Next
+                        <a href="/post/k8s-create-kubeconfig/" data-toggle="tooltip" data-placement="top" title="Kubernetes-创建配置文件">Next
                             Post &rarr;</a>
                     </li>
                     
@@ -694,7 +700,7 @@ cp *.pem /etc/kubernetes/ssl
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

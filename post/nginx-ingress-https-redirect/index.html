@@ -216,7 +216,10 @@
   <ul>
     <li>
       <ul>
-        <li></li>
+        <li><a href="#创建证书">创建证书</a></li>
+        <li><a href="#创建-secret">创建 secret</a></li>
+        <li><a href="#配置-ingress-开启-tls">配置 Ingress 开启 TLS</a></li>
+        <li><a href="#测试">测试</a></li>
       </ul>
     </li>
   </ul>
@@ -228,16 +231,16 @@
 <blockquote>
 <p>证书这一块我们可以自签证书（不受信任），也可以使用正规机构颁发的证书</p>
 </blockquote>
-<h3 id="创建证书">创建证书</h3>
+<h2 id="创建证书">创建证书</h2>
 <p>首先我们使用我们自签的证书：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 生成 CA 自签证书</span>
-mkdir cert <span style="color:#ff79c6">&amp;&amp;</span> <span style="color:#8be9fd;font-style:italic">cd</span> cert
-openssl genrsa -out ca-key.pem <span style="color:#bd93f9">2048</span>
-openssl req -x509 -new -nodes -key ca-key.pem -days <span style="color:#bd93f9">10000</span> -out ca.pem -subj <span style="color:#f1fa8c">&#34;/CN=kube-ca&#34;</span>
+➜ mkdir cert <span style="color:#ff79c6">&amp;&amp;</span> <span style="color:#8be9fd;font-style:italic">cd</span> cert
+➜ openssl genrsa -out ca-key.pem <span style="color:#bd93f9">2048</span>
+➜ openssl req -x509 -new -nodes -key ca-key.pem -days <span style="color:#bd93f9">10000</span> -out ca.pem -subj <span style="color:#f1fa8c">&#34;/CN=kube-ca&#34;</span>
 
 <span style="color:#6272a4"># 编辑 openssl 配置</span>
-cp /etc/pki/tls/openssl.cnf .
-vim openssl.cnf
+➜ cp /etc/pki/tls/openssl.cnf .
+➜ vim openssl.cnf
 
 <span style="color:#6272a4"># 主要修改如下</span>
 <span style="color:#ff79c6">[</span>req<span style="color:#ff79c6">]</span>
@@ -251,56 +254,56 @@ vim openssl.cnf
 DNS.1 <span style="color:#ff79c6">=</span> saas-delta.xx.com
 
 <span style="color:#6272a4"># 生成证书</span>
-openssl genrsa -out ingress-key.pem <span style="color:#bd93f9">2048</span>
-openssl req -new -key ingress-key.pem -out ingress.csr -subj <span style="color:#f1fa8c">&#34;/CN=kube-ingress&#34;</span> -config openssl.cnf
-openssl x509 -req -in ingress.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out ingress.pem -days <span style="color:#bd93f9">365</span> -extensions v3_req -extfile openssl.cnf
+➜ openssl genrsa -out ingress-key.pem <span style="color:#bd93f9">2048</span>
+➜ openssl req -new -key ingress-key.pem -out ingress.csr -subj <span style="color:#f1fa8c">&#34;/CN=kube-ingress&#34;</span> -config  openssl.cnf
+➜ openssl x509 -req -in ingress.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out ingress.pem -days <span style="color:#bd93f9">365</span> -extensions v3_req -extfile openssl.cnf
 </code></pre></div><p>自签证书生成后就可以用证书和证书密钥创建 secret 了，这里为了方便，我用的是正规机构颁发的证书，如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ls
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ls
 1_xx.cn_bundle.crt 2_xx.cn.key
-</code></pre></div><h3 id="创建-secret">创建 secret</h3>
+</code></pre></div><h2 id="创建-secret">创建 secret</h2>
 <p>创建 secret 用如下命令创建即可：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl create secret tls <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">CERT_NAME</span><span style="color:#f1fa8c">}</span> --key <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">KEY_FILE</span><span style="color:#f1fa8c">}</span> --cert <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">CERT_FILE</span><span style="color:#f1fa8c">}</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl create secret tls <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">CERT_NAME</span><span style="color:#f1fa8c">}</span> --key <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">KEY_FILE</span><span style="color:#f1fa8c">}</span> --cert <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">CERT_FILE</span><span style="color:#f1fa8c">}</span>
 </code></pre></div><p>我实际操作的指令：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl create secret tls ingress-secret --key 2_xx.cn.key --cert 1_xx.cn_bundle.crt -n saas-delta
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl create secret tls ingress-secret --key 2_xx.cn.key --cert 1_xx.cn_bundle.crt -n saas-delta
 </code></pre></div><blockquote>
 <p>创建 secret 时尽量要和 ingress 实例在一个 namespace，这里我的是 saas-delta 命名空间</p>
 </blockquote>
 <p>创建 secret 后可以通过集群查看：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 kubectl get secrets -n saas-delta
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get secrets -n saas-delta
 NAME                  TYPE                                  DATA   AGE
 default-token-dppr2   kubernetes.io/service-account-token   <span style="color:#bd93f9">3</span>      27h
 ingress-secret        kubernetes.io/tls                     <span style="color:#bd93f9">2</span>      83m
-</code></pre></div><h3 id="配置-ingress-开启-tls">配置 Ingress 开启 TLS</h3>
+</code></pre></div><h2 id="配置-ingress-开启-tls">配置 Ingress 开启 TLS</h2>
 <p>创建 secret 后，我们需要修改 ingress 的定义文件，添加 <code>tls</code> 相关内容：</p>
-<pre><code>apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: saas-app-nginx
-  namespace: saas-delta
-  annotations:
-    kubernetes.io/ingress.class: &quot;nginx&quot;
-    nginx.ingress.kubernetes.io/ssl-redirect: &quot;true&quot;
-spec:
-  tls:
-  - hosts:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: extensions/v1beta1
+<span style="color:#ff79c6">kind</span>: Ingress
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: saas-app-nginx
+  <span style="color:#ff79c6">namespace</span>: saas-delta
+  <span style="color:#ff79c6">annotations</span>:
+    <span style="color:#ff79c6">kubernetes.io/ingress.class</span>: <span style="color:#f1fa8c">&#34;nginx&#34;</span>
+    <span style="color:#ff79c6">nginx.ingress.kubernetes.io/ssl-redirect</span>: <span style="color:#f1fa8c">&#34;true&#34;</span>
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">tls</span>:
+  - <span style="color:#ff79c6">hosts</span>:
     - saas-delta.xx.cn
-    secretName: ingress-secret
-  rules:
-  - host: saas-delta.xx.cn
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: saas-app-nginx
-          servicePort: 80
-</code></pre><p>这里有个小问题，http 跳转到 https 官方文档上是这样写的：“By default the controller redirects HTTP clients to the HTTPS port 443 using a 308 Permanent Redirect response if TLS is enabled for that Ingress.” 大概意思就是 “默认情况下，如果为该Ingress启用了TLS，则控制器会使用308永久重定向响应将HTTP客户端重定向到HTTPS端口443。” 但是在我这个阿里云的集群上好像并不好使，需要将<code>nginx.ingress.kubernetes.io/ssl-redirect</code>设置为 <code>true</code>才可以。</p>
+    <span style="color:#ff79c6">secretName</span>: ingress-secret
+  <span style="color:#ff79c6">rules</span>:
+  - <span style="color:#ff79c6">host</span>: saas-delta.xx.cn
+    <span style="color:#ff79c6">http</span>:
+      <span style="color:#ff79c6">paths</span>:
+      - <span style="color:#ff79c6">path</span>: /
+        <span style="color:#ff79c6">backend</span>:
+          <span style="color:#ff79c6">serviceName</span>: saas-app-nginx
+          <span style="color:#ff79c6">servicePort</span>: <span style="color:#bd93f9">80</span>
+</code></pre></div><p>这里有个小问题，http 跳转到 https 官方文档上是这样写的：“By default the controller redirects HTTP clients to the HTTPS port 443 using a 308 Permanent Redirect response if TLS is enabled for that Ingress.” 大概意思就是 “默认情况下，如果为该Ingress启用了TLS，则控制器会使用308永久重定向响应将HTTP客户端重定向到HTTPS端口443。” 但是在我这个阿里云的集群上好像并不好使，需要将<code>nginx.ingress.kubernetes.io/ssl-redirect</code>设置为 <code>true</code>才可以。</p>
 <p>修改完 ingress 配置文件后直接使用即可：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl apply -f app-ingress.yaml
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl apply -f app-ingress.yaml
 </code></pre></div><p>一个 Ingress 只能使用一个 secret，也就是说只能用一个证书,或者说如果你在一个 Ingress 中配置了多个域名，那么使用 TLS 的话必须保证证书支持该 Ingress 下所有域名；并且这个 secretName 一定要放在上面域名列表最后位置，否则会报错 <code>did not find expected key</code> 无法创建；同时上面的 hosts 段下域名必须跟下面的 rules 中完全匹配</p>
 <p>Kubernetes Ingress 默认情况下，当不配置证书时，会默认提供一个 TLS 证书，也就是说你 Ingress 中配置错了，比如写了 2 个 <code>secretName</code>、或者 <code>hosts</code> 段中缺了某个域名，那么对于写了多个 <code>secretName</code> 的情况，所有域名全会走默认证书，对于 <code>hosts</code> 缺了某个域名的情况，缺失的域名将会走默认证书，部署时一定要验证一下证，更新 Ingress 证书可能需要等一段时间才会生效</p>
-<h3 id="测试">测试</h3>
+<h2 id="测试">测试</h2>
 <p>配置完成后就可以进行测试了，这里我用的是 DNS 解析的方式将 hosts 解析到了 ingress 的公网IP上：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 curl -I http://saas-delta.xx.cn
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ curl -I http://saas-delta.xx.cn
 HTTP/1.1 <span style="color:#bd93f9">308</span> Permanent Redirect
 Date: Mon, <span style="color:#bd93f9">06</span> May <span style="color:#bd93f9">2019</span> 10:49:13 GMT
 Content-Type: text/html
@@ -566,7 +569,7 @@ Location: https://saas-delta.xx.cn/
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

@@ -228,38 +228,38 @@
                 <p>对于 RabbitMQ 集群，虽然官方提供了 RabbitMQ 管理 UI 来监控集群状态，但是从设计上来说这种方式并不是特别方便，这里我是借助 Prometheus 并配合 Grafana 来整体监控 RabbitMQ 集群。</p>
 <p>对于 RabbitMQ，从 <code>3.8.0</code> 版本开始，RabbitMQ 就内置了对 Prometheus 和 Grafana 的支持。但实质上是通过 <code>rabbitmq_prometheus</code> 这个插件来获取对 Prometheus 度量标准的支持，该插件是通过专用的 TCP 端口来暴露相关 RabbitMQ 指标的，默认端口是 <code>15692</code>。这些度量标准提供了对 RabbitMQ 节点状态和<a href="https://www.rabbitmq.com/runtime.html">运行时</a>的状态的支持。</p>
 <p>这里我用的是之前已经安装并配置完成的 Prometheus 和 RabbitMQ 集群，具体信息如下:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># Prometheus 监控</span>
-host_ip: 10.10.2.192
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># Prometheus 监控</span>
+<span style="color:#ff79c6">host_ip</span>: <span style="color:#bd93f9">10.10.2.192</span>
 
 <span style="color:#6272a4"># RabbitMQ 集群</span>
-rabbit@rabbitmq-node-1: 10.10.2.193    3.8.0
-rabbit@rabbitmq-node-2: 10.10.2.194    3.8.0
-rabbit@rabbitmq-node-3: 10.10.2.195    3.8.0
+<span style="color:#ff79c6">rabbit@rabbitmq-node-1</span>: <span style="color:#bd93f9">10.10.2.193</span>    <span style="color:#bd93f9">3.8.0</span>
+<span style="color:#ff79c6">rabbit@rabbitmq-node-2</span>: <span style="color:#bd93f9">10.10.2.194</span>    <span style="color:#bd93f9">3.8.0</span>
+<span style="color:#ff79c6">rabbit@rabbitmq-node-3</span>: <span style="color:#bd93f9">10.10.2.195</span>    <span style="color:#bd93f9">3.8.0</span>
 </code></pre></div><p>具有三个节点的 RabbitMQ 集群的安装配置可以参考: <a href="https://www.rabbitmq.com/cluster-formation.html">3-node RabbitMQ 3.8 cluster</a></p>
 <h2 id="rabbitmq-集群配置">RabbitMQ 集群配置</h2>
 <h3 id="修改集群名称">修改集群名称</h3>
 <p>RabbitMQ 集群都有一个描述性的名称，这个名称一般具有某些意义，这里有一些针对集群名称的一些操作,具体如下：</p>
 <p><strong>查看集群名称</strong>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rabbitmq-diagnostics -q cluster_status | grep <span style="color:#f1fa8c">&#34;Cluster name&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rabbitmq-diagnostics -q cluster_status | grep <span style="color:#f1fa8c">&#34;Cluster name&#34;</span>
 Cluster name: rabbit@rabbitmq-node-1
 </code></pre></div><p>这里的 <code>rabbit@rabbitmq-node-1</code> 就是我这个集群的名称，比较草率哈</p>
 <p><strong>修改集群名称:</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rabbitmqctl -q set_cluster_name &lt;cluster_new_name&gt;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rabbitmqctl -q set_cluster_name &lt;cluster_new_name&gt;
 </code></pre></div><p>这里为了简单就不修改了，不影响具体的功能，只是一个名称而已。</p>
 <h3 id="启用-rabbitmq_prometheus-插件">启用 rabbitmq_prometheus 插件</h3>
 <p>接下来我们需要在集群所有节点上均启用 <code>rabbitmq_prometheus</code>插件，具体操作如下:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rabbitmq-plugins <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq_prometheus
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rabbitmq-plugins <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq_prometheus
 </code></pre></div><p>具体输出内容如下，也表示该插件启用<code>成功</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rabbitmq-plugins <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq_prometheus
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">rabbitmq-plugins enable rabbitmq_prometheus
 
-Enabling plugins on node rabbit@rabbitmq-node-1:
+<span style="color:#ff79c6">Enabling plugins on node rabbit@rabbitmq-node-1</span>:
 rabbitmq_prometheus
-The following plugins have been configured:
+<span style="color:#ff79c6">The following plugins have been configured</span>:
   rabbitmq_management_agent
   rabbitmq_prometheus
   rabbitmq_web_dispatch
-Applying plugin configuration to rabbit@rabbitmq-node-1...
-The following plugins have been enabled:
+Applying plugin configuration to rabbit@rabbitmq-node<span style="color:#bd93f9">-1</span>...
+<span style="color:#ff79c6">The following plugins have been enabled</span>:
   rabbitmq_management_agent
   rabbitmq_prometheus
   rabbitmq_web_dispatch
@@ -267,18 +267,18 @@ The following plugins have been enabled:
 started <span style="color:#bd93f9">3</span> plugins.
 </code></pre></div><h3 id="指标校验">指标校验</h3>
 <p>当 <code>rabbitmq_prometheus</code> 插件启用成功后，可以通过 <code>curl</code> 工具测试是否输出 Prometheus 需要的指标，如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -s localhost:15692/metrics | head -n <span style="color:#bd93f9">6</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ curl -s localhost:15692/metrics | head -n <span style="color:#bd93f9">6</span>
 <span style="color:#6272a4"># TYPE erlang_mnesia_held_locks gauge</span>
 <span style="color:#6272a4"># HELP erlang_mnesia_held_locks Number of held locks.</span>
 erlang_mnesia_held_locks <span style="color:#bd93f9">0</span>
 </code></pre></div><p>如上所示表示该插件可以正常暴露 RabbitMQ 集群相关指标</p>
 <h2 id="prometheus-监控配置">Prometheus 监控配置</h2>
 <p>上述过程成功输出了 Prometheus 指标数据后，接下来需要配置 Prometheus 让其监控上 RabbitMQ 集群，修改 Prometheus 配置文件，增加如下内容:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">scrape_configs:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">scrape_configs</span>:
   ...
-  - job_name: <span style="color:#f1fa8c">&#39;rabbitmq_nodes&#39;</span>
-    static_configs:
-    - targets: <span style="color:#ff79c6">[</span><span style="color:#f1fa8c">&#39;10.10.2.193:15692&#39;</span>,<span style="color:#f1fa8c">&#39;10.10.2.194:15692&#39;</span>,<span style="color:#f1fa8c">&#39;10.10.2.195:15692&#39;</span><span style="color:#ff79c6">]</span>
+  - <span style="color:#ff79c6">job_name</span>: <span style="color:#f1fa8c">&#39;rabbitmq_nodes&#39;</span>
+    <span style="color:#ff79c6">static_configs</span>:
+    - <span style="color:#ff79c6">targets</span>: [<span style="color:#f1fa8c">&#39;10.10.2.193:15692&#39;</span>,<span style="color:#f1fa8c">&#39;10.10.2.194:15692&#39;</span>,<span style="color:#f1fa8c">&#39;10.10.2.195:15692&#39;</span>]
   ...
 </code></pre></div><p>修改完成后重启 Prometheus 服务即可。</p>
 <p>可以看到此时 Prometheus 已经将 MQ 集群节点纳入监控：</p>
@@ -295,9 +295,9 @@ erlang_mnesia_held_locks <span style="color:#bd93f9">0</span>
 <p>上述内容都是基于 <code>3.8</code> 版本及其以后的版本，对于 <code>3.8</code> 版本之前的版本可以使用单独的插件 <a href="https://github.com/deadtrickster/prometheus_rabbitmq_exporter">prometheus_rabbitmq_exporter</a>来暴露指标数据。该插件借助的是 <code>RabbitMQ HTTP API</code>来实现的。</p>
 <h2 id="参考链接">参考链接</h2>
 <ul>
-<li><a href="https://www.rabbitmq.com/monitoring.html">Monitoring — RabbitMQ</a></li>
-<li><a href="https://www.rabbitmq.com/cluster-formation.html"> Cluster Formation and Peer Discovery — RabbitMQ</a></li>
-<li><a href="https://www.rabbitmq.com/prometheus.html">Monitoring with Prometheus &amp; Grafana — RabbitMQ</a></li>
+<li><a href="https://www.rabbitmq.com/monitoring.html">Monitoring — RabbitMQ</a><!-- raw HTML omitted --></li>
+<li><a href="https://www.rabbitmq.com/cluster-formation.html"> Cluster Formation and Peer Discovery — RabbitMQ</a><!-- raw HTML omitted --></li>
+<li><a href="https://www.rabbitmq.com/prometheus.html">Monitoring with Prometheus &amp; Grafana — RabbitMQ</a><!-- raw HTML omitted --></li>
 </ul>
 
 
@@ -557,7 +557,7 @@ erlang_mnesia_held_locks <span style="color:#bd93f9">0</span>
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

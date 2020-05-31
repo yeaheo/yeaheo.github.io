@@ -223,27 +223,27 @@
                 <p>本次安装的 docker 客户端是 CE 版本，具体安装教程可以参考官方文档： <a href="https://docs.docker.com/glossary/?term=installation">Docker Installation</a></p>
 <h2 id="卸载旧版本-docker">卸载旧版本 Docker</h2>
 <p>如果要重新安装 Docker ，首先需要在安装之前卸载之前安装过的 Docker 版本，具体卸载过程可参考如下:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum remove docker docker-common docker-selinux docker-engine
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum remove docker docker-common docker-selinux docker-engine
 </code></pre></div><h2 id="准备-docker-yum-仓库">准备 Docker yum 仓库</h2>
 <p>因为直接需要用 yum 安装 docker，所以先要安装一些依赖软件包：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum install -y yum-utils device-mapper-persistent-data lvm2
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum install -y yum-utils device-mapper-persistent-data lvm2
 </code></pre></div><p>添加  repo 软件源：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 </code></pre></div><blockquote>
 <p>Enable the edge and testing repositories. These repositories are included in the docker.repo file above but are disabled by default. You can enable them alongside the stable repository.</p>
 </blockquote>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum-config-manager --enable docker-ce-edge
-$ yum-config-manager --enable docker-ce-testing
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum-config-manager --enable docker-ce-edge
+➜  yum-config-manager --enable docker-ce-testing
 </code></pre></div><p>当然，我们也可以禁用某些版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum-config-manager --disable docker-ce-edge
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum-config-manager --disable docker-ce-edge
 </code></pre></div><blockquote>
 <p>以上这些配置都是非必需的，直接引入repo源就可以直接安装 docker</p>
 </blockquote>
 <h2 id="安装-docker-社区版本">安装 Docker 社区版本</h2>
 <p>引入 repo 源后直接安装即可：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum -y install docker-ce
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum -y install docker-ce
 </code></pre></div><p>默认是安装 docker 社区版的最新版本，如果需要安装其他版本可以通过以下命令查看可用的版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum list docker-ce.x86_64  --showduplicates | sort -r
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum list docker-ce.x86_64  --showduplicates | sort -r
 Loading mirror speeds from cached hostfile
 docker-ce.x86_64            17.06.0.ce-1.el7.centos            docker-ce-stable 
 docker-ce.x86_64            17.06.0.ce-1.el7.centos            @docker-ce-stable
@@ -251,13 +251,13 @@ docker-ce.x86_64            17.03.2.ce-1.el7.centos            docker-ce-stable
 docker-ce.x86_64            17.03.1.ce-1.el7.centos            docker-ce-stable 
 docker-ce.x86_64            17.03.0.ce-1.el7.centos            docker-ce-stable 
 </code></pre></div><p>安装某个具体的版本可以参考下面的命令：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum install docker-ce-&lt;VERSION&gt;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  yum install docker-ce-&lt;VERSION&gt;
 </code></pre></div><p>启动 Docker 服务：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start docker
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  systemctl start docker
 </code></pre></div><p>设置 Docker 开机自启动：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> docker
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  systemctl <span style="color:#8be9fd;font-style:italic">enable</span> docker
 </code></pre></div><p>至此， docker 的社区版本已经安装完成，我们可以利用如下命令查看 docker 的具体版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker version 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  docker version 
 Client:
  Version:           18.09.1
  API version:       1.39
@@ -534,7 +534,7 @@ Server: Docker Engine - Community
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

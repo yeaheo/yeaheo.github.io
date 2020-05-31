@@ -15,9 +15,9 @@
     
 
     
-    <meta name="title" content="Kubernetes集群创建配置文件" />
-    <meta property="og:title" content="Kubernetes集群创建配置文件" />
-    <meta property="twitter:title" content="Kubernetes集群创建配置文件" />
+    <meta name="title" content="Kubernetes-创建配置文件" />
+    <meta property="og:title" content="Kubernetes-创建配置文件" />
+    <meta property="twitter:title" content="Kubernetes-创建配置文件" />
     
 
     
@@ -34,7 +34,7 @@
     <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>Kubernetes集群创建配置文件-吕啸腾的博客 | Aeric Blog</title>
+    <title>Kubernetes-创建配置文件-吕啸腾的博客 | Aeric Blog</title>
 
     <link rel="canonical" href="/post/k8s-create-kubeconfig/">
 
@@ -176,7 +176,7 @@
                         </a>
                         
                     </div>
-                    <h1>Kubernetes集群创建配置文件</h1>
+                    <h1>Kubernetes-创建配置文件</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by 
@@ -216,7 +216,10 @@
   <ul>
     <li>
       <ul>
-        <li></li>
+        <li><a href="#创建-tls-bootstrapping-token">创建 TLS Bootstrapping Token</a></li>
+        <li><a href="#创建-kubelet-bootstrapping-kubeconfig-文件">创建 kubelet bootstrapping kubeconfig 文件</a></li>
+        <li><a href="#创建-kube-proxy-kubeconfig-文件">创建 kube-proxy kubeconfig 文件</a></li>
+        <li><a href="#分发-kubeconfig-文件">分发 kubeconfig 文件</a></li>
       </ul>
     </li>
   </ul>
@@ -227,13 +230,13 @@
 <blockquote>
 <p>以下操作只需要在 <code>master</code> 上执行即可，生成的 <code>*.kubeconfig</code> 文件可以直接拷贝到 node 节点的 <code>/etc/kubernetes</code> 目录下。</p>
 </blockquote>
-<h3 id="创建-tls-bootstrapping-token">创建 TLS Bootstrapping Token</h3>
+<h2 id="创建-tls-bootstrapping-token">创建 TLS Bootstrapping Token</h2>
 <p>token 可以是任意的包涵 128 bit 的字符串，可以使用安全的随机数发生器生成。</p>
 <p>具体配置参考如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
-<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">BOOTSTRAP_TOKEN</span><span style="color:#ff79c6">=</span><span style="color:#ff79c6">$(</span>head -c <span style="color:#bd93f9">16</span> /dev/urandom | od -An -t x | tr -d <span style="color:#f1fa8c">&#39; &#39;</span><span style="color:#ff79c6">)</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+➜ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">BOOTSTRAP_TOKEN</span><span style="color:#ff79c6">=</span><span style="color:#ff79c6">$(</span>head -c <span style="color:#bd93f9">16</span> /dev/urandom | od -An -t x | tr -d <span style="color:#f1fa8c">&#39; &#39;</span><span style="color:#ff79c6">)</span>
 
-cat &gt; token.csv <span style="color:#f1fa8c">&lt;&lt;EOF
+➜ cat &gt; token.csv <span style="color:#f1fa8c">&lt;&lt;EOF
 </span><span style="color:#f1fa8c">${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,&#34;system:kubelet-bootstrap&#34;
 </span><span style="color:#f1fa8c">EOF</span>
 </code></pre></div><blockquote>
@@ -246,68 +249,68 @@ cat &gt; token.csv <span style="color:#f1fa8c">&lt;&lt;EOF
 <li>重启 <code>kube-apiserver</code> 和 <code>kubelet</code> 进程；</li>
 <li>重新 approve kubelet 的 csr 请求。</li>
 </ul>
-<h3 id="创建-kubelet-bootstrapping-kubeconfig-文件">创建 kubelet bootstrapping kubeconfig 文件</h3>
+<h2 id="创建-kubelet-bootstrapping-kubeconfig-文件">创建 kubelet bootstrapping kubeconfig 文件</h2>
 <p>具体配置参考如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
-<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+➜ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
  
 <span style="color:#6272a4"># 设置集群参数</span>
-kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
+➜ kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --certificate-authority<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --server<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
   
 <span style="color:#6272a4"># 设置客户端认证参数</span>
-kubectl config set-credentials kubelet-bootstrap <span style="color:#f1fa8c">\
+➜ kubectl config set-credentials kubelet-bootstrap <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --token<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">BOOTSTRAP_TOKEN</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
 
 <span style="color:#6272a4"># 设置上下文参数</span>
-kubectl config set-context default <span style="color:#f1fa8c">\
+➜ kubectl config set-context default <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --cluster<span style="color:#ff79c6">=</span>kubernetes <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --user<span style="color:#ff79c6">=</span>kubelet-bootstrap <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
   
 <span style="color:#6272a4"># 设置默认上下文</span>
-kubectl config use-context default --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
+➜ kubectl config use-context default --kubeconfig<span style="color:#ff79c6">=</span>bootstrap.kubeconfig
 </code></pre></div><p>参数说明：</p>
 <ul>
 <li><code>--embed-certs</code> 为 <code>true</code> 时表示将 <code>certificate-authority</code> 证书写入到生成的 <code>ootstrap.kubeconfig</code> 文件中；</li>
 <li>设置客户端认证参数时没有指定秘钥和证书，后续由 <code>kube-apiserver</code> 自动生成；</li>
 </ul>
-<h3 id="创建-kube-proxy-kubeconfig-文件">创建 kube-proxy kubeconfig 文件</h3>
+<h2 id="创建-kube-proxy-kubeconfig-文件">创建 kube-proxy kubeconfig 文件</h2>
 <p>创建 kube-proxy 的 kubeconfig 文件参考如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
-<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+➜ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
 <span style="color:#6272a4"># 设置集群参数</span>
-kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
+➜ kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --certificate-authority<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --server<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#f1fa8c">}</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
 <span style="color:#6272a4"># 设置客户端认证参数</span>
-kubectl config set-credentials kube-proxy <span style="color:#f1fa8c">\
+➜ kubectl config set-credentials kube-proxy <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --client-certificate<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kube-proxy.pem <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --client-key<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/kube-proxy-key.pem <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
 <span style="color:#6272a4"># 设置上下文参数</span>
-kubectl config set-context default <span style="color:#f1fa8c">\
+➜ kubectl config set-context default <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --cluster<span style="color:#ff79c6">=</span>kubernetes <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --user<span style="color:#ff79c6">=</span>kube-proxy <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
 <span style="color:#6272a4"># 设置默认上下文</span>
-kubectl config use-context default --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
+➜ kubectl config use-context default --kubeconfig<span style="color:#ff79c6">=</span>kube-proxy.kubeconfig
 </code></pre></div><p>参数说明：</p>
 <ul>
 <li>设置集群参数和客户端认证参数时 <code>--embed-certs</code> 都为 <code>true</code>，这会将 <code>certificate-authority、client-certificate</code> 和 <code>client-key</code> 指向的证书文件内容写入到生成的 <code>kube-proxy.kubeconfig</code> 文件中；</li>
 <li><code>kube-proxy.pem</code> 证书中 CN 为 system:kube-proxy，<code>kube-apiserver</code> 预定义的 RoleBinding cluster-admin 将User system:kube-proxy 与 Role system:node-proxier 绑定，该 Role 授予了调用 <code>kube-apiserver</code> Proxy 相关 API 的权限；</li>
 </ul>
-<h3 id="分发-kubeconfig-文件">分发 kubeconfig 文件</h3>
+<h2 id="分发-kubeconfig-文件">分发 kubeconfig 文件</h2>
 <p>创建完成后，我们需要将生成的两个 kubeconfig 文件分发到所有 Node 上的 <code>/etc/kubernetes/</code> 目录中。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
-scp bootstrap.kubeconfig kube-proxy.kubeconfig node-ip:/etc/kubernetes/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
+➜ scp bootstrap.kubeconfig kube-proxy.kubeconfig node-ip:/etc/kubernetes/
 <span style="color:#6272a4"># /etc/kubernetes/目录需要在node节点上提前创建，在制作证书和密钥的时候已经创建了所以不再赘述</span>
 </code></pre></div>
 
@@ -567,7 +570,7 @@ scp bootstrap.kubeconfig kube-proxy.kubeconfig node-ip:/etc/kubernetes/
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

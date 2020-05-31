@@ -231,10 +231,10 @@
                 <p>之前在 kubernetes 集群中已经安装了 Helm 和 Tiller，那么接下来我们需要熟悉一下 Helm 的基本应用，主要包括利用 Helm 创建、打包、分发、安装、升级及回滚 kubernetes 应用。</p>
 <h2 id="创建-helm-chart">创建 Helm Chart</h2>
 <p>首先我们需要创建一个 Chart，以后的基本操作都基于这个 Chart ：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm create mychart
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm create mychart
 Creating mychart
 </code></pre></div><p>当执行上述命令创建了 Chart 后，会在当前目录下生成相应的 <code>mychart</code> 目录，该目录结构如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ tree mychart/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  tree mychart/
 mychart/
 ├── charts
 ├── Chart.yaml
@@ -260,89 +260,89 @@ Templates    <span style="color:#6272a4"># 目录下是 YAML 文件的模板，�
 <p>templates 目录下 YAML 文件模板的值默认都是在 <code>values.yaml</code> 里定义的，例如，在 <code>deployment.yaml</code> 中定义的容器镜像 <code>image: &quot;{{ .Values.image.repository }}:{{ .Values.image.tag }}&quot;</code> 其中的 <code>.Values.image.repository</code> 的值就是在  <code>values.yaml</code> 里定义的 nginx，<code>.Values.image.tag</code> 的值就是 stable</p>
 </blockquote>
 <p>YAML 文件内容如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat values.yaml | grep -E <span style="color:#f1fa8c">&#34;repository|tag&#34;</span>
-repository: nginx
-tag: stable
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ cat values.yaml | grep -E <span style="color:#f1fa8c">&#34;repository|tag&#34;</span>
+<span style="color:#ff79c6">repository</span>: nginx
+<span style="color:#ff79c6">tag</span>: stable
 </code></pre></div><p>以上两个变量值是在 <code>create chart</code> 的时候自动生成的默认值，我们可以根据实际情况进行修改。</p>
 <h2 id="完善应用的基本信息">完善应用的基本信息</h2>
 <p>由上述内容我们可以知道 <code>Chart.yaml</code> 文件是用来描述应用的相关信息的，所以我们需要修改这个文件的内容，该文件缺省内容如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat Chart.yaml 
-apiVersion: v1
-appVersion: <span style="color:#f1fa8c">&#34;1.0&#34;</span>
-description: A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
-name: mychart
-version: 0.1.0
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ cat Chart.yaml 
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">appVersion</span>: <span style="color:#f1fa8c">&#34;1.0&#34;</span>
+<span style="color:#ff79c6">description</span>: A Helm chart for Kubernetes
+<span style="color:#ff79c6">name</span>: mychart
+<span style="color:#ff79c6">version</span>: <span style="color:#bd93f9">0.1.0</span>
 </code></pre></div><p>官方还有比较完整的文件示例：</p>
-<pre><code>apiVersion: The chart API version, always &quot;v1&quot; (required)
-name: The name of the chart (required)
-version: A SemVer 2 version (required)
-kubeVersion: A SemVer range of compatible Kubernetes versions (optional)
-description: A single-sentence description of this project (optional)
-keywords:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: The chart API version, always <span style="color:#f1fa8c">&#34;v1&#34;</span> (required)
+<span style="color:#ff79c6">name</span>: The name of the chart (required)
+<span style="color:#ff79c6">version</span>: A SemVer <span style="color:#bd93f9">2</span> version (required)
+<span style="color:#ff79c6">kubeVersion</span>: A SemVer range of compatible Kubernetes versions (optional)
+<span style="color:#ff79c6">description</span>: A single-sentence description of this project (optional)
+<span style="color:#ff79c6">keywords</span>:
   - A list of keywords about this project (optional)
-home: The URL of this project's home page (optional)
-sources:
-  - A list of URLs to source code for this project (optional)
-maintainers: # (optional)
-  - name: The maintainer's name (required for each maintainer)
-    email: The maintainer's email (optional for each maintainer)
-    url: A URL for the maintainer (optional for each maintainer)
-engine: gotpl # The name of the template engine (optional, defaults to gotpl)
-icon: A URL to an SVG or PNG image to be used as an icon (optional).
-appVersion: The version of the app that this contains (optional). This needn't be SemVer.
-deprecated: Whether this chart is deprecated (optional, boolean)
-tillerVersion: The version of Tiller that this chart requires. This should be expressed as a SemVer range: &quot;&gt;2.0.0&quot; (optional)
-</code></pre><p>我们只需要根据我们的需求对其进行相关更改即可。</p>
+<span style="color:#ff79c6">home</span>: The URL of this project<span style="color:#f1fa8c">&#39;s home page (optional)
+</span><span style="color:#f1fa8c">sources:
+</span><span style="color:#f1fa8c">  - A list of URLs to source code for this project (optional)
+</span><span style="color:#f1fa8c">maintainers: # (optional)
+</span><span style="color:#f1fa8c">  - name: The maintainer&#39;</span>s name (required for each maintainer)
+    <span style="color:#ff79c6">email</span>: The maintainer<span style="color:#f1fa8c">&#39;s email (optional for each maintainer)
+</span><span style="color:#f1fa8c">    url: A URL for the maintainer (optional for each maintainer)
+</span><span style="color:#f1fa8c">engine: gotpl # The name of the template engine (optional, defaults to gotpl)
+</span><span style="color:#f1fa8c">icon: A URL to an SVG or PNG image to be used as an icon (optional).
+</span><span style="color:#f1fa8c">appVersion: The version of the app that this contains (optional). This needn&#39;</span>t be SemVer.
+<span style="color:#ff79c6">deprecated</span>: Whether this chart is deprecated (optional, boolean)
+<span style="color:#ff79c6">tillerVersion: The version of Tiller that this chart requires. This should be expressed as a SemVer range</span>: <span style="color:#f1fa8c">&#34;&gt;2.0.0&#34;</span> (optional)
+</code></pre></div><p>我们只需要根据我们的需求对其进行相关更改即可。</p>
 <h3 id="完善应用具体部署信息">完善应用具体部署信息</h3>
 <p>编辑 <code>values.yaml</code>，当 Chart 创建后默认会在 Kubernetes 部署一个 Nginx。 mychart 应用的 <code>values.yaml</code> 文件的具体内容如下：</p>
-<pre><code>$ cat values.yaml 
-# Default values for mychart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ cat values.yaml 
+<span style="color:#6272a4"># Default values for mychart.</span>
+<span style="color:#6272a4"># This is a YAML-formatted file.</span>
+<span style="color:#6272a4"># Declare variables to be passed into your templates.</span>
 
-replicaCount: 1
+<span style="color:#ff79c6">replicaCount</span>: <span style="color:#bd93f9">1</span>
 
-image:
-  repository: nginx
-  tag: stable
-  pullPolicy: IfNotPresent
+<span style="color:#ff79c6">image</span>:
+  <span style="color:#ff79c6">repository</span>: nginx
+  <span style="color:#ff79c6">tag</span>: stable
+  <span style="color:#ff79c6">pullPolicy</span>: IfNotPresent
 
-service:
-  type: ClusterIP
-  port: 80
+<span style="color:#ff79c6">service</span>:
+  <span style="color:#ff79c6">type</span>: ClusterIP
+  <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">80</span>
 
-ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: &quot;true&quot;
-  path: /
-  hosts:
+<span style="color:#ff79c6">ingress</span>:
+  <span style="color:#ff79c6">enabled</span>: <span style="color:#ff79c6">false</span>
+  <span style="color:#ff79c6">annotations</span>: {}
+    <span style="color:#6272a4"># kubernetes.io/ingress.class: nginx</span>
+    <span style="color:#6272a4"># kubernetes.io/tls-acme: &#34;true&#34;</span>
+  <span style="color:#ff79c6">path</span>: /
+  <span style="color:#ff79c6">hosts</span>:
     - chart-example.local
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  <span style="color:#ff79c6">tls</span>: []
+  <span style="color:#6272a4">#  - secretName: chart-example-tls</span>
+  <span style="color:#6272a4">#    hosts:</span>
+  <span style="color:#6272a4">#      - chart-example.local</span>
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+<span style="color:#ff79c6">resources</span>: {}
+  <span style="color:#6272a4"># We usually recommend not to specify default resources and to leave this as a conscious</span>
+  <span style="color:#6272a4"># choice for the user. This also increases chances charts run on environments with little</span>
+  <span style="color:#6272a4"># resources, such as Minikube. If you do want to specify resources, uncomment the following</span>
+  <span style="color:#6272a4"># lines, adjust them as necessary, and remove the curly braces after &#39;resources:&#39;.</span>
+  <span style="color:#6272a4"># limits:</span>
+  <span style="color:#6272a4">#  cpu: 100m</span>
+  <span style="color:#6272a4">#  memory: 128Mi</span>
+  <span style="color:#6272a4"># requests:</span>
+  <span style="color:#6272a4">#  cpu: 100m</span>
+  <span style="color:#6272a4">#  memory: 128Mi</span>
 
-nodeSelector: {}
+<span style="color:#ff79c6">nodeSelector</span>: {}
 
-tolerations: []
+<span style="color:#ff79c6">tolerations</span>: []
 
-affinity: {}
-</code></pre><p>当我们修改好 <code>valuse.yaml</code> 文件后，我们可以用如下命令检查依赖和模板配置是否正确：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm lint mychart/
+<span style="color:#ff79c6">affinity</span>: {}
+</code></pre></div><p>当我们修改好 <code>valuse.yaml</code> 文件后，我们可以用如下命令检查依赖和模板配置是否正确：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm lint mychart/
 <span style="color:#ff79c6">==</span>&gt; Linting mychart/
 <span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> Chart.yaml: icon is recommended
 
@@ -351,139 +351,139 @@ affinity: {}
 <p>如果文件格式错误，可以根据提示进行修改</p>
 </blockquote>
 <p>我们也可以使用<code>helm install --dry-run --debug &lt;chart_dir&gt;</code>命令来验证chart配置。该输出中包含了模板的变量配置与最终渲染的 yaml 文件。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm install --dry-run --debug mychart
-<span style="color:#ff79c6">[</span>debug<span style="color:#ff79c6">]</span> Created tunnel using <span style="color:#8be9fd;font-style:italic">local</span> port: <span style="color:#f1fa8c">&#39;36589&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ helm install --dry-run --debug mychart
+<span style="color:#ff79c6">[debug] Created tunnel using local port</span>: <span style="color:#f1fa8c">&#39;36589&#39;</span>
 
-<span style="color:#ff79c6">[</span>debug<span style="color:#ff79c6">]</span> SERVER: <span style="color:#f1fa8c">&#34;127.0.0.1:36589&#34;</span>
+<span style="color:#ff79c6">[debug] SERVER</span>: <span style="color:#f1fa8c">&#34;127.0.0.1:36589&#34;</span>
 
-<span style="color:#ff79c6">[</span>debug<span style="color:#ff79c6">]</span> Original chart version: <span style="color:#f1fa8c">&#34;&#34;</span>
-<span style="color:#ff79c6">[</span>debug<span style="color:#ff79c6">]</span> CHART PATH: /opt/workspace/mychart
+<span style="color:#ff79c6">[debug] Original chart version</span>: <span style="color:#f1fa8c">&#34;&#34;</span>
+<span style="color:#ff79c6">[debug] CHART PATH</span>: /opt/workspace/mychart
 
-NAME:   youngling-flee
-REVISION: <span style="color:#bd93f9">1</span>
-RELEASED: Mon Aug <span style="color:#bd93f9">27</span> 10:56:07 <span style="color:#bd93f9">2018</span>
-CHART: mychart-0.1.0
-USER-SUPPLIED VALUES:
-<span style="color:#ff79c6">{}</span>
+<span style="color:#ff79c6">NAME</span>:   youngling-flee
+<span style="color:#ff79c6">REVISION</span>: <span style="color:#bd93f9">1</span>
+<span style="color:#ff79c6">RELEASED</span>: Mon Aug <span style="color:#bd93f9">27</span> <span style="color:#bd93f9">10</span>:<span style="color:#bd93f9">56</span>:<span style="color:#bd93f9">07</span> <span style="color:#bd93f9">2018</span>
+<span style="color:#ff79c6">CHART</span>: mychart<span style="color:#bd93f9">-0.1.0</span>
+<span style="color:#ff79c6">USER-SUPPLIED VALUES</span>:
+{}
 
-COMPUTED VALUES:
-affinity: <span style="color:#ff79c6">{}</span>
-image:
-  pullPolicy: IfNotPresent
-  repository: nginx
-  tag: stable
-ingress:
-  annotations: <span style="color:#ff79c6">{}</span>
-  enabled: <span style="color:#8be9fd;font-style:italic">false</span>
-  hosts:
+<span style="color:#ff79c6">COMPUTED VALUES</span>:
+<span style="color:#ff79c6">affinity</span>: {}
+<span style="color:#ff79c6">image</span>:
+  <span style="color:#ff79c6">pullPolicy</span>: IfNotPresent
+  <span style="color:#ff79c6">repository</span>: nginx
+  <span style="color:#ff79c6">tag</span>: stable
+<span style="color:#ff79c6">ingress</span>:
+  <span style="color:#ff79c6">annotations</span>: {}
+  <span style="color:#ff79c6">enabled</span>: <span style="color:#ff79c6">false</span>
+  <span style="color:#ff79c6">hosts</span>:
   - chart-example.local
-  path: /
-  tls: <span style="color:#ff79c6">[]</span>
-nodeSelector: <span style="color:#ff79c6">{}</span>
-replicaCount: <span style="color:#bd93f9">1</span>
-resources: <span style="color:#ff79c6">{}</span>
-service:
-  port: <span style="color:#bd93f9">80</span>
-  type: ClusterIP
-tolerations: <span style="color:#ff79c6">[]</span>
+  <span style="color:#ff79c6">path</span>: /
+  <span style="color:#ff79c6">tls</span>: []
+<span style="color:#ff79c6">nodeSelector</span>: {}
+<span style="color:#ff79c6">replicaCount</span>: <span style="color:#bd93f9">1</span>
+<span style="color:#ff79c6">resources</span>: {}
+<span style="color:#ff79c6">service</span>:
+  <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">80</span>
+  <span style="color:#ff79c6">type</span>: ClusterIP
+<span style="color:#ff79c6">tolerations</span>: []
 
-HOOKS:
-MANIFEST:
+<span style="color:#ff79c6">HOOKS</span>:
+<span style="color:#ff79c6">MANIFEST</span>:
 
 ---
 <span style="color:#6272a4"># Source: mychart/templates/service.yaml</span>
-apiVersion: v1
-kind: Service
-metadata:
-  name: youngling-flee-mychart
-  labels:
-    app: mychart
-    chart: mychart-0.1.0
-    release: youngling-flee
-    heritage: Tiller
-spec:
-  type: ClusterIP
-  ports:
-    - port: <span style="color:#bd93f9">80</span>
-      targetPort: http
-      protocol: TCP
-      name: http
-  selector:
-    app: mychart
-    release: youngling-flee
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Service
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: youngling-flee-mychart
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: mychart
+    <span style="color:#ff79c6">chart</span>: mychart<span style="color:#bd93f9">-0.1.0</span>
+    <span style="color:#ff79c6">release</span>: youngling-flee
+    <span style="color:#ff79c6">heritage</span>: Tiller
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">type</span>: ClusterIP
+  <span style="color:#ff79c6">ports</span>:
+    - <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">80</span>
+      <span style="color:#ff79c6">targetPort</span>: http
+      <span style="color:#ff79c6">protocol</span>: TCP
+      <span style="color:#ff79c6">name</span>: http
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">app</span>: mychart
+    <span style="color:#ff79c6">release</span>: youngling-flee
 ---
 <span style="color:#6272a4"># Source: mychart/templates/deployment.yaml</span>
-apiVersion: apps/v1beta2
-kind: Deployment
-metadata:
-  name: youngling-flee-mychart
-  labels:
-    app: mychart
-    chart: mychart-0.1.0
-    release: youngling-flee
-    heritage: Tiller
-spec:
-  replicas: <span style="color:#bd93f9">1</span>
-  selector:
-    matchLabels:
-      app: mychart
-      release: youngling-flee
-  template:
-    metadata:
-      labels:
-        app: mychart
-        release: youngling-flee
-    spec:
-      containers:
-        - name: mychart
-          image: <span style="color:#f1fa8c">&#34;nginx:stable&#34;</span>
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: http
-              containerPort: <span style="color:#bd93f9">80</span>
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            <span style="color:#ff79c6">{}</span>
+<span style="color:#ff79c6">apiVersion</span>: apps/v1beta2
+<span style="color:#ff79c6">kind</span>: Deployment
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: youngling-flee-mychart
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: mychart
+    <span style="color:#ff79c6">chart</span>: mychart<span style="color:#bd93f9">-0.1.0</span>
+    <span style="color:#ff79c6">release</span>: youngling-flee
+    <span style="color:#ff79c6">heritage</span>: Tiller
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">replicas</span>: <span style="color:#bd93f9">1</span>
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">matchLabels</span>:
+      <span style="color:#ff79c6">app</span>: mychart
+      <span style="color:#ff79c6">release</span>: youngling-flee
+  <span style="color:#ff79c6">template</span>:
+    <span style="color:#ff79c6">metadata</span>:
+      <span style="color:#ff79c6">labels</span>:
+        <span style="color:#ff79c6">app</span>: mychart
+        <span style="color:#ff79c6">release</span>: youngling-flee
+    <span style="color:#ff79c6">spec</span>:
+      <span style="color:#ff79c6">containers</span>:
+        - <span style="color:#ff79c6">name</span>: mychart
+          <span style="color:#ff79c6">image</span>: <span style="color:#f1fa8c">&#34;nginx:stable&#34;</span>
+          <span style="color:#ff79c6">imagePullPolicy</span>: IfNotPresent
+          <span style="color:#ff79c6">ports</span>:
+            - <span style="color:#ff79c6">name</span>: http
+              <span style="color:#ff79c6">containerPort</span>: <span style="color:#bd93f9">80</span>
+              <span style="color:#ff79c6">protocol</span>: TCP
+          <span style="color:#ff79c6">livenessProbe</span>:
+            <span style="color:#ff79c6">httpGet</span>:
+              <span style="color:#ff79c6">path</span>: /
+              <span style="color:#ff79c6">port</span>: http
+          <span style="color:#ff79c6">readinessProbe</span>:
+            <span style="color:#ff79c6">httpGet</span>:
+              <span style="color:#ff79c6">path</span>: /
+              <span style="color:#ff79c6">port</span>: http
+          <span style="color:#ff79c6">resources</span>:
+            {}
 
 </code></pre></div><p>我们可以看到 Deployment 和 Service 的名字前半截由两个随机的单词组成，最后才是我们在<code>values.yaml</code>中配置的值。</p>
 <h2 id="打包应用">打包应用</h2>
 <p>当我们修改完相关 YAML 文件的相关配置项后，下一步就是将该应用打包，具体打包操作如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm package mychart/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm package mychart/
 Successfully packaged chart and saved it to: /opt/workspace/mychart-0.1.0.tgz
 </code></pre></div><p>mychart 目录会被打包为一个 <code>mychart-0.1.0.tgz</code>  格式的压缩包，该压缩包默认会被放到当前目录下，并同时被保存到了 Helm 的本地缺省仓库目录中。</p>
 <p>如果打包时需要自定义压缩包的存放位置可以在打包时增加 <code>-d</code>参数，例如：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm package -d /opt/ mychart/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm package -d /opt/ mychart/
 Successfully packaged chart and saved it to: /opt/mychart-0.1.0.tgz
 </code></pre></div><p>如果需要查看已打包的应用的具体地址，可以在打包的时候加上 <code>--debug</code> 参数，具体输出内容如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm package mychart/ --debug
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm package mychart/ --debug
 Successfully packaged chart and saved it to: /opt/workspace/mychart-0.1.0.tgz
 <span style="color:#ff79c6">[</span>debug<span style="color:#ff79c6">]</span> Successfully saved /opt/workspace/mychart-0.1.0.tgz to /root/.helm/repository/local
 </code></pre></div><h2 id="将打包应用发布到-repository">将打包应用发布到 Repository</h2>
 <p>我们已经打包了 Chart 并发布到了 Helm 的本地目录中，但通过 <code>helm search</code> 命令查找，并不能找不到刚才生成的 mychart 包:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm search mychart
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm search mychart
 No results found
 </code></pre></div><p>这是因为 Repository 目录中的 Chart 包还没有被 Helm 管理。通过 <code>helm repo list</code>命令可以看到目前 Helm 中已配置的 Repository 的信息。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm repo list
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm repo list
 NAME    URL
 stable  https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 </code></pre></div><p>在比较新的版本上，当我们安装 Tiller 的时候会自动创建一个名为 <code>local</code> 本地仓库,但是有时候我们在搜索 Chart 的时候会报错，这个是因为没有启动本地仓库而已，我们需要手动启动本地仓库：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm serve &amp;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm serve &amp;
 Now serving you on 127.0.0.1:8879
 </code></pre></div><p>当启动本地仓库后我们再次搜索 chart 就会显示出来，例如：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm search mychart -l
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm search mychart -l
 NAME         	CHART VERSION	APP VERSION	DESCRIPTION                
 local/mychart	0.2.0        	1.0        	A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
 local/mychart	0.1.0        	1.0        	A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
 <span style="color:#6272a4"># -l 参数是显示所有历史版本，默认只显示最新版本</span>
-$ helm search mychart
+➜ helm search mychart
 NAME         	CHART VERSION	APP VERSION	DESCRIPTION                
 local/mychart	0.2.0        	1.0        	A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
 </code></pre></div><p>其实我们还可以将我们自己打包的 Charts 文件上传至我们的私有 helm 仓库，helm 私有仓库可以用 harbor 实现，具体用 harbor 怎样来管理 helm charts 可以参考：<a href="https://aeric.io/post/harbor-manage-helm-charts">用 Harbor 管理 Helm Charts</a></p>
@@ -491,114 +491,114 @@ local/mychart	0.2.0        	1.0        	A Helm chart <span style="color:#ff79c6"
 <h2 id="检查配置和模板是否有效">检查配置和模板是否有效</h2>
 <p>当使用 <code>helm install</code> 命令部署应用时，实际上就是将 templates 目录下的模板文件渲染成 Kubernetes 能够识别的 YAML 格式。</p>
 <p>当我们修改好 Chart 文件后，可以用如下命令检查配置和模板是否有效：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm install --dry-run --debug &lt;chart_dir&gt; --name &lt;release_name&gt;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm install --dry-run --debug &lt;chart_dir&gt; --name &lt;release_name&gt;
 </code></pre></div><p>上述命令输出中包含了模板的变量配置与最终渲染的 YAML 文件，例如:</p>
-<pre><code>$ helm install --dry-run --debug mychart
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ helm install --dry-run --debug mychart
 
-[debug] Created tunnel using local port: '36589'
+<span style="color:#ff79c6">[debug] Created tunnel using local port</span>: <span style="color:#f1fa8c">&#39;36589&#39;</span>
 
-[debug] SERVER: &quot;127.0.0.1:36589&quot;
+<span style="color:#ff79c6">[debug] SERVER</span>: <span style="color:#f1fa8c">&#34;127.0.0.1:36589&#34;</span>
 
-[debug] Original chart version: &quot;&quot;
-[debug] CHART PATH: /opt/workspace/mychart
+<span style="color:#ff79c6">[debug] Original chart version</span>: <span style="color:#f1fa8c">&#34;&#34;</span>
+<span style="color:#ff79c6">[debug] CHART PATH</span>: /opt/workspace/mychart
 
-NAME:   youngling-flee
-REVISION: 1
-RELEASED: Mon Aug 27 10:56:07 2018
-CHART: mychart-0.1.0
-USER-SUPPLIED VALUES:
+<span style="color:#ff79c6">NAME</span>:   youngling-flee
+<span style="color:#ff79c6">REVISION</span>: <span style="color:#bd93f9">1</span>
+<span style="color:#ff79c6">RELEASED</span>: Mon Aug <span style="color:#bd93f9">27</span> <span style="color:#bd93f9">10</span>:<span style="color:#bd93f9">56</span>:<span style="color:#bd93f9">07</span> <span style="color:#bd93f9">2018</span>
+<span style="color:#ff79c6">CHART</span>: mychart<span style="color:#bd93f9">-0.1.0</span>
+<span style="color:#ff79c6">USER-SUPPLIED VALUES</span>:
 {}
 
-COMPUTED VALUES:
-affinity: {}
-image:
-  pullPolicy: IfNotPresent
-  repository: nginx
-  tag: stable
-ingress:
-  annotations: {}
-  enabled: false
-  hosts:
+<span style="color:#ff79c6">COMPUTED VALUES</span>:
+<span style="color:#ff79c6">affinity</span>: {}
+<span style="color:#ff79c6">image</span>:
+  <span style="color:#ff79c6">pullPolicy</span>: IfNotPresent
+  <span style="color:#ff79c6">repository</span>: nginx
+  <span style="color:#ff79c6">tag</span>: stable
+<span style="color:#ff79c6">ingress</span>:
+  <span style="color:#ff79c6">annotations</span>: {}
+  <span style="color:#ff79c6">enabled</span>: <span style="color:#ff79c6">false</span>
+  <span style="color:#ff79c6">hosts</span>:
   - chart-example.local
-  path: /
-  tls: []
-nodeSelector: {}
-replicaCount: 1
-resources: {}
-service:
-  port: 80
-  type: ClusterIP
-tolerations: []
+  <span style="color:#ff79c6">path</span>: /
+  <span style="color:#ff79c6">tls</span>: []
+<span style="color:#ff79c6">nodeSelector</span>: {}
+<span style="color:#ff79c6">replicaCount</span>: <span style="color:#bd93f9">1</span>
+<span style="color:#ff79c6">resources</span>: {}
+<span style="color:#ff79c6">service</span>:
+  <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">80</span>
+  <span style="color:#ff79c6">type</span>: ClusterIP
+<span style="color:#ff79c6">tolerations</span>: []
 
-HOOKS:
-MANIFEST:
+<span style="color:#ff79c6">HOOKS</span>:
+<span style="color:#ff79c6">MANIFEST</span>:
 
 ---
-# Source: mychart/templates/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: youngling-flee-mychart
-  labels:
-    app: mychart
-    chart: mychart-0.1.0
-    release: youngling-flee
-    heritage: Tiller
-spec:
-  type: ClusterIP
-  ports:
-    - port: 80
-      targetPort: http
-      protocol: TCP
-      name: http
-  selector:
-    app: mychart
-    release: youngling-flee
+<span style="color:#6272a4"># Source: mychart/templates/service.yaml</span>
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Service
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: youngling-flee-mychart
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: mychart
+    <span style="color:#ff79c6">chart</span>: mychart<span style="color:#bd93f9">-0.1.0</span>
+    <span style="color:#ff79c6">release</span>: youngling-flee
+    <span style="color:#ff79c6">heritage</span>: Tiller
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">type</span>: ClusterIP
+  <span style="color:#ff79c6">ports</span>:
+    - <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">80</span>
+      <span style="color:#ff79c6">targetPort</span>: http
+      <span style="color:#ff79c6">protocol</span>: TCP
+      <span style="color:#ff79c6">name</span>: http
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">app</span>: mychart
+    <span style="color:#ff79c6">release</span>: youngling-flee
 ---
-# Source: mychart/templates/deployment.yaml
-apiVersion: apps/v1beta2
-kind: Deployment
-metadata:
-  name: youngling-flee-mychart
-  labels:
-    app: mychart
-    chart: mychart-0.1.0
-    release: youngling-flee
-    heritage: Tiller
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mychart
-      release: youngling-flee
-  template:
-    metadata:
-      labels:
-        app: mychart
-        release: youngling-flee
-    spec:
-      containers:
-        - name: mychart
-          image: &quot;nginx:stable&quot;
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
+<span style="color:#6272a4"># Source: mychart/templates/deployment.yaml</span>
+<span style="color:#ff79c6">apiVersion</span>: apps/v1beta2
+<span style="color:#ff79c6">kind</span>: Deployment
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: youngling-flee-mychart
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: mychart
+    <span style="color:#ff79c6">chart</span>: mychart<span style="color:#bd93f9">-0.1.0</span>
+    <span style="color:#ff79c6">release</span>: youngling-flee
+    <span style="color:#ff79c6">heritage</span>: Tiller
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">replicas</span>: <span style="color:#bd93f9">1</span>
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">matchLabels</span>:
+      <span style="color:#ff79c6">app</span>: mychart
+      <span style="color:#ff79c6">release</span>: youngling-flee
+  <span style="color:#ff79c6">template</span>:
+    <span style="color:#ff79c6">metadata</span>:
+      <span style="color:#ff79c6">labels</span>:
+        <span style="color:#ff79c6">app</span>: mychart
+        <span style="color:#ff79c6">release</span>: youngling-flee
+    <span style="color:#ff79c6">spec</span>:
+      <span style="color:#ff79c6">containers</span>:
+        - <span style="color:#ff79c6">name</span>: mychart
+          <span style="color:#ff79c6">image</span>: <span style="color:#f1fa8c">&#34;nginx:stable&#34;</span>
+          <span style="color:#ff79c6">imagePullPolicy</span>: IfNotPresent
+          <span style="color:#ff79c6">ports</span>:
+            - <span style="color:#ff79c6">name</span>: http
+              <span style="color:#ff79c6">containerPort</span>: <span style="color:#bd93f9">80</span>
+              <span style="color:#ff79c6">protocol</span>: TCP
+          <span style="color:#ff79c6">livenessProbe</span>:
+            <span style="color:#ff79c6">httpGet</span>:
+              <span style="color:#ff79c6">path</span>: /
+              <span style="color:#ff79c6">port</span>: http
+          <span style="color:#ff79c6">readinessProbe</span>:
+            <span style="color:#ff79c6">httpGet</span>:
+              <span style="color:#ff79c6">path</span>: /
+              <span style="color:#ff79c6">port</span>: http
+          <span style="color:#ff79c6">resources</span>:
             {}
-</code></pre><h2 id="部署应用到-kubernetes-集群">部署应用到 Kubernetes 集群</h2>
+</code></pre></div><h2 id="部署应用到-kubernetes-集群">部署应用到 Kubernetes 集群</h2>
 <p>验证完成没有问题后，我们就可以使用以下命令将其部署到 Kubernetes 上了:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 部署时需指定 Chart 名及 Release（部署的实例）名。</span>
-$ helm install local/mychart --name helm-test
+➜ helm install local/mychart --name helm-test
 NAME:   helm-test
 LAST DEPLOYED: Mon Aug <span style="color:#bd93f9">27</span> 11:28:28 <span style="color:#bd93f9">2018</span>
 NAMESPACE: default
@@ -623,11 +623,11 @@ NOTES:
 <p>上述命令也可以在<code>mychart</code>目录下执行 <code>helm install .</code>将 nginx 部署到 kubernetes 集群上</p>
 </blockquote>
 <p>现在 nginx 已经部署到 kubernetes 集群上，本地执行提示中的命令在本地主机上访问到 nginx 实例：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">POD_NAME</span><span style="color:#ff79c6">=</span><span style="color:#ff79c6">$(</span>kubectl get pods --namespace default -l <span style="color:#f1fa8c">&#34;app=mychart,release=helm-test&#34;</span> -o <span style="color:#8be9fd;font-style:italic">jsonpath</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;{.items[0].metadata.name}&#34;</span><span style="color:#ff79c6">)</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#34;Visit http://127.0.0.1:8080 to use your application&#34;</span>
-$ kubectl port-forward <span style="color:#8be9fd;font-style:italic">$POD_NAME</span> 8080:80
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">POD_NAME</span><span style="color:#ff79c6">=</span><span style="color:#ff79c6">$(</span>kubectl get pods --namespace default -l <span style="color:#f1fa8c">&#34;app=mychart,release=helm-test&#34;</span> -o <span style="color:#8be9fd;font-style:italic">jsonpath</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;{.items[0].metadata.name}&#34;</span><span style="color:#ff79c6">)</span>
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#34;Visit http://127.0.0.1:8080 to use your application&#34;</span>
+➜ kubectl port-forward <span style="color:#8be9fd;font-style:italic">$POD_NAME</span> 8080:80
 </code></pre></div><p>具体访问效果如下图所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">$ curl -s http://127.0.0.1:8090
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">➜ curl -s http://127.0.0.1:8090
 <span style="color:#ff79c6">&lt;!DOCTYPE html&gt;</span>
 &lt;<span style="color:#ff79c6">html</span>&gt;
 &lt;<span style="color:#ff79c6">head</span>&gt;
@@ -655,11 +655,11 @@ Commercial support is available at
 &lt;/<span style="color:#ff79c6">html</span>&gt;
 </code></pre></div><h2 id="管理部署的-release">管理部署的 Release</h2>
 <p>当部署 Release 到 Kubernetes 集群后，可以使用下面的命令列出的所有已部署的 Release 以及其对应的 Chart：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm list
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm list
 NAME     	REVISION	UPDATED                 	STATUS  	CHART        	NAMESPACE
 helm-test	<span style="color:#bd93f9">1</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:28:28 2018	DEPLOYED	mychart-0.2.0	default  
 </code></pre></div><p>不仅如此，我们还可以用下面命令查看某个 Release 的具体状态：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm status helm-test
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm status helm-test
 LAST DEPLOYED: Mon Aug <span style="color:#bd93f9">27</span> 11:28:28 <span style="color:#bd93f9">2018</span>
 NAMESPACE: default
 STATUS: DEPLOYED
@@ -684,87 +684,87 @@ NOTES:
   <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#34;Visit http://127.0.0.1:8080 to use your application&#34;</span>
   kubectl port-forward <span style="color:#8be9fd;font-style:italic">$POD_NAME</span> 8080:80
 </code></pre></div><p>也可以用如下命令查看已部署应用的详细信息：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm get helm-test
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm get helm-test
 </code></pre></div><h3 id="升级-release">升级 Release</h3>
 <p>从上面 <code>helm list</code> 输出的结果中我们可以看到有一个 Revision（更改历史）字段，该字段用于表示某一个 Release 被更新的次数，我们可以用该特性对已部署的 Release 进行更新。</p>
 <p><strong>模拟应用升级</strong></p>
 <p>首先，需要修改 <code>Chart.yaml</code> 文件，将应用版本从 <code>0.2.0</code> 修改为 <code>0.3.0</code> ，然后使用 <code>helm package</code> 命令打包并发布到本地仓库：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> mychart/
-$ cat Chart.yaml 
-apiVersion: v1
-appVersion: <span style="color:#f1fa8c">&#34;1.0&#34;</span>
-description: A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
-name: mychart
-version: 0.3.0
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ cd mychart/
+➜ cat Chart.yaml 
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">appVersion</span>: <span style="color:#f1fa8c">&#34;1.0&#34;</span>
+<span style="color:#ff79c6">description</span>: A Helm chart for Kubernetes
+<span style="color:#ff79c6">name</span>: mychart
+<span style="color:#ff79c6">version</span>: <span style="color:#bd93f9">0.3.0</span>
 
-$ helm package mychart
-Successfully packaged chart and saved it to: /opt/workspace/mychart-0.3.0.tgz
+➜ helm package mychart
+<span style="color:#ff79c6">Successfully packaged chart and saved it to</span>: /opt/workspace/mychart<span style="color:#bd93f9">-0.3.0</span>.tgz
 </code></pre></div><p>查询本地仓库版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm search mychart -l
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm search mychart -l
 NAME         	CHART VERSION	APP VERSION	DESCRIPTION                
 local/mychart	0.3.0        	1.0        	A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
 local/mychart	0.2.0        	1.0        	A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
 local/mychart	0.1.0        	1.0        	A Helm chart <span style="color:#ff79c6">for</span> Kubernetes
 </code></pre></div><p>升级应用</p>
 <p>用 <code>helm upgrade</code> 命令将已部署的 helm-test 升级到新版本:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm upgrade helm-test local/mychart
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm upgrade helm-test local/mychart
 Release <span style="color:#f1fa8c">&#34;helm-test&#34;</span> has been upgraded. Happy Helming!
 </code></pre></div><blockquote>
 <p>你可以通过 <code>--version</code> 参数指定需要升级的版本号，如果没有指定版本号，则默认使用最新版本</p>
 </blockquote>
 <p>升级完成后再次查看，注意观察 <code>Revision</code> 字段：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm list
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm list
 NAME     	REVISION	UPDATED                 	STATUS  	CHART        	NAMESPACE
 helm-test	<span style="color:#bd93f9">2</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:58:10 2018	DEPLOYED	mychart-0.3.0	default  
 </code></pre></div><p>可以看到 <code>Revision</code> 字段由原来的 1 变成了 2，<code>Chart</code> 字段也由 <code>mychart-0.2.0</code> 升级到了 <code>mychart-0.3.0</code> ,表示升级完成。</p>
 <h3 id="回滚-release">回滚 Release</h3>
 <p>如果更新后的程序运行有问题，需要回退到旧版本的应用。当遇到这种问题后我们可以使用 <code>helm history</code> 命令查看一个 Release 的所有变更记录：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
 REVISION	UPDATED                 	STATUS    	CHART        	DESCRIPTION     
 <span style="color:#bd93f9">1</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:28:28 2018	SUPERSEDED	mychart-0.2.0	Install <span style="color:#8be9fd;font-style:italic">complete</span>
 <span style="color:#bd93f9">2</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:58:10 2018	DEPLOYED  	mychart-0.3.0	Upgrade <span style="color:#8be9fd;font-style:italic">complete</span>
 </code></pre></div><p>当我们知道了应用的变更记录后，我们可以选择回退应用到指定版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm rollback helm-test <span style="color:#bd93f9">1</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm rollback helm-test <span style="color:#bd93f9">1</span>
 Rollback was a success! Happy Helming!
 </code></pre></div><blockquote>
 <p>其中的参数 1 是 helm history 查看到 Release 的历史记录中 REVISION 对应的值</p>
 </blockquote>
 <p>再次查看 Release 的变更记录：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
 REVISION	UPDATED                 	STATUS    	CHART        	DESCRIPTION     
 <span style="color:#bd93f9">1</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:28:28 2018	SUPERSEDED	mychart-0.2.0	Install <span style="color:#8be9fd;font-style:italic">complete</span>
 <span style="color:#bd93f9">2</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:58:10 2018	SUPERSEDED	mychart-0.3.0	Upgrade <span style="color:#8be9fd;font-style:italic">complete</span>
 <span style="color:#bd93f9">3</span>       	Mon Aug <span style="color:#bd93f9">27</span> 12:06:26 2018	DEPLOYED  	mychart-0.2.0	Rollback to <span style="color:#bd93f9">1</span>   
 </code></pre></div><p>再次查看现有 Release ：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm list
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm list
 NAME     	REVISION	UPDATED                 	STATUS  	CHART        	NAMESPACE
 helm-test	<span style="color:#bd93f9">3</span>       	Mon Aug <span style="color:#bd93f9">27</span> 12:06:26 2018	DEPLOYED	mychart-0.2.0	default  
 </code></pre></div><p>可以看到 <code>Revision</code> 字段由原来的 2 变成了 3，<code>Chart</code> 字段也由 <code>mychart-0.3.0</code> 回退到了 <code>mychart-0.2.0</code> ,表示回退应用完成。</p>
 <h3 id="删除-release">删除 Release</h3>
 <p>删除应用比较方便，如果需要删除一个已部署的 Release，可以利用 <code>helm delete</code> 命令来完成删除：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm delete helm-test
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm delete helm-test
 release <span style="color:#f1fa8c">&#34;helm-test&#34;</span> deleted
 $ helm list
 </code></pre></div><p>当我们删除应用后我们可以使用如下命令查看被删除应用的状态：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm list -a
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm list -a
 NAME     	REVISION	UPDATED                 	STATUS 	CHART        	NAMESPACE
 helm-test	<span style="color:#bd93f9">3</span>       	Mon Aug <span style="color:#bd93f9">27</span> 12:06:26 2018	DELETED	mychart-0.2.0	default  
 </code></pre></div><p>由上述内容可知被删除的应用已经被标记为 <code>DELETED</code> 状态。</p>
 <p>也可以使用 <code>--deleted</code> 参数来列出已经删除的 Release ：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm list --deleted 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm list --deleted 
 NAME     	REVISION	UPDATED                 	STATUS 	CHART        	NAMESPACE
 helm-test	<span style="color:#bd93f9">3</span>       	Mon Aug <span style="color:#bd93f9">27</span> 12:06:26 2018	DELETED	mychart-0.2.0	default  
 </code></pre></div><p>查看被删除应用的历史变更记录：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
 REVISION	UPDATED                 	STATUS    	CHART        	DESCRIPTION      
 <span style="color:#bd93f9">1</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:28:28 2018	SUPERSEDED	mychart-0.2.0	Install <span style="color:#8be9fd;font-style:italic">complete</span> 
 <span style="color:#bd93f9">2</span>       	Mon Aug <span style="color:#bd93f9">27</span> 11:58:10 2018	SUPERSEDED	mychart-0.3.0	Upgrade <span style="color:#8be9fd;font-style:italic">complete</span> 
 <span style="color:#bd93f9">3</span>       	Mon Aug <span style="color:#bd93f9">27</span> 12:06:26 2018	DELETED   	mychart-0.2.0	Deletion <span style="color:#8be9fd;font-style:italic">complete</span>
 </code></pre></div><p>有时候我们需要移除指定 Release 所有相关的 Kubernetes 资源和 Release 的历史记录，我们可以利用如下命令：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm delete --purge helm-test
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm delete --purge helm-test
 release <span style="color:#f1fa8c">&#34;helm-test&#34;</span> deleted
 
-$ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
+➜ helm <span style="color:#8be9fd;font-style:italic">history</span> helm-test
 Error: release: <span style="color:#f1fa8c">&#34;helm-test&#34;</span> not found
 </code></pre></div>
 
@@ -1024,7 +1024,7 @@ Error: release: <span style="color:#f1fa8c">&#34;helm-test&#34;</span> not found
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

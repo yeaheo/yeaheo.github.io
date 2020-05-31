@@ -220,7 +220,10 @@
   <ul>
     <li>
       <ul>
-        <li></li>
+        <li><a href="#安装并配置-zookeeper">安装并配置 Zookeeper</a></li>
+        <li><a href="#安装配置-mesos-master-节点">安装配置 Mesos-Master 节点</a></li>
+        <li><a href="#配置-marathon">配置 Marathon</a></li>
+        <li><a href="#配置-mesos-slave-节点">配置 Mesos-Slave 节点</a></li>
       </ul>
     </li>
   </ul>
@@ -232,13 +235,14 @@ mesos-master2   172.16.8.121   mesos+zookeeper+marathon
 mesos-master3   172.16.8.122   mesos+zookeeper+marathon
 mesos-slave1    172.16.8.110   mesos+docker
 </code></pre></div><p>上述所有机器系统版本如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@mesos-master1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># java -version</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ java -version
 openjdk version <span style="color:#f1fa8c">&#34;1.8.0_191&#34;</span>
 OpenJDK Runtime Environment <span style="color:#ff79c6">(</span>build 1.8.0_191-b12<span style="color:#ff79c6">)</span>
 OpenJDK 64-Bit Server VM <span style="color:#ff79c6">(</span>build 25.191-b12, mixed mode<span style="color:#ff79c6">)</span>
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@mesos-master1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># uname -r</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ uname -r
 4.19.0-1.el7.elrepo.x86_64
-<span style="color:#ff79c6">[</span>root@mesos-master1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># cat /etc/redhat-release</span> 
+
+➜ cat /etc/redhat-release 
 CentOS Linux release 7.5.1804 <span style="color:#ff79c6">(</span>Core<span style="color:#ff79c6">)</span> 
 </code></pre></div><blockquote>
 <p>在部署基本组件之前需要先配置好各个机器上的 Java 环境，这里不再赘述</p>
@@ -250,23 +254,23 @@ CentOS Linux release 7.5.1804 <span style="color:#ff79c6">(</span>Core<span styl
 172.16.8.120 mesos-master1
 172.16.8.121 mesos-master2
 172.16.8.122 mesos-master3
-</code></pre></div><h3 id="安装并配置-zookeeper">安装并配置 Zookeeper</h3>
+</code></pre></div><h2 id="安装并配置-zookeeper">安装并配置 Zookeeper</h2>
 <p>Zookeeper 的安装方式有多种，常用的一般是用源码二进制的方式（tar包）安装，另一种是直接用 yum 安装。</p>
-<p>二进制方式安装可以参考：https://www.jianshu.com/p/950fb55ea53a</p>
+<p>二进制方式安装可以参考：<a href="https://www.jianshu.com/p/950fb55ea53a">https://www.jianshu.com/p/950fb55ea53a</a></p>
 <p>为了可以安装较新版本的 zookeeper 本次安装使用二进制方式安装，具体内容如下：</p>
-<p>Zookeeper 的官方站点：https://zookeeper.apache.org/</p>
-<p>Zookeeper 的官方下载地址：https://zookeeper.apache.org/releases.html 我们可以在官方站点下载我们需要的版本即可。</p>
-<h4 id="下载-zookeeper">下载 zookeeper</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ wget http://apache.01link.hk/zookeeper/zookeeper-3.4.13/zookeeper-3.4.13.tar.gz
-$ tar xf zookeeper-3.4.13.tar.gz -C /srv/
-</code></pre></div><h4 id="配置-zookeeper">配置 Zookeeper</h4>
+<p>Zookeeper 的官方站点：<a href="https://zookeeper.apache.org/">https://zookeeper.apache.org/</a></p>
+<p>Zookeeper 的官方下载地址：<a href="https://zookeeper.apache.org/releases.html">https://zookeeper.apache.org/releases.html</a> 我们可以在官方站点下载我们需要的版本即可。</p>
+<h3 id="下载-zookeeper">下载 zookeeper</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ wget http://apache.01link.hk/zookeeper/zookeeper-3.4.13/zookeeper-3.4.13.tar.gz
+➜ tar xf zookeeper-3.4.13.tar.gz -C /srv/
+</code></pre></div><h3 id="配置-zookeeper">配置 Zookeeper</h3>
 <p>我们需要在所有 master 节点上手动创建 zookeeper 的数据及日志存放目录：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir -pv /data/zookeeper/<span style="color:#ff79c6">{</span>data,logs<span style="color:#ff79c6">}</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkdir -pv /data/zookeeper/<span style="color:#ff79c6">{</span>data,logs<span style="color:#ff79c6">}</span>
 </code></pre></div><p>准备 zookeeper 的配置文件：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cp /srv/zookeeper-3.4.13/conf/zoo_sample.cfg /srv/zookeeper-3.4.13/conf/zoo.cfg
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cp /srv/zookeeper-3.4.13/conf/zoo_sample.cfg /srv/zookeeper-3.4.13/conf/zoo.cfg
 
 <span style="color:#6272a4"># 修改配置文件内容如下：</span>
-$ cat /srv/zookeeper/conf/zoo.cfg | grep -v <span style="color:#f1fa8c">&#39;^#&#39;</span> | grep -v <span style="color:#f1fa8c">&#39;^$&#39;</span>
+➜ cat /srv/zookeeper/conf/zoo.cfg | grep -v <span style="color:#f1fa8c">&#39;^#&#39;</span> | grep -v <span style="color:#f1fa8c">&#39;^$&#39;</span>
 <span style="color:#8be9fd;font-style:italic">tickTime</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">2000</span>
 <span style="color:#8be9fd;font-style:italic">initLimit</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">10</span>
 <span style="color:#8be9fd;font-style:italic">syncLimit</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">5</span>
@@ -281,103 +285,103 @@ server.3<span style="color:#ff79c6">=</span>mesos-master3:2888:3888
 </blockquote>
 <p>准备 myid 文件：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># mesos-master1上执行</span>
-<span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;1&#39;</span> &gt; /data/zookeeper/data/myid
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;1&#39;</span> &gt; /data/zookeeper/data/myid
 
 <span style="color:#6272a4"># mesos-master2上执行</span>
-<span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;2&#39;</span> &gt; /data/zookeeper/data/myid
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;2&#39;</span> &gt; /data/zookeeper/data/myid
 
 <span style="color:#6272a4"># mesos-master3上执行</span>
-<span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;3&#39;</span> &gt; /data/zookeeper/data/myid
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;3&#39;</span> &gt; /data/zookeeper/data/myid
 </code></pre></div><p>配置完成后就可以启动 zookeeper 服务了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start zookeeper.service
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl start zookeeper.service
 </code></pre></div><blockquote>
 <p>三台机器上均需要启动 zookeeper 服务</p>
 </blockquote>
-<h3 id="安装配置-mesos-master-节点">安装配置 Mesos-Master 节点</h3>
+<h2 id="安装配置-mesos-master-节点">安装配置 Mesos-Master 节点</h2>
 <p>在所有 master 机器上执行如下命令安装 mesos 和 marathon：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-3.noarch.rpm
-$ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mesosphere
-$ yum -y install mesos marathon
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-3.noarch.rpm
+➜ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mesosphere
+➜ yum -y install mesos marathon
 </code></pre></div><blockquote>
 <p>有时候安装的 marathon 软件包不是我们需要的，这个是因为我们的 yum 源不对，只需将对应的 yum 源禁用,重新安装即可</p>
 </blockquote>
 <p>安装完成的相关软件包如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rpm -qa | grep -E <span style="color:#f1fa8c">&#39;mesos|marathon&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rpm -qa | grep -E <span style="color:#f1fa8c">&#39;mesos|marathon&#39;</span>
 mesos-1.7.0-2.0.3.x86_64
 mesosphere-el-repo-7-3.noarch
 marathon-1.4.13-1.0.683.el7.x86_64
 </code></pre></div><p>安装完成后需要我们配置 mesos ，mesos 的高可用配置是由 zookeeper 实现的，所以需要配置 zookeeper，具体操作如下：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 在所有 master 上执行</span>
-$ vim /etc/mesos/zk
+➜ vim /etc/mesos/zk
 zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/mesos
 </code></pre></div><p>设置文件<code>/etc/master-/quorum</code>内容为一个大于（master节点数除以2）的整数。即采用四舍五入，比如这里有3个master节点，那么3/2=1.5，四舍五入为2</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 在所有 master 上执行</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#bd93f9">2</span> &gt; /etc/mesos-master/quorum
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#bd93f9">2</span> &gt; /etc/mesos-master/quorum
 </code></pre></div><p>设置 mesos 集群 <code>hostname</code> 和集群名称</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 在 mesos-master1 上执行</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.120 &gt; /etc/mesos-master/hostname
-$ <span style="color:#8be9fd;font-style:italic">echo</span> Mesos-Cluster &gt; /etc/mesos-master/cluster
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.120 &gt; /etc/mesos-master/hostname
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> Mesos-Cluster &gt; /etc/mesos-master/cluster
 
 <span style="color:#6272a4"># 在 mesos-master2 上执行</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.121 &gt; /etc/mesos-master/hostname
-$ <span style="color:#8be9fd;font-style:italic">echo</span> Mesos-Cluster &gt; /etc/mesos-master/cluster
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.121 &gt; /etc/mesos-master/hostname
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> Mesos-Cluster &gt; /etc/mesos-master/cluster
 
 <span style="color:#6272a4"># 在 mesos-master3 上执行</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.122 &gt; /etc/mesos-master/hostname
-$ <span style="color:#8be9fd;font-style:italic">echo</span> Mesos-Cluster &gt; /etc/mesos-master/cluster
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.122 &gt; /etc/mesos-master/hostname
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> Mesos-Cluster &gt; /etc/mesos-master/cluster
 </code></pre></div><p>配置完成后就可以启动 mesos-master 服务了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start mesos-master
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl start mesos-master
 </code></pre></div><p>服务启动后可以通过浏览器访问 mesos 的界面：http://172.16.8.120:5050</p>
-<h3 id="配置-marathon">配置 Marathon</h3>
+<h2 id="配置-marathon">配置 Marathon</h2>
 <p>在上述安装 mesos 的时候已经安装了 marathon，这里只需配置即可（所有 mesos-master 机器均执行）。</p>
 <p>创建 marathon 配置文件目录：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 在所有master上执行</span>
-$ mkdir -pv /etc/marathon/conf
+➜ mkdir -pv /etc/marathon/conf
 
 <span style="color:#6272a4"># 在mesos-master1上执行</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.120 &gt; /etc/marathon/conf/hostname
-$ cp  /etc/mesos/zk   /etc/marathon/conf/master
-$ cp  /etc/mesos/zk   /etc/marathon/conf/zk
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.120 &gt; /etc/marathon/conf/hostname
+➜ cp  /etc/mesos/zk   /etc/marathon/conf/master
+➜ cp  /etc/mesos/zk   /etc/marathon/conf/zk
 
 <span style="color:#6272a4"># 修改相关文件</span>
-$ vim /etc/marathon/conf/zk
+➜ vim /etc/marathon/conf/zk
 zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/marathon
 
 <span style="color:#6272a4"># 在mesos-master2上执行</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.121 &gt; /etc/marathon/conf/hostname
-$ cp  /etc/mesos/zk   /etc/marathon/conf/master
-$ cp  /etc/mesos/zk   /etc/marathon/conf/zk
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.121 &gt; /etc/marathon/conf/hostname
+➜ cp  /etc/mesos/zk   /etc/marathon/conf/master
+➜ cp  /etc/mesos/zk   /etc/marathon/conf/zk
 
 <span style="color:#6272a4"># 修改相关文件</span>
-$ vim /etc/marathon/conf/zk
+➜ vim /etc/marathon/conf/zk
 zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/marathon
 
 <span style="color:#6272a4"># 在mesos-master3上执行</span>
-$ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.122 &gt; /etc/marathon/conf/hostname
-$ cp  /etc/mesos/zk   /etc/marathon/conf/master
-$ cp  /etc/mesos/zk   /etc/marathon/conf/zk
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.122 &gt; /etc/marathon/conf/hostname
+➜ cp  /etc/mesos/zk   /etc/marathon/conf/master
+➜ cp  /etc/mesos/zk   /etc/marathon/conf/zk
 
 <span style="color:#6272a4"># 修改相关文件</span>
-$ vim /etc/marathon/conf/zk
+➜ vim /etc/marathon/conf/zk
 zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/marathon
 </code></pre></div><p>配置完成后就可以起相应的服务了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start marathon.service
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl start marathon.service
 </code></pre></div><p>marathon 默认监听 8080 端口，也可以通过浏览器访问其界面：http://172.16.8.120:8080</p>
-<h3 id="配置-mesos-slave-节点">配置 Mesos-Slave 节点</h3>
+<h2 id="配置-mesos-slave-节点">配置 Mesos-Slave 节点</h2>
 <p>mesos-slave 也需要安装 mesos，不需要安装 marathon，首先引入 mesos 的 yum 源：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-3.noarch.rpm
-$ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mesosphere
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-3.noarch.rpm
+➜ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mesosphere
 </code></pre></div><p>安装 mesos 软件包：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum -y install mesos
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ yum -y install mesos
 </code></pre></div><p>安装完成后 mesos-slave 的配置文件默认在 <code>/etc/mesos-slave</code> 目录下，需要自定义配置：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.110 &gt; /etc/mesos-slave/hostname
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">echo</span> 172.16.8.110 &gt; /etc/mesos-slave/hostname
 </code></pre></div><p>配置 mesos-master 信息：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ vim /etc/mesos/zk
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ vim /etc/mesos/zk
 zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/mesos
 </code></pre></div><p>配置 marathon 调用 mesos 运行 docker 容器:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;docker,mesos&#39;</span> &gt; /etc/mesos-slave/containerizers
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;docker,mesos&#39;</span> &gt; /etc/mesos-slave/containerizers
 </code></pre></div><p>配置完成后，启动 mesos-slave 服务</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start mesos-slave
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl start mesos-slave
 </code></pre></div><p>至此，一个 mesos 集群创建完成，全部安装完成后就可以在 mesos 界面看到加入到的 slave 节点。</p>
 
 
@@ -637,7 +641,7 @@ zk://mesos-master1:2181,mesos-master2:2181,mesos-master3:2181/mesos
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

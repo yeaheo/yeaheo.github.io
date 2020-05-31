@@ -229,12 +229,12 @@ pass安装完成后，所有密码都存在于 <code>~/.password-store</code> �
 <h2 id="安装-pass-工具">安装 PASS 工具</h2>
 <p>本次我们选择的安装环境是CentOS7，其他系统的安装方法类似，这里不再详细说明。
 对于基于 RHEL/CentOS 的操作系统, 使用 yum 包管理器命令来安装它:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># yum -y install epel-release</span>
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># yum -y install pass</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ yum -y install epel-release
+➜ yum -y install pass
 </code></pre></div><p>安装好 pass 后，就可以开始使用和配置它了。首先，由于 pass 依赖于 gpg 来对我们的密码进行加密并以安全的方式进行存储，我们必须准备好一个 gpg 密钥对。如果没有 gpg 密钥对，可以在终端输入以下命令进行创建:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --gen-key</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ gpg --gen-key
 </code></pre></div><p>具体过程如下:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --gen-key</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ gpg --gen-key
 gpg <span style="color:#ff79c6">(</span>GnuPG<span style="color:#ff79c6">)</span> 2.0.22; Copyright <span style="color:#ff79c6">(</span>C<span style="color:#ff79c6">)</span> <span style="color:#bd93f9">2013</span> Free Software Foundation, Inc.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
@@ -288,7 +288,7 @@ pub   4096R/D9F7BEE7 2018-03-07
 uid                  cxnicxncx <span style="color:#ff79c6">(</span>abc<span style="color:#ff79c6">)</span> &lt;xxxx@gmail.com&gt;
 sub   4096R/76250E20 2018-03-07
 </code></pre></div><p>查看生成的密钥对：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --list-key</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ gpg --list-key
 /root/.gnupg/pubring.gpg
 ------------------------
 pub   4096R/D9F7BEE7 2018-03-07
@@ -297,49 +297,51 @@ sub   4096R/76250E20 2018-03-07
 </code></pre></div><h2 id="初始化-pass">初始化 PASS</h2>
 <p>如果你已经有了 GPG 密钥对，请通过运行以下命令初始化本地密码存储，你可以使用 email-id 或 gpg-id 初始化。
 查看gpg密钥对可以参考：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># gpg --list-key</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ gpg --list-key
 /root/.gnupg/pubring.gpg
 ------------------------
 pub   4096R/D9F7BEE7 2018-03-07
 uid                  cxnicxncx <span style="color:#ff79c6">(</span>abc<span style="color:#ff79c6">)</span> &lt;yeah6066@gmail.com&gt;
 sub   4096R/76250E20 2018-03-07
 </code></pre></div><p><strong>初始化密码仓库:</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass init cxnicxncx  # cxnicxncx为gpg-id</span> 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass init cxnicxncx  <span style="color:#6272a4"># cxnicxncx为gpg-id</span> 
 Password store initialized <span style="color:#ff79c6">for</span> cxnicxncx
 </code></pre></div><p>上述命令将在 ~/.password-store 目录下创建一个密码存储区。
 pass 命令提供了简单的语法来管理密码。 我们一个个来看，如何添加、编辑、生成和检索密码。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass ls</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass ls
 Password Store
 └── yeah
 或：
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass show</span>
+➜ pass show
 Password Store
 └── yeah
 或：
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass</span>
+➜ pass
 Password Store
 └── yeah
 </code></pre></div><h2 id="储存密码">储存密码</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass edit abc</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass edit abc
 这会打开默认文本编辑器，我么只需要输入密码就可以了。输入的内容会用 gpg 加密并存储为密码仓库目录中的 abc.gpg 文件。
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass</span>
+➜ pass
 Password Store
 ├── abc
 └── yeah
 </code></pre></div><p>其实我们也可以通过以分组的形式储存密码，例如将邮箱账号放到email文件夹内，将ssh账号放到ssh目录下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert email/abcd@gmail.com</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass insert email/abcd@gmail.com
 mkdir: created directory ‘/root/.password-store/email’
 Enter password <span style="color:#ff79c6">for</span> email/abcd@gmail.com: 
 Retype password <span style="color:#ff79c6">for</span> email/abcd@gmail.com: 
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert email/abcd@live.com</span>
+
+➜ pass insert email/abcd@live.com
 Enter password <span style="color:#ff79c6">for</span> email/abcd@live.com: 
 Retype password <span style="color:#ff79c6">for</span> email/abcd@live.com: 
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert 124-ssh/dev</span>
+
+➜ pass insert 124-ssh/dev
 mkdir: created directory ‘/root/.password-store/124-ssh’
 Enter password <span style="color:#ff79c6">for</span> 124-ssh/dev: 
 Retype password <span style="color:#ff79c6">for</span> 124-ssh/dev: 
 </code></pre></div><p>查看：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass
 Password Store
 ├── 124-ssh
 │   └── dev
@@ -349,41 +351,42 @@ Password Store
 │   └── abcd@live.com
 └── yeah
 </code></pre></div><h2 id="查看密码">查看密码</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass abc</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass abc
 Lv_000abc%2018
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass email/abcd@gmail.com</span>
+
+➜ pass email/abcd@gmail.com
 abc
 </code></pre></div><p>需要注意的是当要查看密码时需要输入创建gpg密钥对时的密码。
 <strong>复制密码到剪切板</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass -c abc</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass -c abc
 Copied abc to clipboard. Will clear in <span style="color:#bd93f9">45</span> seconds.
 </code></pre></div><h2 id="密码相关操作">密码相关操作</h2>
 <p><strong>创建新密码</strong></p>
 <p>如果你想生成一些比较难以猜测的密码用于代替原有的奇怪密码，可以通过其内部的 pwgen功能来实现。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass generate abc 15</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass generate abc <span style="color:#bd93f9">15</span>
 An entry already exists <span style="color:#ff79c6">for</span> abc. Overwrite it? <span style="color:#ff79c6">[</span>y/N<span style="color:#ff79c6">]</span> y
 The generated password to abc is:
 T%a2G~L^dPb:dg&#39;
 </code></pre></div><p>若希望密码只包含字母和数字则可以是使用 <code>--no-symbols</code> 选项。生成的密码会显示在屏幕上。也可以通过 <code>--clip</code> 或 <code>-c</code> 选项让 pass 把密码直接拷贝到剪切板中。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass generate -n abc 15</span> 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass generate -n abc <span style="color:#bd93f9">15</span> 
 An entry already exists <span style="color:#ff79c6">for</span> abc. Overwrite it? <span style="color:#ff79c6">[</span>y/N<span style="color:#ff79c6">]</span> y
 The generated password to abc is:
 MTrCm54wPO3H6Mp
 </code></pre></div><p><strong>编辑现有的密码</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass edit yeah</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass edit yeah
 </code></pre></div><p><strong>移除密码</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass rm abc</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass rm abc
 Are you sure you would like to delete abc? <span style="color:#ff79c6">[</span>y/N<span style="color:#ff79c6">]</span> y
 removed ‘/root/.password-store/abc.gpg’
 </code></pre></div><p><strong>保存详细信息</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass insert abc -m</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ pass insert abc -m
 Enter contents of abc and press Ctrl+D when finished:
 
 chxiuhcnxikcnx     
 name: echo.lv
 info: ssh
 
-<span style="color:#ff79c6">[</span>root@ns1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pass abc</span>
+➜ pass abc
 chxiuhcnxikcnx
 name: echo.lv
 info: ssh
@@ -646,7 +649,7 @@ info: ssh
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

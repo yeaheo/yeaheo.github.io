@@ -222,10 +222,10 @@
                 <h2 id="同步容器与宿主机时间">同步容器与宿主机时间</h2>
 <p>在 Docker 容器创建好之后，可能会发现容器时间跟宿主机时间不一致，这就需要同步它们的时间，让容器时间跟宿主机时间保持一致。</p>
 <p>宿主机时间：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># date</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ date
 2017年 07月 30日 星期日 13:46:52 CST
 </code></pre></div><p>容器时间：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker run -i -t centos:latest /bin/bash</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker run -i -t centos:latest /bin/bash
 <span style="color:#ff79c6">[</span>root@0ce1de90e209 /<span style="color:#ff79c6">]</span><span style="color:#6272a4"># date</span>
 Sun Jul <span style="color:#bd93f9">30</span> 05:47:14 UTC <span style="color:#bd93f9">2017</span>
 </code></pre></div><p>发现两者之间的时间相差了八个小时！</p>
@@ -235,20 +235,20 @@ Sun Jul <span style="color:#bd93f9">30</span> 05:47:14 UTC <span style="color:#b
 <p><strong>方法1：共享主机的 localtime</strong></p>
 <p>创建容器的时候指定启动参数，挂载 localtime 文件到容器内，保证两者所采用的时区是一致的。</p>
 <p>示例如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker run -i -t --name my-httpd -v /etc/localtime:/etc/localtime:ro centos:httpd /bin/bash</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker run -i -t --name my-httpd -v /etc/localtime:/etc/localtime:ro centos:httpd /bin/bash
 <span style="color:#ff79c6">[</span>root@be91e9bd5d95 /<span style="color:#ff79c6">]</span><span style="color:#6272a4"># date</span>
 Sun Jul <span style="color:#bd93f9">30</span> 14:01:53 CST <span style="color:#bd93f9">2017</span>
 </code></pre></div><p><strong>方法2：复制主机的 localtime</strong></p>
 <p>示例如下：</p>
 <p>修改前</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker run -i -t centos:latest /bin/bash</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker run -i -t centos:latest /bin/bash
 <span style="color:#ff79c6">[</span>root@0ce1de90e209 /<span style="color:#ff79c6">]</span><span style="color:#6272a4"># date</span>
 Sun Jul <span style="color:#bd93f9">30</span> 05:47:14 UTC <span style="color:#bd93f9">2017</span>
 </code></pre></div><p>修改后</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker cp /etc/localtime 9ec4c03133dd:/etc</span>
-<span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker start 9ec4c03133dd</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker cp /etc/localtime 9ec4c03133dd:/etc
+➜ docker start 9ec4c03133dd
 9ec4c03133dd
-<span style="color:#ff79c6">[</span>root@ceph-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker attach 9ec4c03133dd</span>
+➜ docker attach 9ec4c03133dd
 <span style="color:#ff79c6">[</span>root@9ec4c03133dd /<span style="color:#ff79c6">]</span><span style="color:#6272a4"># date</span>
 Sun Jul <span style="color:#bd93f9">30</span> 14:05:25 CST <span style="color:#bd93f9">2017</span>
 </code></pre></div><p><strong>方法3：创建 dockerfile 文件的时候，自定义该镜像的时间格式及时区。</strong></p>
@@ -258,9 +258,9 @@ Sun Jul <span style="color:#bd93f9">30</span> 14:05:25 CST <span style="color:#b
 RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime <span style="color:#ff79c6">&amp;&amp;</span> <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#39;Asia/Shanghai&#39;</span> &gt;/etc/timezone
 ......
 </code></pre></div><p>用 dockerfile 制作镜像：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@ceph-node1 centos<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker build -t centos:zone .</span>
-<span style="color:#ff79c6">[</span>root@ceph-node1 centos<span style="color:#ff79c6">]</span><span style="color:#6272a4"># docker run -i -t centos:zone /bin/bash</span>
-<span style="color:#ff79c6">[</span>root@5d143e9813f7 /<span style="color:#ff79c6">]</span><span style="color:#6272a4"># date</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker build -t centos:zone .
+➜ docker run -i -t centos:zone /bin/bash
+➜ date
 Sun Jul <span style="color:#bd93f9">30</span> 13:49:42 CST <span style="color:#bd93f9">2017</span>
 </code></pre></div><blockquote>
 <p>使用 dokcerfile 生成的镜像的容器改变了容器的时区，这样不仅保证了容器时间与宿主机时间一致，并且如果用 tomcat 镜像作为基础镜像的话，JVM 的时区也是和宿主机保持一致，前两种方法只是保证了素质宿主机时间与容器时间一致，JVM 的时区并没有该 Bain， tomcat 打印的日志不会改变。</p>
@@ -274,7 +274,7 @@ Sun Jul <span style="color:#bd93f9">30</span> 13:49:42 CST <span style="color:#b
   <span style="color:#f1fa8c">&#34;live-restore&#34;</span>: <span style="color:#8be9fd;font-style:italic">true</span>
 <span style="color:#ff79c6">}</span>
 </code></pre></div><p>修改完成，重启 docker 使其生效即可</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl restart docker.service
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl restart docker.service
 </code></pre></div>
 
                 
@@ -533,7 +533,7 @@ Sun Jul <span style="color:#bd93f9">30</span> 13:49:42 CST <span style="color:#b
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

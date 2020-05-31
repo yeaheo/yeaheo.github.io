@@ -233,17 +233,17 @@
 <h2 id="启用-harbor-的-chart-repository-服务">启用 harbor 的 chart repository 服务</h2>
 <p>默认新版 harbor 不会启用 <code>chart repository service</code>，如果需要管理 <code>helm</code>，我们需要在安装时添加额外的参数，例如：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">## 默认安装</span>
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ ./install.sh
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜ ./install.sh
 
 <span style="color:#6272a4">## 启动 chart repository service 服务</span>
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ ./install.sh --with-chartmuseum
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜ ./install.sh --with-chartmuseum
 </code></pre></div><p>等待安装完成即可，安装完成后会有如下类似提示：</p>
-<pre><code>...
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">...
 ✔ ----Harbor has been installed and started successfully.----
 ...
-</code></pre><p>之后，我们就可以用上述 harbor 来管理 helm charts 了。</p>
+</code></pre></div><p>之后，我们就可以用上述 harbor 来管理 helm charts 了。</p>
 <h2 id="图形界面操作">图形界面操作</h2>
 <p><strong>创建相关项目：</strong></p>
 <p>首先，我们需要在 harbor 上创建一个名为 <code>helm-repo</code>的项目，如下图所示：</p>
@@ -261,59 +261,72 @@ $ ./install.sh --with-chartmuseum
 <h2 id="用-helm-cli-管理-helm-charts">用 Helm CLI 管理 Helm Charts</h2>
 <p>上述用 harbor 的图形界面操作 helm charts 固然简单快捷，这个在我们查看 helm 时确实简单高效，但是当我们想利用 CI 实现 helm charts 自动部署应用到 Kubernetes 集群的时候，该方法就显得比较鸡肋了，可以说图形界面根本无法实现，所以我们需要用 <code>Helm CLI</code>工具来实现。</p>
 <p>首先，需要安装 helm 客户端工具，具体安装 helm cli 可以参考：<a href="https://docs.helm.sh/using_helm/#installing-helm">Install Helm</a>，安装完成后可以通过如下命令验证安装是否完成：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm version
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm version
 
 <span style="color:#6272a4">#Client: &amp;version.Version{SemVer:&#34;v2.9.1&#34;, GitCommit:&#34;20adb27c7c5868466912eebdf6664e7390ebe710&#34;, GitTreeState:&#34;clean&#34;}</span>
 <span style="color:#6272a4">#Server: &amp;version.Version{SemVer:&#34;v2.9.1&#34;, GitCommit:&#34;20adb27c7c5868466912eebdf6664e7390ebe710&#34;, GitTreeState:&#34;clean&#34;}</span>
 </code></pre></div><h3 id="添加-harbor-helm-仓库">添加 harbor helm 仓库</h3>
 <p>在使用之前，应该使用 <code>helm repo add</code> 命令将 <code>Harbor</code> 添加到存储库列表中。它支持两种不同的模式：</p>
-<pre><code>1.Add Harbor as a unified single index entry point
-2.Add Harbor project as separate index entry point
-</code></pre><p>这两种模式的具体区别如下所述：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#bd93f9">1.</span>Add Harbor as a unified single index entry point
+<span style="color:#bd93f9">2.</span>Add Harbor project as separate index entry point
+</code></pre></div><p>这两种模式的具体区别如下所述：</p>
 <p><strong>Add Harbor as a unified single index entry point</strong></p>
-<ul>
-<li>
 <p>该模式可以使 Helm 访问到不同项目中的所有图表，以及当前经过身份验证的用户可以访问的图表。</p>
-</li>
-<li>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm repo add --ca-file ca.crt --cert-file server.crt --key-file server.key --username<span style="color:#ff79c6">=</span>admin --password<span style="color:#ff79c6">=</span>Passw0rd myrepo https://xx.xx.xx.xx/chartrepo
-</code></pre></div></li>
-</ul>
-<p><strong>Add Harbor project as separate index entry point</strong></p>
-<ul>
-<li>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm repo add <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --ca-file ca.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --cert-file server.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --key-file server.key <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --username<span style="color:#ff79c6">=</span>admin <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --password<span style="color:#ff79c6">=</span>Passw0rd <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    myrepo https://xx.xx.xx.xx/chartrepo
+</code></pre></div><p><strong>Add Harbor project as separate index entry point</strong></p>
 <p>该模式 helm 只能在指定项目中提取图表。</p>
-</li>
-<li>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm repo add --ca-file ca.crt --cert-file server.crt --key-file server.key --username<span style="color:#ff79c6">=</span>admin --password<span style="color:#ff79c6">=</span>Passw0rd myrepo https://xx.xx.xx.xx/chartrepo/myproject
-</code></pre></div></li>
-</ul>
-<blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm repo add <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --ca-file ca.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --cert-file server.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --key-file server.key <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --username<span style="color:#ff79c6">=</span>admin <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --password<span style="color:#ff79c6">=</span>Passw0rd 
+    myrepo https://xx.xx.xx.xx/chartrepo/myproject
+</code></pre></div><blockquote>
 <p>需要注意的是，如果用 <code>https</code>协议，这两种模式均需提供受信的证书和密钥，ca 证书可以不需要，省略</p>
 </blockquote>
 <p>本次，我用的是第二种模式，添加完成后，如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-m1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># helm repo list</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm repo list
 NAME     	URL
 stable   	https://kubernetes-charts.storage.googleapis.com
 <span style="color:#8be9fd;font-style:italic">local</span>    	http://127.0.0.1:8879/charts
 myrepo	    https://harbor.xxx.cn/chartrepo/helm-repo
 </code></pre></div><h3 id="上传-helm-charts">上传 Helm Charts</h3>
 <p>因为我们需要用 <code>helm push</code>命令上传，该命令是通过 <code>helm plugin</code>实现的，但是默认 helm 没有安装此插件，需要安装：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm plugin install https://github.com/chartmuseum/helm-push
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm plugin install https://github.com/chartmuseum/helm-push
 </code></pre></div><p>当我们打包好 <code>Helm Charts</code>后就可以通过命令上传至我们创建的仓库:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm push --ca-file<span style="color:#ff79c6">=</span>ca.crt --key-file<span style="color:#ff79c6">=</span>server.key --cert-file<span style="color:#ff79c6">=</span>server.crt --username<span style="color:#ff79c6">=</span>admin --password<span style="color:#ff79c6">=</span>passw0rd chart_repo/hello-helm-0.1.0.tgz myrepo
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm push <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --ca-file<span style="color:#ff79c6">=</span>ca.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --key-file<span style="color:#ff79c6">=</span>server.key <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --cert-file<span style="color:#ff79c6">=</span>server.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --username<span style="color:#ff79c6">=</span>admin <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --password<span style="color:#ff79c6">=</span>passw0rd <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     chart_repo/hello-helm-0.1.0.tgz myrepo
 </code></pre></div><blockquote>
 <p><code>push</code> command does not support pushing a prov file of a signed chart yet.</p>
 </blockquote>
 <h3 id="安装-helm-charts">安装 Helm Charts</h3>
 <p>在安装之前，请确保使用命令 helm init 正确初始化helm，并且图表索引与命令 <code>helm repo update</code>同步。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm repo update
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm repo update
 </code></pre></div><p>搜索需要安装的 helm chart</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm search hello
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm search hello
 </code></pre></div><p>安装 helm charts</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm install --ca-file<span style="color:#ff79c6">=</span>ca.crt --key-file<span style="color:#ff79c6">=</span>server.key --cert-file<span style="color:#ff79c6">=</span>server.crt --username<span style="color:#ff79c6">=</span>admin --password<span style="color:#ff79c6">=</span>Passw0rd --version 0.1.10 repo248/chart_repo/hello-helm
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm install <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --ca-file<span style="color:#ff79c6">=</span>ca.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --key-file<span style="color:#ff79c6">=</span>server.key <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --cert-file<span style="color:#ff79c6">=</span>server.crt <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --username<span style="color:#ff79c6">=</span>admin <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --password<span style="color:#ff79c6">=</span>Passw0rd <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     --version 0.1.10 <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>     repo/chart_repo/hello-helm
 </code></pre></div><p>至此， 用 harbor 管理 helm charts 就完成了。helm 连接的 kubernetes 集群默认是和 kubectl 连接的 kubernetes 集群一致的，之后我们可以到 kubernetes 集群中查看我们新部署的 helm 相关应用</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm list
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ helm list
 </code></pre></div>
 
                 
@@ -572,7 +585,7 @@ myrepo	    https://harbor.xxx.cn/chartrepo/helm-repo
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

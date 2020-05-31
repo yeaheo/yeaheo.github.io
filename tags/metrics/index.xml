@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>Kubernetes集群安装Metrics Server</title>
+      <title>Kubernetes安装Metrics Server</title>
       <link>https://aeric.io/post/k8s-metrics-server-installation/</link>
       <pubDate>Fri, 04 Jan 2019 12:23:36 +0800</pubDate>
       

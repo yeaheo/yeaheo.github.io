@@ -216,7 +216,11 @@
   <ul>
     <li>
       <ul>
-        <li></li>
+        <li><a href="#准备-kube-dns-相关镜像">准备 kube-dns 相关镜像</a></li>
+        <li><a href="#准备-kube-dns-相关-yaml-文件">准备 kube-dns 相关 yaml 文件</a></li>
+        <li><a href="#系统预定义的-rolebinding">系统预定义的 RoleBinding</a></li>
+        <li><a href="#配置-kube-dns-相关服务">配置 kube-dns 相关服务</a></li>
+        <li><a href="#检查-kube-dns-功能">检查 kube-dns 功能</a></li>
       </ul>
     </li>
   </ul>
@@ -226,27 +230,27 @@
 <blockquote>
 <p>我是把 kuberntes 解压到了 <code>/srv/</code> 目录下</p>
 </blockquote>
-<h3 id="准备-kube-dns-相关镜像">准备 kube-dns 相关镜像</h3>
+<h2 id="准备-kube-dns-相关镜像">准备 kube-dns 相关镜像</h2>
 <p><code>kube-dns</code> 插件直接使用 kubernetes 部署，官方的配置文件中包含以下镜像：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># cat kube-dns.yaml.base | grep image</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cat kube-dns.yaml.base | grep image
       image: gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.8
       image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.8
       image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.8
-<span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pwd</span>
+➜ <span style="color:#8be9fd;font-style:italic">pwd</span>
 /srv/kubernetes/cluster/addons/dns
 </code></pre></div><p>因为墙的原因，这些镜像我们需要翻墙下载，很是不方便，我下载了所需要的镜像，并上传到了时速云镜像仓库欢迎大家下载使用：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">index.tenxcloud.com/yeaheo/k8s-dns-dnsmasq-nanny-amd64:1.14.8
 index.tenxcloud.com/yeaheo/k8s-dns-kube-dns-amd64:1.14.8
 index.tenxcloud.com/yeaheo/k8s-dns-sidecar-amd64:1.14.8
 </code></pre></div><p>我们 <code>pull</code> 下来相关镜像后建议上传到私有仓库中，这样下载速度会更快，更方便，私有仓库部署参见 <a href="https://yeaheo.com/post/k8s-harbor-installation/">harbor私有镜像仓库部署</a></p>
-<h3 id="准备-kube-dns-相关-yaml-文件">准备 kube-dns 相关 yaml 文件</h3>
+<h2 id="准备-kube-dns-相关-yaml-文件">准备 kube-dns 相关 yaml 文件</h2>
 <p>默认情况下 kube-dns 插件的 <code>yaml</code> 文件在对应目录下已经存在，我们只需复制一份到指定目录下即可：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># pwd</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">pwd</span>
 /srv/kubernetes/cluster/addons/dns   
-<span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># cp kube-dns.yaml.base /opt/k8s-addons/dns/kube-dns.yaml</span>
+➜ cp kube-dns.yaml.base /opt/k8s-addons/dns/kube-dns.yaml
 </code></pre></div><p>然后需要我们修改相关 <code>yaml</code> 文件。</p>
 <p>这里我们用源文件 <code>kube-dns.yaml.base</code> 做修改，修改后的 <code>kube-dns.yaml</code> 与源文件的区别如下所示，而这些正式我们需要修改的：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># diff kube-dns.yaml kube-dns.yaml.base</span> 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ diff kube-dns.yaml kube-dns.yaml.base 
 33c33
 &lt;   clusterIP: 10.254.0.2
 ---
@@ -281,81 +285,83 @@ index.tenxcloud.com/yeaheo/k8s-dns-sidecar-amd64:1.14.8
 <p>yaml 配置文件中使用的是私有镜像仓库中的镜像。这些文件都是统一成为一个文件，当然也可以做分离，这样更直观些。</p>
 </blockquote>
 <p>修改好的 kube-dns 相关 yaml 文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/addons/kube-dns/kube-dns.yaml">kube-dns.yaml</a></p>
-<h3 id="系统预定义的-rolebinding">系统预定义的 RoleBinding</h3>
+<h2 id="系统预定义的-rolebinding">系统预定义的 RoleBinding</h2>
 <p>预定义的 <code>RoleBinding system:kube-dns</code> 将 <code>kube-system</code> 命名空间的 <code>kube-dns ServiceAccount</code> 与 <code>ystem:kube-dns Role</code> 绑定， 该 Role 具有访问 <code>kube-apiserver</code> DNS 相关 API 的权限；</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># kubectl get clusterrolebindings system:kube-dns -o yaml</span>
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  annotations:
-    rbac.authorization.kubernetes.io/autoupdate: <span style="color:#f1fa8c">&#34;true&#34;</span>
-  creationTimestamp: 2018-04-06T09:06:30Z
-  labels:
-    kubernetes.io/bootstrapping: rbac-defaults
-  name: system:kube-dns
-  resourceVersion: <span style="color:#f1fa8c">&#34;87&#34;</span>
-  selfLink: /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/system%3Akube-dns
-  uid: cbda2173-3979-11e8-8d8b-525400472b24
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:kube-dns
-subjects:
-- kind: ServiceAccount
-  name: kube-dns
-  namespace: kube-system
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ kubectl get clusterrolebindings system:kube-dns -o yaml
+<span style="color:#ff79c6">apiVersion</span>: rbac.authorization.k8s.io/v1
+<span style="color:#ff79c6">kind</span>: ClusterRoleBinding
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">annotations</span>:
+    <span style="color:#ff79c6">rbac.authorization.kubernetes.io/autoupdate</span>: <span style="color:#f1fa8c">&#34;true&#34;</span>
+  <span style="color:#ff79c6">creationTimestamp</span>: 2018-04-06T09:06:30Z
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">kubernetes.io/bootstrapping</span>: rbac-defaults
+  <span style="color:#ff79c6">name</span>: system:kube-dns
+  <span style="color:#ff79c6">resourceVersion</span>: <span style="color:#f1fa8c">&#34;87&#34;</span>
+  <span style="color:#ff79c6">selfLink</span>: /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/system%3Akube-dns
+  <span style="color:#ff79c6">uid</span>: cbda2173<span style="color:#bd93f9">-3979-11e8</span>-8d8b-525400472b24
+<span style="color:#ff79c6">roleRef</span>:
+  <span style="color:#ff79c6">apiGroup</span>: rbac.authorization.k8s.io
+  <span style="color:#ff79c6">kind</span>: ClusterRole
+  <span style="color:#ff79c6">name</span>: system:kube-dns
+<span style="color:#ff79c6">subjects</span>:
+- <span style="color:#ff79c6">kind</span>: ServiceAccount
+  <span style="color:#ff79c6">name</span>: kube-dns
+  <span style="color:#ff79c6">namespace</span>: kube-system
 </code></pre></div><p><code>kube-dns.yaml</code> 里定义的 pods 时使用了 <code>kube-dns</code> 的 <code>ServiceAccount</code> 所以具有访问 <code>kube-apiserver</code> DNS 相关 API 的权限。其他不用配置，例如 <code>kube-dns</code> 的 <code>ServiceAccount</code> 我们默认就好。</p>
-<h3 id="配置-kube-dns-相关服务">配置 kube-dns 相关服务</h3>
+<h2 id="配置-kube-dns-相关服务">配置 kube-dns 相关服务</h2>
 <p>之前我们在修改 <code>kube-dns.yaml</code> 文件的时候，有如下一处修改：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">33c33
-&lt;   clusterIP: 10.254.0.2
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">33c33
+<span style="color:#ff79c6">&lt;   clusterIP</span>: <span style="color:#bd93f9">10.254.0.2</span>
 ---
-&gt;   clusterIP: __PILLAR__DNS__SERVER__
+<span style="color:#f1fa8c">&gt;   clusterIP: __PILLAR__DNS__SERVER__</span>
 </code></pre></div><p><code>spec.clusterIP = 10.254.0.2</code>，明确指定了 <code>kube-dns Service IP</code>，这个 IP 需要和 kubelet 的 <code>--cluster-dns</code> 参数值一致，否则启动 <code>kube-dns</code> 的时候会报错；</p>
 <p><strong>执行 <code>kube-dns</code> 定义文件:</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># cd /opt/k8s-addons/dns/</span>
-<span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ll</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/k8s-addons/dns/
+➜ ll
 total <span style="color:#bd93f9">8</span>
 -rw-r--r-- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">6051</span> Apr <span style="color:#bd93f9">26</span> 10:47 kube-dns.yaml
-<span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># kubectl create -f kube-dns.yaml</span>
+➜ kubectl create -f kube-dns.yaml
 </code></pre></div><p><strong>验证 <code>kube-dns</code> 相关服务</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># kubectl get pods -n kube-system | grep dns</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get pods -n kube-system | grep dns
 kube-dns-559bc869fb-tzc2b               3/3       Running   <span style="color:#bd93f9">0</span>          15d
 
-<span style="color:#ff79c6">[</span>root@k8s-master dns<span style="color:#ff79c6">]</span><span style="color:#6272a4"># kubectl get svc -n kube-system | grep dns</span>
+➜ kubectl get svc -n kube-system | grep dns
 kube-dns               ClusterIP   10.254.0.2       &lt;none&gt;        53/UDP,53/TCP    15d
 </code></pre></div><p>可以看出， <code>kube-dns</code> 插件已经安装完成，相关 <code>sevice</code> 及 <code>pod</code> 都在正常工作。</p>
-<h3 id="检查-kube-dns-功能">检查 kube-dns 功能</h3>
+<h2 id="检查-kube-dns-功能">检查 kube-dns 功能</h2>
 <p><code>kube-dns</code> 插件安装完成后我们需要验证一下 <code>kube-dns</code> 的相关功能。</p>
 <p>新建一个 deployment 验证 kube-dns 功能：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master nginx<span style="color:#ff79c6">]</span><span style="color:#6272a4"># cat my-nginx.yaml</span> 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ cat my-nginx.yaml 
 
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: my-nginx
-spec:
-  replicas: <span style="color:#bd93f9">2</span>
-  template:
-    metadata:
-      labels:
-        run: my-nginx
-    spec:
-      containers:
-      - name: my-nginx
-        image: 192.168.8.69/library/nginx:1.11.2
-        ports:
-        - containerPort: <span style="color:#bd93f9">80</span>
+<span style="color:#ff79c6">apiVersion</span>: extensions/v1beta1
+<span style="color:#ff79c6">kind</span>: Deployment
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: my-nginx
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">replicas</span>: <span style="color:#bd93f9">2</span>
+  <span style="color:#ff79c6">template</span>:
+    <span style="color:#ff79c6">metadata</span>:
+      <span style="color:#ff79c6">labels</span>:
+        <span style="color:#ff79c6">run</span>: my-nginx
+    <span style="color:#ff79c6">spec</span>:
+      <span style="color:#ff79c6">containers</span>:
+      - <span style="color:#ff79c6">name</span>: my-nginx
+        <span style="color:#ff79c6">image</span>: <span style="color:#bd93f9">192.168.8.69</span>/library/nginx:<span style="color:#bd93f9">1.11.2</span>
+        <span style="color:#ff79c6">ports</span>:
+        - <span style="color:#ff79c6">containerPort</span>: <span style="color:#bd93f9">80</span>
 </code></pre></div><p>export 该 deployment, 生成 my-nginx 服务:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># kubectl create -f my-nginx.yaml</span> 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl create -f my-nginx.yaml 
 deployment <span style="color:#f1fa8c">&#34;my-nginx&#34;</span> created
-<span style="color:#6272a4"># kubectl expose deploy my-nginx</span>
+
+➜ kubectl expose deploy my-nginx
 service <span style="color:#f1fa8c">&#34;my-nginx&#34;</span> exposed
-<span style="color:#6272a4"># kubectl get services --all-namespaces |grep my-nginx</span>
+
+➜ kubectl get services --all-namespaces |grep my-nginx
 default       my-nginx               ClusterIP   10.254.196.99    &lt;none&gt;        80/TCP           6s
 </code></pre></div><p>创建另一个 pod，查看 <code>/etc/resolv.conf</code> 是否包含 <code>kubelet</code> 配置的 <code>--cluster-dns</code> 和 <code>--cluster-domain</code>，是否能够将服务 <code>my-nginx</code> 解析到 Cluster IP <code>10.254.196.99</code>。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl create -f nginx-pod.yaml
-$ kubectl <span style="color:#8be9fd;font-style:italic">exec</span>  nginx -i -t -- /bin/bash
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl create -f nginx-pod.yaml
+➜ kubectl <span style="color:#8be9fd;font-style:italic">exec</span>  nginx -i -t -- /bin/bash
 root@nginx:/# cat /etc/resolv.conf
 nameserver 10.254.0.2
 search default.svc.cluster.local. svc.cluster.local. cluster.local. jimmysong.io
@@ -637,7 +643,7 @@ PING kube-dns.kube-system.svc.cluster.local <span style="color:#ff79c6">(</span>
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

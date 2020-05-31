@@ -262,8 +262,8 @@
 <li>新版本软件下载目录：<code>/opt/soft</code></li>
 </ul>
 <p>首先，关闭现在运行的 Harbor 服务：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ docker-compose down
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜ docker-compose down
 Stopping harbor-jobservice  ... <span style="color:#ff79c6">done</span>
 Stopping nginx              ... <span style="color:#ff79c6">done</span>
 Stopping harbor-ui          ... <span style="color:#ff79c6">done</span>
@@ -282,29 +282,29 @@ Removing registry           ... <span style="color:#ff79c6">done</span>
 Removing harbor-log         ... <span style="color:#ff79c6">done</span>
 Removing network harbor_harbor
 </code></pre></div><p>升级之前需要先进行原版本的备份，避免升级失败可以自由回滚到旧版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mv harbor /srv/harbor_older
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mv harbor /srv/harbor_older
 </code></pre></div><p>备份Harbor数据，Harbor 的数据目录默认为 <code>/data/database</code>：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cp -a /data/database /srv/database
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cp -a /data/database /srv/database
 </code></pre></div><p>从 <a href="%5Bhttps://github.com/goharbor/harbor/releases%5D(https://github.com/goharbor/harbor/releases)">Harbor版本下载页</a>下载最新版 Harbor 文件，这里我们直接下载离线安装包进行升级：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
-$ wget https://storage.googleapis.com/harbor-releases/release-1.7.0/harbor-offline-installer-v1.7.1.tgz
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
+➜ wget https://storage.googleapis.com/harbor-releases/release-1.7.0/harbor-offline-installer-v1.7.1.tgz
 </code></pre></div><p>在升级 Harbor 之前，先要进行迁移。迁移工具作为 docker 镜像提供，因此我们应该从 docker hub 中提取图像。在以下命令中将 [tag] 替换为需要升级的 Harbor 发行版本（例如v1.5.0）,这里我们用 <code>v1.7.1</code>版本的镜像：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker pull goharbor/harbor-migrator:<span style="color:#ff79c6">[</span>tag<span style="color:#ff79c6">]</span>
-$ docker pull goharbor/harbor-migrator:v1.7.1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker pull goharbor/harbor-migrator:<span style="color:#ff79c6">[</span>tag<span style="color:#ff79c6">]</span>
+➜ docker pull goharbor/harbor-migrator:v1.7.1
 </code></pre></div><p>更新配置文件<code>harbor.cfg</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -it --rm -v <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">harbor_cfg</span><span style="color:#f1fa8c">}</span>:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:v1.7.1 --cfg up
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker run -it --rm -v <span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">harbor_cfg</span><span style="color:#f1fa8c">}</span>:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:v1.7.1 --cfg up
 </code></pre></div><blockquote>
 <p>这里的 <code>${harbor_cfg}</code>指的是我们之前安装的 harbor 的配置文件全路径，例如之前 harbor 版本的安装路径为 <code>/srv/harbor</code>，那么这里的 <code>${harbor_cfg}</code>指的就是 <code>/srv/harbor/harbor.cfg</code></p>
 </blockquote>
 <p>以下是我的具体执行步骤，请参考：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># 备份harbor</span>
-$ mv /srv/harbor /srv/harbor_older
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor_older
+➜ mv /srv/harbor /srv/harbor_older
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor_older
 
 <span style="color:#6272a4"># 备份harbor配置文件</span>
-$ cp harbor.cfg harbor.cfg.bak
+➜ cp harbor.cfg harbor.cfg.bak
 
-$ docker run -it --rm -v /srv/harbor_older/harbor.cfg:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:v1.7.1 --cfg up
+➜ docker run -it --rm -v /srv/harbor_older/harbor.cfg:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:v1.7.1 --cfg up
 Please backup before upgrade,
 Enter y to <span style="color:#ff79c6">continue</span> updating or n to abort: y
 The path of the migrated harbor.cfg is not set, the input file will be overwritten.
@@ -312,30 +312,30 @@ input version: 1.6.0, migrator chain: <span style="color:#ff79c6">[</span><span 
 migrating to version 1.7.0
 Written new values to /harbor-migration/harbor-cfg/harbor.cfg
 </code></pre></div><p>执行完上述步骤后会生成一个新的 <code>harbor.cfg</code>文件，我们需要将此文件复制到新的 harbor 版本目录下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ tar xf /opt/soft/harbor-offline-installer-v1.7.1.tgz -C /srv/
-$ cp -f /srv/harbor_older/harbor.cfg /srv/harbor/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ tar xf /opt/soft/harbor-offline-installer-v1.7.1.tgz -C /srv/
+➜ cp -f /srv/harbor_older/harbor.cfg /srv/harbor/
 </code></pre></div><p>配置文件更新完成后，就可以升级了，需要注意的是默认新版 harbor 不会启用 <code>chart repository service</code>，如果需要管理 <code>helm</code>，我们需要在安装时添加额外的参数，例如：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4">## 默认安装</span>
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ ./install.sh
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜ ./install.sh
 
 <span style="color:#6272a4">## 启动 chart repository service 服务</span>
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ ./install.sh --with-chartmuseum
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜ ./install.sh --with-chartmuseum
 </code></pre></div><p>等待安装完成即可，安装完成后会有如下类似提示：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">...
 ✔ ----Harbor has been installed and started successfully.----
 ...
 </code></pre></div><h2 id="回滚到旧版本">回滚到旧版本</h2>
 <p>如果升级失败，我们可以按照如下过程回滚到旧版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ docker-compose down
-$ <span style="color:#8be9fd;font-style:italic">cd</span> ..
-$ rm -rf harbor
-$ mv harbor_older harbor
-$ cp -a /srv/database /data/
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ ./install.sh
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜  docker-compose down
+➜  <span style="color:#8be9fd;font-style:italic">cd</span> ..
+➜  rm -rf harbor
+➜  mv harbor_older harbor
+➜  cp -a /srv/database /data/
+➜  <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜  ./install.sh
 </code></pre></div>
 
                 
@@ -594,7 +594,7 @@ $ ./install.sh
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

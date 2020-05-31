@@ -15,9 +15,9 @@
     
 
     
-    <meta name="title" content="Kubernetes集群安装Metrics Server" />
-    <meta property="og:title" content="Kubernetes集群安装Metrics Server" />
-    <meta property="twitter:title" content="Kubernetes集群安装Metrics Server" />
+    <meta name="title" content="Kubernetes安装Metrics Server" />
+    <meta property="og:title" content="Kubernetes安装Metrics Server" />
+    <meta property="twitter:title" content="Kubernetes安装Metrics Server" />
     
 
     
@@ -34,7 +34,7 @@
     <meta name="keyword"  content="吕啸腾, lyuxiaoteng, Lyuxiaoteng, 吕啸腾的网络日志, 吕啸腾的博客, Aeric Blog, 博客, 个人网站, 互联网, Web, 云原生, PaaS, Istio, Kubernetes, 微服务, Microservice">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>Kubernetes集群安装Metrics Server-吕啸腾的博客 | Aeric Blog</title>
+    <title>Kubernetes安装Metrics Server-吕啸腾的博客 | Aeric Blog</title>
 
     <link rel="canonical" href="/post/k8s-metrics-server-installation/">
 
@@ -180,7 +180,7 @@
                         </a>
                         
                     </div>
-                    <h1>Kubernetes集群安装Metrics Server</h1>
+                    <h1>Kubernetes安装Metrics Server</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by 
@@ -230,7 +230,7 @@
                 <p>Kubernetes 1.8 关于资源使用情况的 metrics，可以通过 Metrics API 获取到 Kubernetes 1.11 已经废弃 heapster。这里我们基于 Kubernetes 1.12 版本安装 Metrics Server。</p>
 <h2 id="metrics-server-的安装">Metrics Server 的安装</h2>
 <p>首先，先说明下集群环境：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl get nodes
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get nodes
 NAME        STATUS   ROLES    AGE   VERSION
 k8s-m1      Ready    master   36d   v1.12.3
 k8s-node1   Ready    &lt;none&gt;   36d   v1.12.3
@@ -239,7 +239,7 @@ k8s-node2   Ready    &lt;none&gt;   36d   v1.12.3
 <p>Metrics API 的  URI 是<code>/apis/metrics.k8s.io/</code>，扩展了 Kubernetes 的核心 API。</p>
 <p>Metrics Server 详细信息可以参考：<a href="https://github.com/kubernetes-incubator/metrics-server">https://github.com/kubernetes-incubator/metrics-server</a></p>
 <p>准备部署 Metrics Server 的 <code>yaml</code>文件（配置清单文件）:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ git clone https://github.com/kubernetes-incubator/metrics-server
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ git clone https://github.com/kubernetes-incubator/metrics-server
 </code></pre></div><p>下载完成后还需要对 <code>metrics-server/deploy/1.8+/resource-reader.yaml</code>文件进行修改，需要修改的内容如下：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
 <span style="color:#ff79c6">apiVersion</span>: rbac.authorization.k8s.io/v1
@@ -277,8 +277,8 @@ k8s-node2   Ready    &lt;none&gt;   36d   v1.12.3
   - /metrics-server
   - --kubelet-insecure-tls
 </code></pre></div><p>修改完成就可以正式部署了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ <span style="color:#8be9fd;font-style:italic">cd</span> metrics-server/deploy/1.8+
-👍 ~ kubectl apply -f .
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> metrics-server/deploy/1.8+
+➜ kubectl apply -f .
 clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
 clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
 rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
@@ -289,53 +289,53 @@ service/metrics-server created
 clusterrole.rbac.authorization.k8s.io/system:metrics-server created
 clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
 </code></pre></div><p>Metrics Server 相关 pod 、service 默认部署在 <code>kube-system</code>的 NAMESPACE 下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl get pods -n kube-system | grep metrics
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get pods -n kube-system | grep metrics
 metrics-server-6bbbb8f8f5-ngr9c               1/1     Running   <span style="color:#bd93f9">0</span>          115s
 ---
-👍 ~ kubectl get svc -n kube-system | grep metrics
+➜ kubectl get svc -n kube-system | grep metrics
 metrics-server            ClusterIP   10.104.82.243    &lt;none&gt;        443/TCP       2m46s
 </code></pre></div><p>部署完成后使用如下命令查看node相关指标：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl get --raw <span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get --raw <span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes&#34;</span>
 <span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;kind&#34;</span>:<span style="color:#f1fa8c">&#34;NodeMetricsList&#34;</span>,<span style="color:#f1fa8c">&#34;apiVersion&#34;</span>:<span style="color:#f1fa8c">&#34;metrics.k8s.io/v1beta1&#34;</span>,<span style="color:#f1fa8c">&#34;metadata&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;selfLink&#34;</span>:<span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes&#34;</span><span style="color:#ff79c6">}</span>,<span style="color:#f1fa8c">&#34;items&#34;</span>:<span style="color:#ff79c6">[]}</span>
 </code></pre></div><p>没有获取到信息，此时查看 metric-server 容器的日志，有下面的错误：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl logs -f -n kube-system metrics-server-6bbbb8f8f5-ngr9c
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl logs -f -n kube-system metrics-server-6bbbb8f8f5-ngr9c
 ---
 E1003 05:46:13.757009       <span style="color:#bd93f9">1</span> manager.go:102<span style="color:#ff79c6">]</span> unable to fully collect metrics: <span style="color:#ff79c6">[</span>unable to fully scrape metrics from <span style="color:#8be9fd;font-style:italic">source</span> kubelet_summary:node1: unable to fetch metrics from Kubelet node1 <span style="color:#ff79c6">(</span>node1<span style="color:#ff79c6">)</span>: Get https://k8s-node1:10250/stats/summary/: dial tcp: lookup k8s-node1 on 10.96.0.10:53: no such host, unable to fully scrape metrics from <span style="color:#8be9fd;font-style:italic">source</span> kubelet_summary:k8s-node2: unable to fetch metrics from Kubelet node2 <span style="color:#ff79c6">(</span>node2<span style="color:#ff79c6">)</span>: Get https://k8s-node2:10250/stats/summary/: dial tcp: lookup node2 on 10.96.0.10:53: <span style="color:#8be9fd;font-style:italic">read</span> udp 10.244.1.6:45288-&gt;10.96.0.10:53: i/o timeout<span style="color:#ff79c6">]</span>
 </code></pre></div><p>可以看到 metrics-server 在从 kubelet 的 10250 端口获取信息时，使用的是 hostname，而因为 node1 和 node2 是一个独立的 Kubernetes 演示环境，只是修改了这两个节点系统的 <code>/etc/hosts</code> 文件，而并没有内网的 DNS 服务器，所以 metrics-server 中不认识 k8s-node1 和 k8s-node1 的名字。这里我们可以直接修改 Kubernetes 集群中的 coredns的 configmap，修改 Corefile 加入 hostnames 插件，将 Kubernetes 的各个节点的主机名加入到 hostnames 中，这样Kubernetes 集群中的所有 Pod 都可以从 CoreDNS 中解析各个节点的名字。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl edit configmap coredns -n kube-system
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">➜ kubectl edit configmap coredns -n kube-system
 ---
-apiVersion: v1
-data:
-  Corefile: |
-    .:53 <span style="color:#ff79c6">{</span>
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">data</span>:
+  <span style="color:#ff79c6">Corefile</span>: <span style="color:#f1fa8c">|
+</span><span style="color:#f1fa8c">    .:53 {</span>
         errors
         health
-        hosts <span style="color:#ff79c6">{</span>                        <span style="color:#6272a4"># 增加此字段</span>
-          10.200.100.216  k8s-m1           
-          10.200.100.215  k8s-node1
-          10.200.100.214  k8s-node2
+        hosts {                        <span style="color:#6272a4"># 增加此字段</span>
+          <span style="color:#bd93f9">10.200.100.216</span>  k8s-m1           
+          <span style="color:#bd93f9">10.200.100.215</span>  k8s-node1
+          <span style="color:#bd93f9">10.200.100.214</span>  k8s-node2
           fallthrough
-        <span style="color:#ff79c6">}</span>
-        kubernetes cluster.local in-addr.arpa ip6.arpa <span style="color:#ff79c6">{</span>
+        }
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
            pods insecure
            upstream
            fallthrough in-addr.arpa ip6.arpa
-        <span style="color:#ff79c6">}</span>
-        prometheus :9153
+        }
+        prometheus :<span style="color:#bd93f9">9153</span>
         proxy . /etc/resolv.conf
         cache <span style="color:#bd93f9">30</span>
         loop
         reload
         loadbalance
-    <span style="color:#ff79c6">}</span>
-kind: ConfigMap
-metadata:
-  creationTimestamp: 2018-11-28T10:50:05Z
-  name: coredns
-  namespace: kube-system
-  resourceVersion: <span style="color:#f1fa8c">&#34;4454220&#34;</span>
-  selfLink: /api/v1/namespaces/kube-system/configmaps/coredns
-  uid: 5da15457-f2fb-11e8-affd-080027adebb7
+    }
+<span style="color:#ff79c6">kind</span>: ConfigMap
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">creationTimestamp</span>: 2018-11-28T10:50:05Z
+  <span style="color:#ff79c6">name</span>: coredns
+  <span style="color:#ff79c6">namespace</span>: kube-system
+  <span style="color:#ff79c6">resourceVersion</span>: <span style="color:#f1fa8c">&#34;4454220&#34;</span>
+  <span style="color:#ff79c6">selfLink</span>: /api/v1/namespaces/kube-system/configmaps/coredns
+  <span style="color:#ff79c6">uid</span>: 5da15457-f2fb<span style="color:#bd93f9">-11e8</span>-affd-080027adebb7
 </code></pre></div><blockquote>
 <p>其实除了上述方法外还有一种方法可以解决此问题，就是需要按照上面的方法修改<code>metrics-server-deployment.yaml</code>文件，添加<code>--kubelet-preferred-address-types=InternalIP</code>参数，修改后的内容如下：</p>
 </blockquote>
@@ -356,17 +356,17 @@ metadata:
   - --kubelet-insecure-tls
   - --kubelet-preferred-address-types=InternalIP
 </code></pre></div><p>配置修改完毕后重启集群中 coredns 和 metrics-server，确认 metrics-server 不再有错误日志。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl get --raw <span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get --raw <span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes&#34;</span>
 <span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;kind&#34;</span>:<span style="color:#f1fa8c">&#34;NodeMetricsList&#34;</span>,<span style="color:#f1fa8c">&#34;apiVersion&#34;</span>:<span style="color:#f1fa8c">&#34;metrics.k8s.io/v1beta1&#34;</span>,<span style="color:#f1fa8c">&#34;metadata&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;selfLink&#34;</span>:<span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes&#34;</span><span style="color:#ff79c6">}</span>,<span style="color:#f1fa8c">&#34;items&#34;</span>:<span style="color:#ff79c6">[{</span><span style="color:#f1fa8c">&#34;metadata&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;name&#34;</span>:<span style="color:#f1fa8c">&#34;k8s-m1&#34;</span>,<span style="color:#f1fa8c">&#34;selfLink&#34;</span>:<span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes/k8s-m1&#34;</span>,<span style="color:#f1fa8c">&#34;creationTimestamp&#34;</span>:<span style="color:#f1fa8c">&#34;2019-01-04T09:54:27Z&#34;</span><span style="color:#ff79c6">}</span>,<span style="color:#f1fa8c">&#34;timestamp&#34;</span>:<span style="color:#f1fa8c">&#34;2019-01-04T09:53:46Z&#34;</span>,<span style="color:#f1fa8c">&#34;window&#34;</span>:<span style="color:#f1fa8c">&#34;30s&#34;</span>,<span style="color:#f1fa8c">&#34;usage&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;cpu&#34;</span>:<span style="color:#f1fa8c">&#34;93706104n&#34;</span>,<span style="color:#f1fa8c">&#34;memory&#34;</span>:<span style="color:#f1fa8c">&#34;2580432Ki&#34;</span><span style="color:#ff79c6">}}</span>,<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;metadata&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;name&#34;</span>:<span style="color:#f1fa8c">&#34;k8s-node1&#34;</span>,<span style="color:#f1fa8c">&#34;selfLink&#34;</span>:<span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes/k8s-node1&#34;</span>,<span style="color:#f1fa8c">&#34;creationTimestamp&#34;</span>:<span style="color:#f1fa8c">&#34;2019-01-04T09:54:27Z&#34;</span><span style="color:#ff79c6">}</span>,<span style="color:#f1fa8c">&#34;timestamp&#34;</span>:<span style="color:#f1fa8c">&#34;2019-01-04T09:53:42Z&#34;</span>,<span style="color:#f1fa8c">&#34;window&#34;</span>:<span style="color:#f1fa8c">&#34;30s&#34;</span>,<span style="color:#f1fa8c">&#34;usage&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;cpu&#34;</span>:<span style="color:#f1fa8c">&#34;310715486n&#34;</span>,<span style="color:#f1fa8c">&#34;memory&#34;</span>:<span style="color:#f1fa8c">&#34;2369228Ki&#34;</span><span style="color:#ff79c6">}}</span>,<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;metadata&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;name&#34;</span>:<span style="color:#f1fa8c">&#34;k8s-node2&#34;</span>,<span style="color:#f1fa8c">&#34;selfLink&#34;</span>:<span style="color:#f1fa8c">&#34;/apis/metrics.k8s.io/v1beta1/nodes/k8s-node2&#34;</span>,<span style="color:#f1fa8c">&#34;creationTimestamp&#34;</span>:<span style="color:#f1fa8c">&#34;2019-01-04T09:54:27Z&#34;</span><span style="color:#ff79c6">}</span>,<span style="color:#f1fa8c">&#34;timestamp&#34;</span>:<span style="color:#f1fa8c">&#34;2019-01-04T09:53:46Z&#34;</span>,<span style="color:#f1fa8c">&#34;window&#34;</span>:<span style="color:#f1fa8c">&#34;30s&#34;</span>,<span style="color:#f1fa8c">&#34;usage&#34;</span>:<span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;cpu&#34;</span>:<span style="color:#f1fa8c">&#34;304256739n&#34;</span>,<span style="color:#f1fa8c">&#34;memory&#34;</span>:<span style="color:#f1fa8c">&#34;2433132Ki&#34;</span><span style="color:#ff79c6">}}]}</span>
 </code></pre></div><p>可以看到此时可以正常获取到数据，说明 Metrics Server 现在可以正常工作了。</p>
 <h2 id="metrics-api">Metrics API</h2>
 <p>Metrics Server 从 Kubernetes 集群中每个 Node 上 kubelet 的 API 收集 metrics 数据。通过 Metrics API 可以获取Kubernetes 资源的 Metrics 指标，Metrics API 挂载<code>/apis/metrics.k8s.io/ </code>下。 可以使用<code>kubectl top</code>命令访问 Metrics API，例如:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl top nodes
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl top nodes
 NAME        CPU<span style="color:#ff79c6">(</span>cores<span style="color:#ff79c6">)</span>   CPU%   MEMORY<span style="color:#ff79c6">(</span>bytes<span style="color:#ff79c6">)</span>   MEMORY%
 k8s-m1      91m          9%     2469Mi          66%
 k8s-node1   308m         30%    2309Mi          62%
 k8s-node2   326m         32%    2382Mi          64%
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">👍 ~ kubectl top pods -n kube-system
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl top pods -n kube-system
 NAME                                          CPU<span style="color:#ff79c6">(</span>cores<span style="color:#ff79c6">)</span>   MEMORY<span style="color:#ff79c6">(</span>bytes<span style="color:#ff79c6">)</span>
 coredns-576cbf47c7-bc9jb                      1m           17Mi
 coredns-576cbf47c7-k2hpc                      2m           14Mi
@@ -643,7 +643,7 @@ traefik-ingress-controller-5bc6d75c76-q4m5n   2m           29Mi
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

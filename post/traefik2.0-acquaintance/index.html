@@ -246,109 +246,109 @@
 <p>下面是我根据几位博主的文章针对几个比较常用的特性进行简述。</p>
 <h2 id="支持-sni-路由和多协议端口的-tcp">支持 SNI 路由和多协议端口的 TCP</h2>
 <p>下面是<a href="https://containo.us/blog/traefik-2-0-6531ec5196c2/">官方博客</a>的一个示例配置，主要用来做下 TCP 的支持：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tcp:
-  routers:
-    to-database:
-      entrypoints:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">tcp</span>:
+  <span style="color:#ff79c6">routers</span>:
+    <span style="color:#ff79c6">to-database</span>:
+      <span style="color:#ff79c6">entrypoints</span>:
       - database-entrypoint
-      rule: HostSNI<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">`</span>*<span style="color:#f1fa8c">`</span><span style="color:#ff79c6">)</span>
-      service: database-service
-  services:     
-    database-service:
-      loadBalancer:
-        servers:
-        - address: xx.xx.xx.xx:xx
+      <span style="color:#ff79c6">rule</span>: HostSNI(`<span style="color:#ff79c6">*`)</span>
+      <span style="color:#ff79c6">service</span>: database-service
+  <span style="color:#ff79c6">services</span>:     
+    <span style="color:#ff79c6">database-service</span>:
+      <span style="color:#ff79c6">loadBalancer</span>:
+        <span style="color:#ff79c6">servers</span>:
+        - <span style="color:#ff79c6">address</span>: xx.xx.xx.xx:xx
 </code></pre></div><p>上述配置表示每个以 <code>database-entrypoint</code> 结尾的请求都将被路由到 <code>database-service</code> 这个服务上去。同时 Traefik 还支持通过 TLS，Traefik 还可以根据 SNI 来路由 TCP 请求。在下面示例中，Traefik 就将根据 SNI 将请求路由到两个数据库：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tcp:
-  routers:
-    to-db-1:
-      entrypoints:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">tcp</span>:
+  <span style="color:#ff79c6">routers</span>:
+    <span style="color:#ff79c6">to-db-1</span>:
+      <span style="color:#ff79c6">entrypoints</span>:
       - web-secure
-      rule: <span style="color:#f1fa8c">&#34;HostSNI(`db1.domain`)&#34;</span>
-      service: <span style="color:#f1fa8c">&#34;db1&#34;</span>
-      tls: <span style="color:#ff79c6">{}</span> 
-    to-db-2:
-      entrypoints:
+      <span style="color:#ff79c6">rule</span>: <span style="color:#f1fa8c">&#34;HostSNI(`db1.domain`)&#34;</span>
+      <span style="color:#ff79c6">service</span>: <span style="color:#f1fa8c">&#34;db1&#34;</span>
+      <span style="color:#ff79c6">tls</span>: {} 
+    <span style="color:#ff79c6">to-db-2</span>:
+      <span style="color:#ff79c6">entrypoints</span>:
       - web-secure
-      rule: <span style="color:#f1fa8c">&#34;HostSNI(`db2.domain`)&#34;</span>
-      service: <span style="color:#f1fa8c">&#34;db2&#34;</span>
-      tls: <span style="color:#ff79c6">{}</span>
+      <span style="color:#ff79c6">rule</span>: <span style="color:#f1fa8c">&#34;HostSNI(`db2.domain`)&#34;</span>
+      <span style="color:#ff79c6">service</span>: <span style="color:#f1fa8c">&#34;db2&#34;</span>
+      <span style="color:#ff79c6">tls</span>: {}
 </code></pre></div><p>同时 Traefik 还是支持 HTTP 和 TCP 在同一个端口上，如果你希望获得相同的入口的同时获取 HTTP 和 TCP 请求，那么 Traefik 可以很完美的来处理它。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tcp:
-  routers:
-    to-db-1:
-      entrypoints:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">tcp</span>:
+  <span style="color:#ff79c6">routers</span>:
+    <span style="color:#ff79c6">to-db-1</span>:
+      <span style="color:#ff79c6">entrypoints</span>:
       - web-secure
-      rule: <span style="color:#f1fa8c">&#34;HostSNI(`db1.domain`)&#34;</span>
-      service: <span style="color:#f1fa8c">&#34;db-1&#34;</span>
-      tls: <span style="color:#ff79c6">{}</span>
-http:
-  routers:
-    to-db1-dashboard:
-      entrypoints:
+      <span style="color:#ff79c6">rule</span>: <span style="color:#f1fa8c">&#34;HostSNI(`db1.domain`)&#34;</span>
+      <span style="color:#ff79c6">service</span>: <span style="color:#f1fa8c">&#34;db-1&#34;</span>
+      <span style="color:#ff79c6">tls</span>: {}
+<span style="color:#ff79c6">http</span>:
+  <span style="color:#ff79c6">routers</span>:
+    <span style="color:#ff79c6">to-db1-dashboard</span>:
+      <span style="color:#ff79c6">entrypoints</span>:
       - web-secure
-      rule: <span style="color:#f1fa8c">&#34;Host(`dashboard.db1.domain`)&#34;</span>
-      service: <span style="color:#f1fa8c">&#34;db1-dashboard&#34;</span>
-      tls: <span style="color:#ff79c6">{}</span>
+      <span style="color:#ff79c6">rule</span>: <span style="color:#f1fa8c">&#34;Host(`dashboard.db1.domain`)&#34;</span>
+      <span style="color:#ff79c6">service</span>: <span style="color:#f1fa8c">&#34;db1-dashboard&#34;</span>
+      <span style="color:#ff79c6">tls</span>: {}
 </code></pre></div><p>上述示例中<code>dashboard.db1.domain</code> 上的 HTTP 请求将路由到数据库的 Dashboard 服务上，而上面的 <code>db1.domain</code> 上的 TCP 请求将路由到数据库上面去</p>
 <h2 id="使用中间件middlewares自定义路由">使用中间件（Middlewares）自定义路由</h2>
 <p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/image-5.png" alt="Middlewares"></p>
 <p>在 Traefik 2.0 中还引入了中间件的功能，通过中间件可以将请求路由到目的地之前或者之后来调整请求。我们可以声明一个中间件，这个中间件可以复用到我们之后定义的路由上，下面是<a href="https://docs.traefik.io/v2.0/middlewares/overview/">官方文档</a>中中间件的配置方式:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># As YAML Configuration File</span>
-http:
-  routers:
-    router1:
-      service: myService
-      middlewares:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># As YAML Configuration File</span>
+<span style="color:#ff79c6">http</span>:
+  <span style="color:#ff79c6">routers</span>:
+    <span style="color:#ff79c6">router1</span>:
+      <span style="color:#ff79c6">service</span>: myService
+      <span style="color:#ff79c6">middlewares</span>:
         - <span style="color:#f1fa8c">&#34;foo-add-prefix&#34;</span>
-      rule: <span style="color:#f1fa8c">&#34;Host(`example.com`)&#34;</span>
+      <span style="color:#ff79c6">rule</span>: <span style="color:#f1fa8c">&#34;Host(`example.com`)&#34;</span>
 
-  middlewares:
-    foo-add-prefix:
-      addPrefix:
-        prefix: <span style="color:#f1fa8c">&#34;/foo&#34;</span>
+  <span style="color:#ff79c6">middlewares</span>:
+    <span style="color:#ff79c6">foo-add-prefix</span>:
+      <span style="color:#ff79c6">addPrefix</span>:
+        <span style="color:#ff79c6">prefix</span>: <span style="color:#f1fa8c">&#34;/foo&#34;</span>
 
-  services:
-    service1:
-      loadBalancer:
-        servers:
-          - url: <span style="color:#f1fa8c">&#34;http://127.0.0.1:80&#34;</span>
+  <span style="color:#ff79c6">services</span>:
+    <span style="color:#ff79c6">service1</span>:
+      <span style="color:#ff79c6">loadBalancer</span>:
+        <span style="color:#ff79c6">servers</span>:
+          - <span style="color:#ff79c6">url</span>: <span style="color:#f1fa8c">&#34;http://127.0.0.1:80&#34;</span>
 </code></pre></div><p>对于 Kubernetes 用户来说，还可以使用 Traefik 的新 CRD 来进行更加清晰明了的配置，而不需要像 nginx-Ingress 定义好多复杂的注解。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># As a Kubernetes Traefik IngressRoute</span>
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: middlewares.traefik.containo.us
-spec:
-  group: traefik.containo.us
-  version: v1alpha1
-  names:
-    kind: Middleware
-    plural: middlewares
-    singular: middleware
-  scope: Namespaced
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># As a Kubernetes Traefik IngressRoute</span>
+<span style="color:#ff79c6">apiVersion</span>: apiextensions.k8s.io/v1beta1
+<span style="color:#ff79c6">kind</span>: CustomResourceDefinition
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: middlewares.traefik.containo.us
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">group</span>: traefik.containo.us
+  <span style="color:#ff79c6">version</span>: v1alpha1
+  <span style="color:#ff79c6">names</span>:
+    <span style="color:#ff79c6">kind</span>: Middleware
+    <span style="color:#ff79c6">plural</span>: middlewares
+    <span style="color:#ff79c6">singular</span>: middleware
+  <span style="color:#ff79c6">scope</span>: Namespaced
 
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: stripprefix
-spec:
-  stripPrefix:
-    prefixes:
+<span style="color:#ff79c6">apiVersion</span>: traefik.containo.us/v1alpha1
+<span style="color:#ff79c6">kind</span>: Middleware
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: stripprefix
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">stripPrefix</span>:
+    <span style="color:#ff79c6">prefixes</span>:
       - /stripit
 
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: ingressroute
-spec:
+<span style="color:#ff79c6">apiVersion</span>: traefik.containo.us/v1alpha1
+<span style="color:#ff79c6">kind</span>: IngressRoute
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: ingressroute
+<span style="color:#ff79c6">spec</span>:
 <span style="color:#6272a4"># more fields...</span>
-  routes:
+  <span style="color:#ff79c6">routes</span>:
     <span style="color:#6272a4"># more fields...</span>
-    middlewares:
-      - name: stripprefix
+    <span style="color:#ff79c6">middlewares</span>:
+      - <span style="color:#ff79c6">name</span>: stripprefix
 </code></pre></div><p>例如我们常用的 <code>https</code> 方式就是通过中间件实现的，而且在 Traefik 中内置了<a href="https://docs.traefik.io/v2.0/middlewares/overview/">许多中间件</a>：路径操作、多种身份验证机制、缓冲、断路器、重试、压缩、错误处理、headers、IP 白名单、限速、重定向等。</p>
 <h2 id="traefik-20-提供的全新的-dashboard">Traefik 2.0 提供的全新的 Dashboard</h2>
 <p>Traefik 2.0 提供了一种全新的 WebUI，我们可以通过 dashboard 查看集群上的相关信息。同时还可以看到服务的比较详细的配置信息，如下图所示:</p>
@@ -359,46 +359,46 @@ spec:
 <p>在 Traefik2.0 中还支持了金丝雀发布，还有 A/B 测试，这些都是 Traefik 通过服务负载均衡的形式实现的。</p>
 <p><img src="https://aericio.oss-cn-beijing.aliyuncs.com/images/blog/traefik-cannay.png" alt="Traefik 金丝雀发布"></p>
 <p>可以将服务负载均衡器看成负责将请求转发到实际服务的虚拟服务，下面让我们来看一个经典的场景，现在有一个路由到一个 API：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
-  routers:
-    my-route:
-      rule: <span style="color:#f1fa8c">&#34;Host(`my.domain`)&#34;</span>
-      service: my-api-v1
-  services:
-    my-api-v1:
-      loadBalancer:
-        servers:
-        - url: <span style="color:#f1fa8c">&#34;http://private-ip-server-1/&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">http</span>:
+  <span style="color:#ff79c6">routers</span>:
+    <span style="color:#ff79c6">my-route</span>:
+      <span style="color:#ff79c6">rule</span>: <span style="color:#f1fa8c">&#34;Host(`my.domain`)&#34;</span>
+      <span style="color:#ff79c6">service</span>: my-api-v1
+  <span style="color:#ff79c6">services</span>:
+    <span style="color:#ff79c6">my-api-v1</span>:
+      <span style="color:#ff79c6">loadBalancer</span>:
+        <span style="color:#ff79c6">servers</span>:
+        - <span style="color:#ff79c6">url</span>: <span style="color:#f1fa8c">&#34;http://private-ip-server-1/&#34;</span>
 </code></pre></div><p>如果需要发布一个新版本，并且希望可以实现逐步部署，比如先部署三分之一，这里需要定义一个新的 ID 来部署一个新服务，例如:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
-  services:
-    my-api-v2:
-      loadBalancer:
-        servers:
-        - url: <span style="color:#f1fa8c">&#34;http://private-ip-server-2/&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">http</span>:
+  <span style="color:#ff79c6">services</span>:
+    <span style="color:#ff79c6">my-api-v2</span>:
+      <span style="color:#ff79c6">loadBalancer</span>:
+        <span style="color:#ff79c6">servers</span>:
+        - <span style="color:#ff79c6">url</span>: <span style="color:#f1fa8c">&#34;http://private-ip-server-2/&#34;</span>
 </code></pre></div><p>然后再创建一个服务负载均衡器，并设置相应的权重而不是直接指向新的版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
-  services:
-    canary-api:
-      weighted:
-        services:
-        - name: my-api-v1
-          weight: <span style="color:#bd93f9">3</span>
-        - name: my-api-v2
-          weight: <span style="color:#bd93f9">1</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">http</span>:
+  <span style="color:#ff79c6">services</span>:
+    <span style="color:#ff79c6">canary-api</span>:
+      <span style="color:#ff79c6">weighted</span>:
+        <span style="color:#ff79c6">services</span>:
+        - <span style="color:#ff79c6">name</span>: my-api-v1
+          <span style="color:#ff79c6">weight</span>: <span style="color:#bd93f9">3</span>
+        - <span style="color:#ff79c6">name</span>: my-api-v2
+          <span style="color:#ff79c6">weight</span>: <span style="color:#bd93f9">1</span>
 </code></pre></div><p>最后，将路由指向这个服务：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">http:
-  routers:
-    my-route:
-      rule: <span style="color:#f1fa8c">&#34;Host(`my.domain`)&#34;</span>
-      service: canary-api
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">http</span>:
+  <span style="color:#ff79c6">routers</span>:
+    <span style="color:#ff79c6">my-route</span>:
+      <span style="color:#ff79c6">rule</span>: <span style="color:#f1fa8c">&#34;Host(`my.domain`)&#34;</span>
+      <span style="color:#ff79c6">service</span>: canary-api
 </code></pre></div><p>之后，我们不需要重新部署真正的服务就可以更新权重，当然还可以对它们进行扩容，这都不会对金丝雀部署本身产生任何的影响。</p>
 <p>当然，对于新版的 Traefik 新特性也不止这么点，还有很多新特性，这里不再赘述，只是找几个比较常用的后续做测试，如果需要了解其他新特性可以参考 <a href="https://docs.traefik.io/v2.0/">Traefik 2.0 官方文档</a> 。</p>
 <h2 id="参考链接">参考链接</h2>
 <ul>
-<li><a href="https://docs.traefik.io/v2.0/">Traefik</a></li>
-<li><a href="https://containo.us/blog/traefik-2-0-6531ec5196c2/">Traefik 2.0 - The Wait is Over!</a></li>
-<li><a href="https://www.qikqiak.com/post/traefik2-ga/">Traefik 2.0 正式版发布-阳明的博客|Kubernetes|Istio|Prometheus|Python|Golang|云原生</a></li>
+<li><a href="https://docs.traefik.io/v2.0/">Traefik</a><!-- raw HTML omitted --></li>
+<li><a href="https://containo.us/blog/traefik-2-0-6531ec5196c2/">Traefik 2.0 - The Wait is Over!</a><!-- raw HTML omitted --></li>
+<li><a href="https://www.qikqiak.com/post/traefik2-ga/">Traefik 2.0 正式版发布-阳明的博客|Kubernetes|Istio|Prometheus|Python|Golang|云原生</a><!-- raw HTML omitted --></li>
 </ul>
 
 
@@ -658,7 +658,7 @@ spec:
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

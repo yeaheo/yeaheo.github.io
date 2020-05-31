@@ -236,86 +236,86 @@
 <h2 id="nodeselector">nodeSelector</h2>
 <p><code>nodeSelector</code> 其实是最简单的一种节点约束形式，它依赖 Kubernetes 集群中的 label 属性，我们知道<code>label</code>是<code>kubernetes</code>中一个非常重要的概念，用户可以非常灵活的利用 label 来管理集群中的资源，比如最常见的一个就是 service 通过匹配 label 去选择 POD 的。而 POD 的调度也可以根据节点的 label 进行特定的部署。</p>
 <p>集群现状：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl get nodes
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get nodes
 NAME                                STATUS   ROLES    AGE   VERSION
 cn-beijing.i-2zeigrq970614g1spzpu   Ready    &lt;none&gt;   30d   v1.12.6-aliyun.1
 cn-beijing.i-2zeigrq970614g1spzpv   Ready    &lt;none&gt;   30d   v1.12.6-aliyun.1
 </code></pre></div><p>如果需要查看 node 节点的 label 可以使用如下命令：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl get nodes --show-labels
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get nodes --show-labels
 或者
-➜ ~ kubectl describe nodes &lt;node-name&gt;
+➜ kubectl describe nodes &lt;node-name&gt;
 </code></pre></div><p>首先需要为节点打上标签，参考如下命令：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;<span style="color:#ff79c6">=</span>&lt;label-value&gt;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;<span style="color:#ff79c6">=</span>&lt;label-value&gt;
 </code></pre></div><p>这里我为 <code>cn-beijing.i-2zeigrq970614g1spzpv</code> 这个节点加一个 <code>source=yeaheo</code>的标签：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl label nodes cn-beijing.i-2zeigrq970614g1spzpv <span style="color:#8be9fd;font-style:italic">source</span><span style="color:#ff79c6">=</span>yeaheo
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl label nodes cn-beijing.i-2zeigrq970614g1spzpv <span style="color:#8be9fd;font-style:italic">source</span><span style="color:#ff79c6">=</span>yeaheo
 node/cn-beijing.i-2zeigrq970614g1spzpv labeled
 </code></pre></div><p>当 node 被打上了相关标签后，在调度的时候就可以使用这些标签了，只需要在 POD 的 spec 字段中添加<code>nodeSelector</code>字段，里面是我们需要被调度的节点的 label，本次我们用官方文档的 pod 模板：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx
-  labels:
-    env: <span style="color:#8be9fd;font-style:italic">test</span>
-spec:
-  containers:
-  - name: nginx
-    image: nginx:alpine 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Pod
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: nginx
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">env</span>: test
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">containers</span>:
+  - <span style="color:#ff79c6">name</span>: nginx
+    <span style="color:#ff79c6">image</span>: nginx:alpine 
 </code></pre></div><p>在 <code>spec</code>字段添加 <code>nodeSelector</code>后完整的 yaml 文件如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx
-  labels:
-    env: <span style="color:#8be9fd;font-style:italic">test</span>
-spec:
-  containers:
-  - name: nginx
-    image: nginx:alpine
-    imagePullPolicy: IfNotPresent
-  nodeSelector:
-    source: yeaheo
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Pod
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: nginx
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">env</span>: test
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">containers</span>:
+  - <span style="color:#ff79c6">name</span>: nginx
+    <span style="color:#ff79c6">image</span>: nginx:alpine
+    <span style="color:#ff79c6">imagePullPolicy</span>: IfNotPresent
+  <span style="color:#ff79c6">nodeSelector</span>:
+    <span style="color:#ff79c6">source</span>: yeaheo
 </code></pre></div><p>部署该文件：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ~ kubectl apply -f pod-nginx.yaml
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl apply -f pod-nginx.yaml
 </code></pre></div><p>部署完成后，可以通过查看该 pod 确实调度到了指定节点上：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ affinity kubectl get pods -n default -o wide
 NAME    READY   STATUS    RESTARTS   AGE     IP             NODE                                NOMINATED NODE
 nginx   1/1     Running   <span style="color:#bd93f9">0</span>          2m46s   172.16.0.205   cn-beijing.i-2zeigrq970614g1spzpv   &lt;none&gt;
 </code></pre></div><h2 id="affinity-and-anti-affinity">Affinity and anti-affinity</h2>
 <p><code>nodeSelector</code>提供了一种非常简单的方法来将pod限制为具有特定标签的节点。而 <code>Affinity</code>相比 <code>nodeSelector</code>更加的强大，官方文档这样比较两者的：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">1、the language is more expressive <span style="color:#ff79c6">(</span>not just “AND of exact match”<span style="color:#ff79c6">)</span>
-2、you can indicate that the rule is “soft”/“preference” rather than a hard requirement, so <span style="color:#ff79c6">if</span> the scheduler can’t satisfy it, the pod will still be scheduled
-3、you can constrain against labels on other pods running on the node <span style="color:#ff79c6">(</span>or other topological domain<span style="color:#ff79c6">)</span>, rather than against labels on the node itself, which allows rules about which pods can and cannot be co-located
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#bd93f9">1</span>、the language is more expressive (not just “AND of exact match”)
+<span style="color:#bd93f9">2</span>、you can indicate that the rule is “soft”/“preference” rather than a hard requirement, so if the scheduler can’t satisfy it, the pod will still be scheduled
+<span style="color:#bd93f9">3</span>、you can constrain against labels on other pods running on the node (or other topological domain), rather than against labels on the node itself, which allows rules about which pods can and cannot be co-located
 </code></pre></div><p>亲和特征由两种类型的亲和力组成，“节点亲和力”和“节点间亲和力/反亲和力”。节点亲和力就像现有的<code>nodeSelector</code>（但具有上面列出的前两个好处），而pod间亲和/反亲和力限制 pod 标签而不是节点标签，如上面列出的第三个项目中所述，除了拥有第一个和上面列出的第二个属性。</p>
 <h3 id="nodeaffinity">nodeAffinity</h3>
 <p><code>nodeAffinity</code>就是节点亲和性，相对应的是<code>Anti-Affinity</code>，就是反亲和性，这种方法比上面的<code>nodeSelector</code>更加灵活，它可以进行一些简单的逻辑组合了，不只是简单的相等匹配。 调度可以分成软策略和硬策略两种方式，软策略就是如果你没有满足调度要求的节点的话，POD 就会忽略这条规则，继续完成调度过程，说白了就是<strong>满足条件最好了，没有的话也无所谓了</strong>的策略；而硬策略就比较强硬了，如果没有满足条件的节点的话，就不断重试直到满足条件为止，简单说就是<strong>你必须满足我的要求，不然我就不干</strong>的策略。</p>
 <p><code>nodeAffinity</code>就有两上面两种策略：<code>preferredDuringSchedulingIgnoredDuringExecution</code>和<code>requiredDuringSchedulingIgnoredDuringExecution</code>，前面的就是软策略，后面的就是硬策略。</p>
 <p>如下 <code>pod-with-node-affinity.yaml</code> 配置清单文件定义的亲和性：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
-kind: Pod
-metadata:
-  name: with-node-affinity
-spec:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/e2e-az-name
-            operator: In
-            values:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Pod
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: with-node-affinity
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">affinity</span>:
+    <span style="color:#ff79c6">nodeAffinity</span>:
+      <span style="color:#ff79c6">requiredDuringSchedulingIgnoredDuringExecution</span>:
+        <span style="color:#ff79c6">nodeSelectorTerms</span>:
+        - <span style="color:#ff79c6">matchExpressions</span>:
+          - <span style="color:#ff79c6">key</span>: kubernetes.io/e2e-az-name
+            <span style="color:#ff79c6">operator</span>: In
+            <span style="color:#ff79c6">values</span>:
             - e2e-az1
             - e2e-az2
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: <span style="color:#bd93f9">1</span>
-        preference:
-          matchExpressions:
-          - key: another-node-label-key
-            operator: In
-            values:
+      <span style="color:#ff79c6">preferredDuringSchedulingIgnoredDuringExecution</span>:
+      - <span style="color:#ff79c6">weight</span>: <span style="color:#bd93f9">1</span>
+        <span style="color:#ff79c6">preference</span>:
+          <span style="color:#ff79c6">matchExpressions</span>:
+          - <span style="color:#ff79c6">key</span>: another-node-label-key
+            <span style="color:#ff79c6">operator</span>: In
+            <span style="color:#ff79c6">values</span>:
             - another-node-label-value
-  containers:
-  - name: with-node-affinity
-    image: k8s.gcr.io/pause:2.0
+  <span style="color:#ff79c6">containers</span>:
+  - <span style="color:#ff79c6">name</span>: with-node-affinity
+    <span style="color:#ff79c6">image</span>: k8s.gcr.io/pause:<span style="color:#bd93f9">2.0</span>
 </code></pre></div><p>此节点关联性规则表示，该pod只能放置在一个标签上，该标签的键是<code>kubernetes.io/e2e-az-name</code>，其值为<code>e2e-az1</code>或者<code>e2e-az2</code>。此外，在满足该标准的节点中，具有其键<code>another-node-label-key</code>和值的标签的节点<code>another-node-label-value</code>应该是首选的。</p>
 <p>现在<code>Kubernetes</code>提供的操作符有下面的几种：</p>
 <ul>
@@ -332,37 +332,37 @@ spec:
 <h3 id="podaffinity">podAffinity</h3>
 <p>上面两种方式都是让 POD 去选择节点的，有的时候我们也希望能够根据 POD 之间的关系进行调度，<code>Kubernetes</code>在1.4版本引入的<code>podAffinity</code>概念就可以实现我们这个需求。</p>
 <p>和<code>nodeAffinity</code>类似，<code>podAffinity</code>也有<code>requiredDuringSchedulingIgnoredDuringExecution</code>和 <code>preferredDuringSchedulingIgnoredDuringExecution</code>两种调度策略，唯一不同的是如果要使用互斥性，我们需要使用<code>podAntiAffinity</code>字段。 如下例子所示，我们希望<code>with-pod-affinity</code>和<code>busybox-pod</code>能够就近部署，而不希望和<code>node-affinity-pod</code>部署在同一个拓扑域下面：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
-kind: Pod
-metadata:
-  name: with-pod-affinity
-  labels:
-    app: pod-affinity-pod
-spec:
-  containers:
-  - name: with-pod-affinity
-    image: nginx
-  affinity:
-    podAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app
-            operator: In
-            values:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Pod
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: with-pod-affinity
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">app</span>: pod-affinity-pod
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">containers</span>:
+  - <span style="color:#ff79c6">name</span>: with-pod-affinity
+    <span style="color:#ff79c6">image</span>: nginx
+  <span style="color:#ff79c6">affinity</span>:
+    <span style="color:#ff79c6">podAffinity</span>:
+      <span style="color:#ff79c6">requiredDuringSchedulingIgnoredDuringExecution</span>:
+      - <span style="color:#ff79c6">labelSelector</span>:
+          <span style="color:#ff79c6">matchExpressions</span>:
+          - <span style="color:#ff79c6">key</span>: app
+            <span style="color:#ff79c6">operator</span>: In
+            <span style="color:#ff79c6">values</span>:
             - busybox-pod
-        topologyKey: kubernetes.io/hostname
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: <span style="color:#bd93f9">1</span>
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: app
-              operator: In
-              values:
+        <span style="color:#ff79c6">topologyKey</span>: kubernetes.io/hostname
+    <span style="color:#ff79c6">podAntiAffinity</span>:
+      <span style="color:#ff79c6">preferredDuringSchedulingIgnoredDuringExecution</span>:
+      - <span style="color:#ff79c6">weight</span>: <span style="color:#bd93f9">1</span>
+        <span style="color:#ff79c6">podAffinityTerm</span>:
+          <span style="color:#ff79c6">labelSelector</span>:
+            <span style="color:#ff79c6">matchExpressions</span>:
+            - <span style="color:#ff79c6">key</span>: app
+              <span style="color:#ff79c6">operator</span>: In
+              <span style="color:#ff79c6">values</span>:
               - node-affinity-pod
-          topologyKey: kubernetes.io/hostname
+          <span style="color:#ff79c6">topologyKey</span>: kubernetes.io/hostname
 </code></pre></div><p>上面这个例子中的 POD 需要调度到某个指定的主机上，至少有一个节点上运行了这样的 POD：这个 POD 有一个<code>app=busybox-pod</code>的 label。<code>podAntiAffinity</code>则是希望最好不要调度到这样的节点：这个节点上运行了某个 POD，而这个 POD 有<code>app=node-affinity-pod</code>的 label。</p>
 <p>需要注意的是：</p>
 <blockquote>
@@ -370,44 +370,44 @@ spec:
 </blockquote>
 <h2 id="nodename">nodeName</h2>
 <p><code>nodeName</code>是最简单的节点选择约束形式，但由于其局限性，通常不使用它。这里简单举个例子：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx
-spec:
-  containers:
-  - name: nginx
-    image: nginx
-  nodeName: kube-01
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Pod
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: nginx
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">containers</span>:
+  - <span style="color:#ff79c6">name</span>: nginx
+    <span style="color:#ff79c6">image</span>: nginx
+  <span style="color:#ff79c6">nodeName</span>: kube<span style="color:#bd93f9">-01</span>
 </code></pre></div><h1 id="污点和容忍度">污点和容忍度</h1>
 <p>对于<code>nodeAffinity</code>无论是硬策略还是软策略方式，都是调度 POD 到预期节点上，而<code>Taints</code>恰好与之相反，如果一个节点标记为 Taints ，除非 POD 也被标识为可以容忍污点节点，否则该 Taints 节点不会被调度pod。</p>
 <p>taint 标记节点举例如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl taint nodes node1 <span style="color:#8be9fd;font-style:italic">key</span><span style="color:#ff79c6">=</span>value:NoSchedule
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl taint nodes node1 <span style="color:#8be9fd;font-style:italic">key</span><span style="color:#ff79c6">=</span>value:NoSchedule
 </code></pre></div><p>如果需要取消此污点可以参考下面命令：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl taint nodes node1 key:NoSchedule-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl taint nodes node1 key:NoSchedule-
 </code></pre></div><p>当需要将某些 pod 调度到带有污点的节点上，必须在 pod 的 spec 字段中指定容忍度，这里有个例子可以参考：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tolerations:
-- key: <span style="color:#f1fa8c">&#34;key&#34;</span>
-  operator: <span style="color:#f1fa8c">&#34;Equal&#34;</span>
-  value: <span style="color:#f1fa8c">&#34;value&#34;</span>
-  effect: <span style="color:#f1fa8c">&#34;NoSchedule&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">tolerations</span>:
+- <span style="color:#ff79c6">key</span>: <span style="color:#f1fa8c">&#34;key&#34;</span>
+  <span style="color:#ff79c6">operator</span>: <span style="color:#f1fa8c">&#34;Equal&#34;</span>
+  <span style="color:#ff79c6">value</span>: <span style="color:#f1fa8c">&#34;value&#34;</span>
+  <span style="color:#ff79c6">effect</span>: <span style="color:#f1fa8c">&#34;NoSchedule&#34;</span>
   
 或者
 
-tolerations:
-- key: <span style="color:#f1fa8c">&#34;key&#34;</span>
-  operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
-  effect: <span style="color:#f1fa8c">&#34;NoSchedule&#34;</span>
+<span style="color:#ff79c6">tolerations</span>:
+- <span style="color:#ff79c6">key</span>: <span style="color:#f1fa8c">&#34;key&#34;</span>
+  <span style="color:#ff79c6">operator</span>: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
+  <span style="color:#ff79c6">effect</span>: <span style="color:#f1fa8c">&#34;NoSchedule&#34;</span>
 
 <span style="color:#6272a4"># 如果 operator 未指定，默认为 Equal</span>
 </code></pre></div><p>这里有两种特殊情况，如下：</p>
 <p>An empty <code>key</code> with operator <code>Exists</code> matches all keys, values and effects which means this will tolerate everything.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tolerations:
-- operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">tolerations</span>:
+- <span style="color:#ff79c6">operator</span>: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
 </code></pre></div><p>An empty <code>effect</code> matches all effects with key <code>key</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tolerations:
-- key: <span style="color:#f1fa8c">&#34;key&#34;</span>
-  operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">tolerations</span>:
+- <span style="color:#ff79c6">key</span>: <span style="color:#f1fa8c">&#34;key&#34;</span>
+  <span style="color:#ff79c6">operator</span>: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
 </code></pre></div><p>effect 共有三个可选项，可按实际需求进行设置：</p>
 <ul>
 <li>
@@ -422,8 +422,8 @@ tolerations:
 </ul>
 <h1 id="参考资料">参考资料</h1>
 <ul>
-<li><a href="https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/">https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/</a></li>
-<li><a href="https://kubernetes.io/docs/concepts/configuration/assign-pod-node/">https://kubernetes.io/docs/concepts/configuration/assign-pod-node/</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/">https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/</a><!-- raw HTML omitted --></li>
+<li><a href="https://kubernetes.io/docs/concepts/configuration/assign-pod-node/">https://kubernetes.io/docs/concepts/configuration/assign-pod-node/</a><!-- raw HTML omitted --></li>
 </ul>
 
 
@@ -683,7 +683,7 @@ tolerations:
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

@@ -230,8 +230,8 @@
                 <p>以前简单介绍了一下 Traefik 2.0 的新特性，这里我试着在已经存在的 Kubernetes 集群中部署 Traefik 2.0 ,需要注意的是新版本的 Traefik 在配置 Ingress 的路由规则的时候是通过自定义的 CRD 对象来实现的，并不像 <code>1.0+</code> 版本使用 Kubernetes 的 <code>annotations</code>来完成路由规则配置。下面将介绍如何在 Kubernetes 环境下部署并配置 Traefik v2.0。</p>
 <h2 id="traefik-20-部署环境说明">Traefik 2.0 部署环境说明</h2>
 <p>本次部署的 Traefik 2.0 的 Kubernetes 集群版本及其版本如下:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Traefik 版本     2.0.6
-Kubernetes 版本  v1.15.3
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">Traefik 版本</span>:     <span style="color:#bd93f9">2.0.6</span>
+<span style="color:#ff79c6">Kubernetes 版本</span>:  v1<span style="color:#bd93f9">.15.3</span>
 </code></pre></div><h2 id="kubernetes-部署-traefik">Kubernetes 部署 Traefik</h2>
 <p>为了方便大家参考，我整理了一下配置清单文件，并上传到了 GitHub 上，具体地址可以参考: <a href="https://github.com/yeaheo/traefik2.0">https://github.com/yeaheo/traefik2.0</a> 欢迎大家借鉴。</p>
 <blockquote>
@@ -240,293 +240,293 @@ Kubernetes 版本  v1.15.3
 <h3 id="创建-crd-资源">创建 CRD 资源</h3>
 <p>在 Traefik 2.0 版本以后后，它开始使用 CRD（Custom Resource Definition）来完成路由规则配置，所以需要提前创建 CRD 资源</p>
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-crd.yaml)，直接应用即可:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># IngressRoute</span>
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ingressroutes.traefik.containo.us
-spec:
-  group: traefik.containo.us
-  version: v1alpha1
-  names:
-    kind: IngressRoute
-    plural: ingressroutes
-    singular: ingressroute
-  scope: Namespaced
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># IngressRoute</span>
+<span style="color:#ff79c6">apiVersion</span>: apiextensions.k8s.io/v1beta1
+<span style="color:#ff79c6">kind</span>: CustomResourceDefinition
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: ingressroutes.traefik.containo.us
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">group</span>: traefik.containo.us
+  <span style="color:#ff79c6">version</span>: v1alpha1
+  <span style="color:#ff79c6">names</span>:
+    <span style="color:#ff79c6">kind</span>: IngressRoute
+    <span style="color:#ff79c6">plural</span>: ingressroutes
+    <span style="color:#ff79c6">singular</span>: ingressroute
+  <span style="color:#ff79c6">scope</span>: Namespaced
 
 ---
 <span style="color:#6272a4"># IngressRouteTCP</span>
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ingressroutetcps.traefik.containo.us
-spec:
-  group: traefik.containo.us
-  version: v1alpha1
-  names:
-    kind: IngressRouteTCP
-    plural: ingressroutetcps
-    singular: ingressroutetcp
-  scope: Namespaced
+<span style="color:#ff79c6">apiVersion</span>: apiextensions.k8s.io/v1beta1
+<span style="color:#ff79c6">kind</span>: CustomResourceDefinition
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: ingressroutetcps.traefik.containo.us
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">group</span>: traefik.containo.us
+  <span style="color:#ff79c6">version</span>: v1alpha1
+  <span style="color:#ff79c6">names</span>:
+    <span style="color:#ff79c6">kind</span>: IngressRouteTCP
+    <span style="color:#ff79c6">plural</span>: ingressroutetcps
+    <span style="color:#ff79c6">singular</span>: ingressroutetcp
+  <span style="color:#ff79c6">scope</span>: Namespaced
 
 ---
 <span style="color:#6272a4"># MiddleWares</span>
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: middlewares.traefik.containo.us
-spec:
-  group: traefik.containo.us
-  version: v1alpha1
-  names:
-    kind: Middleware
-    plural: middlewares
-    singular: middleware
-  scope: Namespaced
+<span style="color:#ff79c6">apiVersion</span>: apiextensions.k8s.io/v1beta1
+<span style="color:#ff79c6">kind</span>: CustomResourceDefinition
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: middlewares.traefik.containo.us
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">group</span>: traefik.containo.us
+  <span style="color:#ff79c6">version</span>: v1alpha1
+  <span style="color:#ff79c6">names</span>:
+    <span style="color:#ff79c6">kind</span>: Middleware
+    <span style="color:#ff79c6">plural</span>: middlewares
+    <span style="color:#ff79c6">singular</span>: middleware
+  <span style="color:#ff79c6">scope</span>: Namespaced
 
 ---
 <span style="color:#6272a4"># TLSOption</span>
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: tlsoptions.traefik.containo.us
-spec:
-  group: traefik.containo.us
-  version: v1alpha1
-  names:
-    kind: TLSOption
-    plural: tlsoptions
-    singular: tlsoption
-  scope: Namespaced
+<span style="color:#ff79c6">apiVersion</span>: apiextensions.k8s.io/v1beta1
+<span style="color:#ff79c6">kind</span>: CustomResourceDefinition
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: tlsoptions.traefik.containo.us
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">group</span>: traefik.containo.us
+  <span style="color:#ff79c6">version</span>: v1alpha1
+  <span style="color:#ff79c6">names</span>:
+    <span style="color:#ff79c6">kind</span>: TLSOption
+    <span style="color:#ff79c6">plural</span>: tlsoptions
+    <span style="color:#ff79c6">singular</span>: tlsoption
+  <span style="color:#ff79c6">scope</span>: Namespaced
 </code></pre></div><p>部署：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-crd.yaml
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl apply -f traefik-crd.yaml
 </code></pre></div><h3 id="创建-traefik-配置文件">创建 Traefik 配置文件</h3>
 <p>由于 Traefik 配置很多，通过 CLI 定义不是很方便，一般时候选择将其配置选项放到配置文件中，然后存入 ConfigMap，将其挂入 Traefik 中。</p>
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-config.yaml)，直接应用即可:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: traefik-config
-  namespace: traefik
-data:
-  traefik.yaml: |-
-    serversTransport:
-      insecureSkipVerify: <span style="color:#8be9fd;font-style:italic">true</span>
-    api:
-      insecure: <span style="color:#8be9fd;font-style:italic">true</span>
-      dashboard: <span style="color:#8be9fd;font-style:italic">true</span>
-      debug: <span style="color:#8be9fd;font-style:italic">true</span>
-    metrics:
-      prometheus: <span style="color:#f1fa8c">&#34;&#34;</span>
-    entryPoints:
-      web:
-        address: <span style="color:#f1fa8c">&#34;:80&#34;</span>
-      websecure:
-        address: <span style="color:#f1fa8c">&#34;:443&#34;</span>
-    providers:
-      kubernetesCRD: <span style="color:#f1fa8c">&#34;&#34;</span>
-    log:
-      filePath: <span style="color:#f1fa8c">&#34;&#34;</span>
-      level: error
-      format: json
-    accessLog:
-      filePath: <span style="color:#f1fa8c">&#34;&#34;</span>
-      format: json
-      bufferingSize: <span style="color:#bd93f9">0</span>
-      filters:
-        retryAttempts: <span style="color:#8be9fd;font-style:italic">true</span>
-        minDuration: <span style="color:#bd93f9">20</span>
-      fields:
-        defaultMode: keep
-        names:
-          ClientUsername: drop
-        headers:
-          defaultMode: keep
-          names:
-            User-Agent: redact
-            Authorization: drop
-            Content-Type: keep
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">kind</span>: ConfigMap
+<span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: traefik-config
+  <span style="color:#ff79c6">namespace</span>: traefik
+<span style="color:#ff79c6">data</span>:
+  <span style="color:#ff79c6">traefik.yaml</span>: |<span style="color:#f1fa8c">-
+</span><span style="color:#f1fa8c">    serversTransport:</span>
+      <span style="color:#ff79c6">insecureSkipVerify</span>: <span style="color:#ff79c6">true</span>
+    <span style="color:#ff79c6">api</span>:
+      <span style="color:#ff79c6">insecure</span>: <span style="color:#ff79c6">true</span>
+      <span style="color:#ff79c6">dashboard</span>: <span style="color:#ff79c6">true</span>
+      <span style="color:#ff79c6">debug</span>: <span style="color:#ff79c6">true</span>
+    <span style="color:#ff79c6">metrics</span>:
+      <span style="color:#ff79c6">prometheus</span>: <span style="color:#f1fa8c">&#34;&#34;</span>
+    <span style="color:#ff79c6">entryPoints</span>:
+      <span style="color:#ff79c6">web</span>:
+        <span style="color:#ff79c6">address</span>: <span style="color:#f1fa8c">&#34;:80&#34;</span>
+      <span style="color:#ff79c6">websecure</span>:
+        <span style="color:#ff79c6">address</span>: <span style="color:#f1fa8c">&#34;:443&#34;</span>
+    <span style="color:#ff79c6">providers</span>:
+      <span style="color:#ff79c6">kubernetesCRD</span>: <span style="color:#f1fa8c">&#34;&#34;</span>
+    <span style="color:#ff79c6">log</span>:
+      <span style="color:#ff79c6">filePath</span>: <span style="color:#f1fa8c">&#34;&#34;</span>
+      <span style="color:#ff79c6">level</span>: error
+      <span style="color:#ff79c6">format</span>: json
+    <span style="color:#ff79c6">accessLog</span>:
+      <span style="color:#ff79c6">filePath</span>: <span style="color:#f1fa8c">&#34;&#34;</span>
+      <span style="color:#ff79c6">format</span>: json
+      <span style="color:#ff79c6">bufferingSize</span>: <span style="color:#bd93f9">0</span>
+      <span style="color:#ff79c6">filters</span>:
+        <span style="color:#ff79c6">retryAttempts</span>: <span style="color:#ff79c6">true</span>
+        <span style="color:#ff79c6">minDuration</span>: <span style="color:#bd93f9">20</span>
+      <span style="color:#ff79c6">fields</span>:
+        <span style="color:#ff79c6">defaultMode</span>: keep
+        <span style="color:#ff79c6">names</span>:
+          <span style="color:#ff79c6">ClientUsername</span>: drop
+        <span style="color:#ff79c6">headers</span>:
+          <span style="color:#ff79c6">defaultMode</span>: keep
+          <span style="color:#ff79c6">names</span>:
+            <span style="color:#ff79c6">User-Agent</span>: redact
+            <span style="color:#ff79c6">Authorization</span>: drop
+            <span style="color:#ff79c6">Content-Type</span>: keep
 </code></pre></div><p>部署：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-config.yaml
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl apply -f traefik-config.yaml
 </code></pre></div><blockquote>
 <p>如果需要修改 Traefik 的配置，可以通过修改此文件再 <code>apply</code> 即可</p>
 </blockquote>
 <h3 id="创建-rbac-资源">创建 RBAC 资源</h3>
 <p>Kubernetes 在 1.6 版本中引入了基于角色的访问控制（RBAC）策略，方便对 Kubernetes 资源和 API 进行细粒度控制。Traefik 需要一定的权限，所以这里提前创建好 Traefik ServiceAccount 并分配一定的权限。</p>
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-config.yaml)，直接应用即可:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: traefik-ingress-controller
-  namespace: traefik
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: ServiceAccount
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: traefik-ingress-controller
+  <span style="color:#ff79c6">namespace</span>: traefik
 ---
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: traefik-ingress-controller
-rules:
-  - apiGroups:
+<span style="color:#ff79c6">kind</span>: ClusterRole
+<span style="color:#ff79c6">apiVersion</span>: rbac.authorization.k8s.io/v1beta1
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: traefik-ingress-controller
+<span style="color:#ff79c6">rules</span>:
+  - <span style="color:#ff79c6">apiGroups</span>:
       - <span style="color:#f1fa8c">&#34;&#34;</span>
-    resources:
+    <span style="color:#ff79c6">resources</span>:
       - services
       - endpoints
       - secrets
-    verbs:
+    <span style="color:#ff79c6">verbs</span>:
       - get
       - list
       - watch
-  - apiGroups:
+  - <span style="color:#ff79c6">apiGroups</span>:
       - extensions
-    resources:
+    <span style="color:#ff79c6">resources</span>:
       - ingresses
-    verbs:
+    <span style="color:#ff79c6">verbs</span>:
       - get
       - list
       - watch
-  - apiGroups:
+  - <span style="color:#ff79c6">apiGroups</span>:
       - extensions
-    resources:
+    <span style="color:#ff79c6">resources</span>:
       - ingresses/status
-    verbs:
+    <span style="color:#ff79c6">verbs</span>:
       - update
-  - apiGroups:
+  - <span style="color:#ff79c6">apiGroups</span>:
       - traefik.containo.us
-    resources:
+    <span style="color:#ff79c6">resources</span>:
       - middlewares
-    verbs:
+    <span style="color:#ff79c6">verbs</span>:
       - get
       - list
       - watch
-  - apiGroups:
+  - <span style="color:#ff79c6">apiGroups</span>:
       - traefik.containo.us
-    resources:
+    <span style="color:#ff79c6">resources</span>:
       - ingressroutes
-    verbs:
+    <span style="color:#ff79c6">verbs</span>:
       - get
       - list
       - watch
-  - apiGroups:
+  - <span style="color:#ff79c6">apiGroups</span>:
       - traefik.containo.us
-    resources:
+    <span style="color:#ff79c6">resources</span>:
       - ingressroutetcps
-    verbs:
+    <span style="color:#ff79c6">verbs</span>:
       - get
       - list
       - watch
-  - apiGroups:
+  - <span style="color:#ff79c6">apiGroups</span>:
       - traefik.containo.us
-    resources:
+    <span style="color:#ff79c6">resources</span>:
       - tlsoptions
-    verbs:
+    <span style="color:#ff79c6">verbs</span>:
       - get
       - list
       - watch
 ---
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: traefik-ingress-controller
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: traefik-ingress-controller
-subjects:
-- kind: ServiceAccount
-  name: traefik-ingress-controller
-  namespace: traefik
+<span style="color:#ff79c6">kind</span>: ClusterRoleBinding
+<span style="color:#ff79c6">apiVersion</span>: rbac.authorization.k8s.io/v1beta1
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: traefik-ingress-controller
+<span style="color:#ff79c6">roleRef</span>:
+  <span style="color:#ff79c6">apiGroup</span>: rbac.authorization.k8s.io
+  <span style="color:#ff79c6">kind</span>: ClusterRole
+  <span style="color:#ff79c6">name</span>: traefik-ingress-controller
+<span style="color:#ff79c6">subjects</span>:
+- <span style="color:#ff79c6">kind</span>: ServiceAccount
+  <span style="color:#ff79c6">name</span>: traefik-ingress-controller
+  <span style="color:#ff79c6">namespace</span>: traefik
 </code></pre></div><p>部署：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-rbac.yaml
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl apply -f traefik-rbac.yaml
 </code></pre></div><h3 id="执行-traefik-部署文件">执行 Traefik 部署文件</h3>
 <blockquote>
 <p>需要说明的是，我部署时用的是 <code>DaemonSet</code> 的方式部署，并且将其指定到了带有 <code>app=traefik-ingress</code> 的节点上，部署时需要根据实际情况而定，要谨慎</p>
 </blockquote>
 <p><strong>设置节点标签:</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl label nodes node-10.200.100.215 <span style="color:#8be9fd;font-style:italic">app</span><span style="color:#ff79c6">=</span>traefik-ingress
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl label nodes node-10.200.100.215 <span style="color:#8be9fd;font-style:italic">app</span><span style="color:#ff79c6">=</span>traefik-ingress
 </code></pre></div><p>如果需要删除节点标签可以使用如下命令:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl label nodes node-10.200.100.215 app-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl label nodes node-10.200.100.215 app-
 </code></pre></div><p>用 DaemonSet 方式部署，便于在多服务器间扩展，用 hostport 方式占用服务器 80、443 端口，方便流量进入。</p>
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-deploy.yaml)，直接应用即可:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">---
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: traefik-ingress-controller
-  namespace: traefik
-  labels:
-    k8s-app: traefik
-spec:
-  selector:
-    matchLabels:
-      k8s-app: traefik
-  template:
-    metadata:
-      name: traefik
-      labels:
-        k8s-app: traefik
-    spec:
-      serviceAccountName: traefik-ingress-controller
-      terminationGracePeriodSeconds: <span style="color:#bd93f9">1</span>
-      containers:
-        - image: traefik:latest
-          name: traefik-ingress-lb
-          ports:
-            - name: web
-              containerPort: <span style="color:#bd93f9">80</span>
-              hostPort: <span style="color:#bd93f9">80</span>
-            - name: websecure
-              containerPort: <span style="color:#bd93f9">443</span>
-              hostPort: <span style="color:#bd93f9">443</span>
-            - name: admin
-              containerPort: <span style="color:#bd93f9">8080</span>
-          resources:
-            limits:
-              cpu: 500m
-              memory: 512Mi
-            requests:
-              cpu: 500m
-              memory: 512Mi
-          securityContext:
-            capabilities:
-              drop:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
+<span style="color:#ff79c6">apiVersion</span>: apps/v1
+<span style="color:#ff79c6">kind</span>: DaemonSet
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: traefik-ingress-controller
+  <span style="color:#ff79c6">namespace</span>: traefik
+  <span style="color:#ff79c6">labels</span>:
+    <span style="color:#ff79c6">k8s-app</span>: traefik
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">matchLabels</span>:
+      <span style="color:#ff79c6">k8s-app</span>: traefik
+  <span style="color:#ff79c6">template</span>:
+    <span style="color:#ff79c6">metadata</span>:
+      <span style="color:#ff79c6">name</span>: traefik
+      <span style="color:#ff79c6">labels</span>:
+        <span style="color:#ff79c6">k8s-app</span>: traefik
+    <span style="color:#ff79c6">spec</span>:
+      <span style="color:#ff79c6">serviceAccountName</span>: traefik-ingress-controller
+      <span style="color:#ff79c6">terminationGracePeriodSeconds</span>: <span style="color:#bd93f9">1</span>
+      <span style="color:#ff79c6">containers</span>:
+        - <span style="color:#ff79c6">image</span>: traefik:latest
+          <span style="color:#ff79c6">name</span>: traefik-ingress-lb
+          <span style="color:#ff79c6">ports</span>:
+            - <span style="color:#ff79c6">name</span>: web
+              <span style="color:#ff79c6">containerPort</span>: <span style="color:#bd93f9">80</span>
+              <span style="color:#ff79c6">hostPort</span>: <span style="color:#bd93f9">80</span>
+            - <span style="color:#ff79c6">name</span>: websecure
+              <span style="color:#ff79c6">containerPort</span>: <span style="color:#bd93f9">443</span>
+              <span style="color:#ff79c6">hostPort</span>: <span style="color:#bd93f9">443</span>
+            - <span style="color:#ff79c6">name</span>: admin
+              <span style="color:#ff79c6">containerPort</span>: <span style="color:#bd93f9">8080</span>
+          <span style="color:#ff79c6">resources</span>:
+            <span style="color:#ff79c6">limits</span>:
+              <span style="color:#ff79c6">cpu</span>: 500m
+              <span style="color:#ff79c6">memory</span>: 512Mi
+            <span style="color:#ff79c6">requests</span>:
+              <span style="color:#ff79c6">cpu</span>: 500m
+              <span style="color:#ff79c6">memory</span>: 512Mi
+          <span style="color:#ff79c6">securityContext</span>:
+            <span style="color:#ff79c6">capabilities</span>:
+              <span style="color:#ff79c6">drop</span>:
                 - ALL
-              add:
+              <span style="color:#ff79c6">add</span>:
                 - NET_BIND_SERVICE
-          args:
-            - --configfile<span style="color:#ff79c6">=</span>/config/traefik.yaml
-          volumeMounts:
-            - mountPath: <span style="color:#f1fa8c">&#34;/config&#34;</span>
-              name: <span style="color:#f1fa8c">&#34;config&#34;</span>
-      volumes:
-        - name: config
-          configMap:
-            name: traefik-config 
-      tolerations:
-        - operator: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
-      nodeSelector:
-        app: <span style="color:#f1fa8c">&#34;traefik-ingress&#34;</span>
+          <span style="color:#ff79c6">args</span>:
+            - --configfile=/config/traefik.yaml
+          <span style="color:#ff79c6">volumeMounts</span>:
+            - <span style="color:#ff79c6">mountPath</span>: <span style="color:#f1fa8c">&#34;/config&#34;</span>
+              <span style="color:#ff79c6">name</span>: <span style="color:#f1fa8c">&#34;config&#34;</span>
+      <span style="color:#ff79c6">volumes</span>:
+        - <span style="color:#ff79c6">name</span>: config
+          <span style="color:#ff79c6">configMap</span>:
+            <span style="color:#ff79c6">name</span>: traefik-config 
+      <span style="color:#ff79c6">tolerations</span>:
+        - <span style="color:#ff79c6">operator</span>: <span style="color:#f1fa8c">&#34;Exists&#34;</span>
+      <span style="color:#ff79c6">nodeSelector</span>:
+        <span style="color:#ff79c6">app</span>: <span style="color:#f1fa8c">&#34;traefik-ingress&#34;</span>
 </code></pre></div><p>部署：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-deploy.yaml
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl apply -f traefik-deploy.yaml
 </code></pre></div><h3 id="部署-svc-文件">部署 SVC 文件</h3>
 <p>这里我贴出我之前整理的 <code>yaml</code> 文件(traefik-svc.yaml)，直接应用即可:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apiVersion: v1
-kind: Service
-metadata:
-  name: traefik
-  namespace: traefik
-spec:
-  ports:
-    - name: web
-      port: <span style="color:#bd93f9">80</span>
-    - name: websecure
-      port: <span style="color:#bd93f9">443</span>
-    - name: admin
-      port: <span style="color:#bd93f9">8080</span>
-  selector:
-    k8s-app: traefik
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#ff79c6">apiVersion</span>: v1
+<span style="color:#ff79c6">kind</span>: Service
+<span style="color:#ff79c6">metadata</span>:
+  <span style="color:#ff79c6">name</span>: traefik
+  <span style="color:#ff79c6">namespace</span>: traefik
+<span style="color:#ff79c6">spec</span>:
+  <span style="color:#ff79c6">ports</span>:
+    - <span style="color:#ff79c6">name</span>: web
+      <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">80</span>
+    - <span style="color:#ff79c6">name</span>: websecure
+      <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">443</span>
+    - <span style="color:#ff79c6">name</span>: admin
+      <span style="color:#ff79c6">port</span>: <span style="color:#bd93f9">8080</span>
+  <span style="color:#ff79c6">selector</span>:
+    <span style="color:#ff79c6">k8s-app</span>: traefik
 </code></pre></div><p>部署：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl apply -f traefik-svc.yaml
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl apply -f traefik-svc.yaml
 </code></pre></div><p>至此， Traefik 2.0 就部署完成了，接下来就是对其特性进行简单测试了。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl -n traefik get pods
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl -n traefik get pods
 NAME                               READY   STATUS    RESTARTS   AGE
 traefik-ingress-controller-cx788   1/1     Running   <span style="color:#bd93f9">1</span>          1d
 </code></pre></div><blockquote>
@@ -790,7 +790,7 @@ traefik-ingress-controller-cx788   1/1     Running   <span style="color:#bd93f9"
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

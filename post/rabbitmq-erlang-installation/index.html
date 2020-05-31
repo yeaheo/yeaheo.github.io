@@ -219,35 +219,35 @@
 <p>其他系统的安装配置可以参考 Erlang 的官方站点相关文档：<a href="https://www.erlang.org">https://www.erlang.org</a></p>
 <p>Erlang 官方库文件参见<a href="https://packages.erlang-solutions.com/erlang/">Erlang repository page</a>, 我们需要根据我们的需要下载对应的版本。本次我们选择用 rpm 的方式安装。</p>
 <p>系统基本环境如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat /etc/redhat-release
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cat /etc/redhat-release
 CentOS Linux release 7.5.1804 <span style="color:#ff79c6">(</span>Core<span style="color:#ff79c6">)</span>
 
-$ uname -r
+➜ uname -r
 3.10.0-862.el7.x86_64
 </code></pre></div><p>下载基本依赖软件：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum update -y
-$ yum install epel-release -y
-$ yum install gcc gcc-c++ glibc-devel make ncurses-devel openssl-devel autoconf git wget wxBase.x86_64
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ yum update -y
+➜ yum install epel-release -y
+➜ yum install gcc gcc-c++ glibc-devel make ncurses-devel openssl-devel autoconf git wget wxBase.x86_64
 </code></pre></div><p>下载 Erlang 软件：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /opt/soft
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
-$ wget http://packages.erlang-solutions.com/erlang-solutions-1.0-1.noarch.rpm
-$ rpm -Uvh erlang-solutions-1.0-1.noarch.rpm
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkdir /opt/soft
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
+➜ wget http://packages.erlang-solutions.com/erlang-solutions-1.0-1.noarch.rpm
+➜ rpm -Uvh erlang-solutions-1.0-1.noarch.rpm
 </code></pre></div><p>导入 Erlang  相关 key：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rpm --import https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rpm --import https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
 </code></pre></div><p>修改 repo 文件，启用 gpg 校验功能:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>erlang-solutions<span style="color:#ff79c6">]</span>
-<span style="color:#8be9fd;font-style:italic">name</span><span style="color:#ff79c6">=</span>CentOS <span style="color:#8be9fd;font-style:italic">$releasever</span> - <span style="color:#8be9fd;font-style:italic">$basearch</span> - Erlang Solutions
-<span style="color:#8be9fd;font-style:italic">baseurl</span><span style="color:#ff79c6">=</span>https://packages.erlang-solutions.com/rpm/centos/<span style="color:#8be9fd;font-style:italic">$releasever</span>/<span style="color:#8be9fd;font-style:italic">$basearch</span>
-<span style="color:#8be9fd;font-style:italic">gpgcheck</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span>    <span style="color:#6272a4"># 修改此参数，将 0 改为 1</span>
-<span style="color:#8be9fd;font-style:italic">gpgkey</span><span style="color:#ff79c6">=</span>https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
-<span style="color:#8be9fd;font-style:italic">enabled</span><span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">[erlang-solutions]
+name=CentOS $releasever - $basearch - Erlang Solutions
+baseurl=https://packages.erlang-solutions.com/rpm/centos/$releasever/$basearch
+gpgcheck=<span style="color:#bd93f9">1</span>    <span style="color:#6272a4"># 修改此参数，将 0 改为 1</span>
+gpgkey=https://packages.erlang-solutions.com/rpm/erlang_solutions.asc
+enabled=<span style="color:#bd93f9">1</span>
 </code></pre></div><p>安装 Erlang：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ yum makecache
-$ yum install erlang -y
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ yum makecache
+➜ yum install erlang -y
 </code></pre></div><p>等待安装完成即可。</p>
 <p>Erlang 安装完成后，可以用如下命令检查其版本：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ erl
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ erl
 Erlang/OTP <span style="color:#bd93f9">21</span> <span style="color:#ff79c6">[</span>erts-10.1<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>source<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>64-bit<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>smp:1:1<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>ds:1:1:10<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>async-threads:1<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>hipe<span style="color:#ff79c6">]</span>
 
 Eshell V10.1  <span style="color:#ff79c6">(</span>abort with ^G<span style="color:#ff79c6">)</span>
@@ -511,7 +511,7 @@ Eshell V10.1  <span style="color:#ff79c6">(</span>abort with ^G<span style="colo
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

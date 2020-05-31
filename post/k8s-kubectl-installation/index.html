@@ -216,7 +216,9 @@
   <ul>
     <li>
       <ul>
-        <li></li>
+        <li><a href="#下载并准备-kubectl-工具">下载并准备 kubectl 工具</a></li>
+        <li><a href="#创建-kubectl-kubeconfig-文件">创建 kubectl kubeconfig 文件</a></li>
+        <li><a href="#配置-kubectl-命令自动补全">配置 kubectl 命令自动补全</a></li>
       </ul>
     </li>
   </ul>
@@ -225,50 +227,50 @@
                 <p>其实 kubernetes 的 server 软件包基本涵盖了 kubernetes 几乎所有的工具，所以我们只需要下载 kubernetes 的 server 软件包即可。</p>
 <p>kubernetes 源码下载地址： <a href="https://github.com/kubernetes/kubernetes/releases/">https://github.com/kubernetes/kubernetes/releases/</a></p>
 <p>本文档是基于 v1.9.6 版本部署 kubernetes 集群，其他版本基本类似，相较老版本（v1.6）参数会有变化，我会在对应位置注明。</p>
-<h3 id="下载并准备-kubectl-工具">下载并准备 kubectl 工具</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
-tar -xzvf kubernetes-server-linux-amd64.tar.gz
-<span style="color:#8be9fd;font-style:italic">cd</span> kubernetes
-tar -xzvf  kubernetes-src.tar.gz
-<span style="color:#8be9fd;font-style:italic">cd</span> server/bin
-将二进制文件拷贝到指定路径
-cp kubectl /usr/local/bin
-</code></pre></div><h3 id="创建-kubectl-kubeconfig-文件">创建 kubectl kubeconfig 文件</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
+<h2 id="下载并准备-kubectl-工具">下载并准备 kubectl 工具</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
+➜ tar -xzvf kubernetes-server-linux-amd64.tar.gz
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> kubernetes
+➜ tar -xzvf  kubernetes-src.tar.gz
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> server/bin
+<span style="color:#6272a4"># 将二进制文件拷贝到指定路径</span>
+➜ cp kubectl /usr/local/bin
+</code></pre></div><h2 id="创建-kubectl-kubeconfig-文件">创建 kubectl kubeconfig 文件</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;https://192.168.8.66:6443&#34;</span>
 <span style="color:#6272a4"># 设置集群参数</span>
-kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
+➜ kubectl config set-cluster kubernetes <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --certificate-authority<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/ca.pem <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --server<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">${</span><span style="color:#8be9fd;font-style:italic">KUBE_APISERVER</span><span style="color:#f1fa8c">}</span>
 <span style="color:#6272a4"># 设置客户端认证参数</span>
-kubectl config set-credentials admin <span style="color:#f1fa8c">\
+➜ kubectl config set-credentials admin <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --client-certificate<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/admin.pem <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --embed-certs<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">true</span> <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --client-key<span style="color:#ff79c6">=</span>/etc/kubernetes/ssl/admin-key.pem
 <span style="color:#6272a4"># 设置上下文参数</span>
-kubectl config set-context kubernetes <span style="color:#f1fa8c">\
+➜ kubectl config set-context kubernetes <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --cluster<span style="color:#ff79c6">=</span>kubernetes <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>  --user<span style="color:#ff79c6">=</span>admin
 <span style="color:#6272a4"># 设置默认上下文</span>
-kubectl config use-context kubernetes
+➜ kubectl config use-context kubernetes
 </code></pre></div><p>参数说明：</p>
 <ul>
 <li><code>admin.pem</code> 证书 OU 字段值为 <code>system:masters</code>；</li>
 <li><code>kube-apiserver</code> 预定义的 RoleBinding cluster-admin 将 Group system:masters 与 Role cluster-admin 绑定，该 Role 授予了调用 kube-apiserver 相关 API 的权限；</li>
 </ul>
 <p>生成的 <code>kubeconfig</code> 被保存到 <code>~/.kube/config</code> 文件中，如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-master1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ls /root/.kube/</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ls /root/.kube/
 cache  config  schema
 </code></pre></div><p>现在基本可以使用 kubectl 工具了。</p>
-<h3 id="配置-kubectl-命令自动补全">配置 kubectl 命令自动补全</h3>
+<h2 id="配置-kubectl-命令自动补全">配置 kubectl 命令自动补全</h2>
 <p>成功部署了 kubernetes 集群后，我们通常是通过 kubectl 这个命令行工具进行操作，默认该工具不能自动补全命令，但是我们可以进行一系列配置来实现其自动补全的功能，kubectl 命令行工具本身就支持 complication ，只需要简单的设置下就可以了。</p>
 <p>以下是linux系统的设置命令：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">source</span> &lt;<span style="color:#ff79c6">(</span>kubectl completion bash<span style="color:#ff79c6">)</span>
-<span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#34;source &lt;(kubectl completion bash)&#34;</span> &gt;&gt; ~/.bashrc
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">source</span> &lt;<span style="color:#ff79c6">(</span>kubectl completion bash<span style="color:#ff79c6">)</span>
+➜ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#f1fa8c">&#34;source &lt;(kubectl completion bash)&#34;</span> &gt;&gt; ~/.bashrc
 </code></pre></div><p>然后就可以自动补全了。</p>
 <p>如果是普通用户上述命令依旧可用，复制执行即可！</p>
 <p>如果发现不能自动补全，可以尝试安装 <code>bash-completion</code> 软件包，然后刷新即可！</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">yum -y install bash-completion
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ yum -y install bash-completion
 </code></pre></div>
 
                 
@@ -277,7 +279,7 @@ cache  config  schema
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/post/k8s-create-kubeconfig/" data-toggle="tooltip" data-placement="top" title="Kubernetes集群创建配置文件">&larr;
+                        <a href="/post/k8s-create-kubeconfig/" data-toggle="tooltip" data-placement="top" title="Kubernetes-创建配置文件">&larr;
                             Previous Post</a>
                     </li>
                     
@@ -527,7 +529,7 @@ cache  config  schema
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

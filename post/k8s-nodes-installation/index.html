@@ -214,16 +214,13 @@
                 </header>
                 <nav id="TableOfContents">
   <ul>
-    <li>
-      <ul>
-        <li></li>
-      </ul>
-    </li>
+    <li><a href="#安装并配置-kubelet-服务">安装并配置 kubelet 服务</a></li>
+    <li><a href="#安装并配置-kube-proxy-服务">安装并配置 kube-proxy 服务</a></li>
   </ul>
 </nav>
                 
                 <p>kubernetes node 节点包含如下组件：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Flanneld
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">Flanneld
 Docker:docker直接用yum安装即可
 kubelet
 kube-proxy
@@ -235,21 +232,21 @@ kube-proxy
 关闭 <code>swap</code> 只需修改 <code>/etc/fstab</code> 将，<code>swap</code> 系统注释掉。
 如果要临时关闭，可以用 <code>swapoff -a</code>， <code>-a</code> 表示关闭所有交换设备。</p>
 </blockquote>
-<h3 id="安装并配置-kubelet-服务">安装并配置 kubelet 服务</h3>
+<h1 id="安装并配置-kubelet-服务">安装并配置 kubelet 服务</h1>
 <p>kubelet 启动时向 <code>kube-apiserver</code> 发送 <code>TLS bootstrapping</code> 请求，需要先将 <code>bootstrap token</code>文件中的 <code>kubelet-bootstrap</code> 用户赋予 <code>system:node-bootstrapper cluster</code> 角色(role)， 然后 kubelet 才能有权限创建认证请求(certificate signing requests)：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
-kubectl create clusterrolebinding kubelet-bootstrap <span style="color:#f1fa8c">\
-</span><span style="color:#f1fa8c"></span>  --clusterrole<span style="color:#ff79c6">=</span>system:node-bootstrapper <span style="color:#f1fa8c">\
-</span><span style="color:#f1fa8c"></span>  --user<span style="color:#ff79c6">=</span>kubelet-bootstrap
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /etc/kubernetes
+➜ kubectl create clusterrolebinding kubelet-bootstrap <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --clusterrole<span style="color:#ff79c6">=</span>system:node-bootstrapper <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>    --user<span style="color:#ff79c6">=</span>kubelet-bootstrap
 </code></pre></div><blockquote>
 <p><code>--user=kubelet-bootstrap</code> 是在 <code>/etc/kubernetes/token.csv</code> 文件中指定的用户名，同时也写入了 <code>/etc/kubernetes/bootstrap.kubeconfig</code> 文件；</p>
 </blockquote>
 <p>下载最新的 kubelet 和 kube-proxy 二进制文件,因为我们之前已经下载了 kubernetes 的 server 软件包，所以再贴一下，不再赘述：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
-tar -xzvf kubernetes-server-linux-amd64.tar.gz
-<span style="color:#8be9fd;font-style:italic">cd</span> kubernetes
-tar -xzvf  kubernetes-src.tar.gz
-cp -r ./server/bin/<span style="color:#ff79c6">{</span>kube-proxy,kubelet<span style="color:#ff79c6">}</span> /usr/local/bin/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ wget https://dl.k8s.io/v1.9.6/kubernetes-server-linux-amd64.tar.gz
+➜ tar -xzvf kubernetes-server-linux-amd64.tar.gz
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> kubernetes
+➜ tar -xzvf  kubernetes-src.tar.gz
+➜ cp -r ./server/bin/<span style="color:#ff79c6">{</span>kube-proxy,kubelet<span style="color:#ff79c6">}</span> /usr/local/bin/
 </code></pre></div><p><strong>创建 kubelet 的 System Unit 配置文件</strong></p>
 <p>kubelet 的 service 配置文件: <code>/usr/lib/systemd/system/kubelet.service</code></p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
@@ -326,28 +323,29 @@ cp -r ./server/bin/<span style="color:#ff79c6">{</span>kube-proxy,kubelet<span s
 </blockquote>
 <p><strong>启动 kubelet 服务</strong></p>
 <p>我们修改完相关参数后就可以启动 kubelet 服务了。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
-systemctl start kubelet
-systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kubelet
-systemctl status kubelet
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl daemon-reload
+➜ systemctl start kubelet
+➜ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kubelet
+➜ systemctl status kubelet
 </code></pre></div><p><strong>通过 kublet 的 TLS 证书请求</strong></p>
 <p>kubelet 首次启动时向 kube-apiserver 发送证书签名请求，必须通过后 kubernetes 系统才会将该 Node 加入到集群。</p>
 <p>查看未授权的 CSR 请求:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl get csr
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl get csr
 NAME        AGE       REQUESTOR           CONDITION
 csr-2b308   4m        kubelet-bootstrap   Pending
-$ kubectl get nodes
+➜ kubectl get nodes
 No resources found.
 </code></pre></div><p>通过 CSR 请求:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl certificate approve csr-2b308
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ kubectl certificate approve csr-2b308
 certificatesigningrequest <span style="color:#f1fa8c">&#34;csr-2b308&#34;</span> approved
 <span style="color:#ff79c6">[</span>root@k8s-master kubernetes<span style="color:#ff79c6">]</span><span style="color:#6272a4"># kubectl get nodes</span>
 NAME        STATUS    ROLES     AGE       VERSION
 k8s-node1   Ready     &lt;none&gt;    34d       v1.9.6
 </code></pre></div><p>此时，自动生成了 kubelet kubeconfig 文件和公私钥：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>root@k8s-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ls -l /etc/kubernetes/kubelet.kubeconfig</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ ls -l /etc/kubernetes/kubelet.kubeconfig
 -rw------- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">2215</span> Apr  <span style="color:#bd93f9">6</span> 18:15 /etc/kubernetes/kubelet.kubeconfig
-<span style="color:#ff79c6">[</span>root@k8s-node1 ~<span style="color:#ff79c6">]</span><span style="color:#6272a4"># ls -l /etc/kubernetes/ssl/kubelet*</span>
+
+➜ ls -l /etc/kubernetes/ssl/kubelet*
 -rw-r--r-- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">1042</span> Apr  <span style="color:#bd93f9">6</span> 18:15 /etc/kubernetes/ssl/kubelet-client.crt
 -rw------- <span style="color:#bd93f9">1</span> root root  <span style="color:#bd93f9">227</span> Apr  <span style="color:#bd93f9">6</span> 18:08 /etc/kubernetes/ssl/kubelet-client.key
 -rw-r--r-- <span style="color:#bd93f9">1</span> root root <span style="color:#bd93f9">1111</span> Apr  <span style="color:#bd93f9">6</span> 18:08 /etc/kubernetes/ssl/kubelet.crt
@@ -356,9 +354,9 @@ k8s-node1   Ready     &lt;none&gt;    34d       v1.9.6
 <blockquote>
 <p>如果启动 kubelet 的时候见到证书相关的报错，有个 trick 可以解决这个问题，可以将 master 节点上的 <code>~/.kube/config</code> 文件（该文件在安装 kubectl 命令行工具这一步中将会自动生成）拷贝到 node 节点的 <code>/etc/kubernetes/kubelet.kubeconfig</code> 位置，这样就不需要通过 CSR，当 kubelet 启动后就会自动加入的集群中。</p>
 </blockquote>
-<h3 id="安装并配置-kube-proxy-服务">安装并配置 kube-proxy 服务</h3>
+<h1 id="安装并配置-kube-proxy-服务">安装并配置 kube-proxy 服务</h1>
 <p>安装 conntrack</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">yum -y install conntrack-tools
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ yum -y install conntrack-tools
 </code></pre></div><p><strong>创建 kube-proxy 的 Systemd Unit文件</strong></p>
 <p>unit 文件路径：<code>/usr/lib/systemd/system/kube-proxy.service</code></p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ff79c6">[</span>Unit<span style="color:#ff79c6">]</span>
@@ -398,10 +396,10 @@ k8s-node1   Ready     &lt;none&gt;    34d       v1.9.6
 <p>预定义的 RoleBinding cluster-admin 将User system:kube-proxy 与 Role system:node-proxier 绑定，该 Role 授予了调用 kube-apiserver Proxy 相关 API 的权限；</p>
 <p>完整 kube-proxy 配置文件参见 <a href="https://github.com/yeaheo/kubernetes-manifests/blob/master/config/proxy">proxy</a></p>
 <p><strong>启动 kube-proxy 服务</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
-systemctl start kube-proxy
-systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kube-proxy
-systemctl status kube-proxy
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl daemon-reload
+➜ systemctl start kube-proxy
+➜ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> kube-proxy
+➜ systemctl status kube-proxy
 </code></pre></div><p>至此，整个 kubernetes 集群安装完成，剩下的工作就是在集群上安装各种必要组件了，包括 dns、dashboard、heapster等等；</p>
 
 
@@ -661,7 +659,7 @@ systemctl status kube-proxy
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

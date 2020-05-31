@@ -226,10 +226,10 @@
 <p>本文档旨在基于 Erlang 环境在 CentOS 7 系统上安装配置 RabbitMQ</p>
 <p>因为 RabbitMQ 是用 Erlang 开发实现的，所以在安装 RabbitMQ 之前需要先配置完成 Erlang 的开发环境，Erlang 的具体安装配置可以参考 <a href="https://github.com/yeaheo/hello-linux/blob/master/rabbitmq/rabbitmq-erlang-installation.md">rabbitmq-erlang-installation</a>。</p>
 <p>本次安装系统环境及版本如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat /etc/redhat-release
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ cat /etc/redhat-release
 CentOS Linux release 7.5.1804 <span style="color:#ff79c6">(</span>Core<span style="color:#ff79c6">)</span>
 
-$ uname -r
+➜ uname -r
 3.10.0-862.el7.x86_64
 
 Erlang : 21.1
@@ -242,52 +242,52 @@ RabbitMQ: v3.7.9
 <p>RabbitMQ 的官方下载地址：<a href="https://www.rabbitmq.com/download.html">https://www.rabbitmq.com/download.html</a></p>
 <p>本次我们在  CentOS 7 上安装 RabbitMQ 服务，更为详细的或者其他系统的安装过程可以参考官方文档：<a href="https://www.rabbitmq.com/download.html">https://www.rabbitmq.com/download.html</a></p>
 <h3 id="下载-rabbitmq-软件包">下载 RabbitMQ 软件包</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /opt/soft
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
-$ wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.9/rabbitmq-server-3.7.9-1.el7.noarch.rpm
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkdir /opt/soft
+➜ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
+➜ wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.9/rabbitmq-server-3.7.9-1.el7.noarch.rpm
 </code></pre></div><h3 id="安装-rabbitmq">安装 RabbitMQ</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rpm --import https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rpm --import https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
 
 <span style="color:#6272a4"># this example assumes the CentOS 7 version of the package</span>
-$ yum install rabbitmq-server-3.7.9-1.el7.noarch.rpm -y
+➜ yum install rabbitmq-server-3.7.9-1.el7.noarch.rpm -y
 </code></pre></div><blockquote>
 <p>有时侯在安装的过程中会报错，这个可能是由于 RabbitMQ 和 Erlang 的版本问题，当我们遇到相关错误的时候，可以尝试更换版本。</p>
 </blockquote>
 <h3 id="启动相关服务">启动相关服务</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl start rabbitmq-server
-$ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq-server
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl start rabbitmq-server
+➜ systemctl <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq-server
 </code></pre></div><p>检查 RabbitMQ 服务的状态:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rabbitmqctl status
-</code></pre></div><p>当 RabbitMQ 服务正常启动后，我们可以查看对应的日志，日志默认在 <code>/var/log/rabbitmq/</code>目录下。日志中给出了rabbitmq 启动的重要信息，如 node 名，$home 目录，cookie hash 值，日志文件，数据存储目录等，但是默认情况下没有配置文件的相关信息，我们需要手动创建配置文件</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rabbitmqctl status
+</code></pre></div><p>当 RabbitMQ 服务正常启动后，我们可以查看对应的日志，日志默认在 <code>/var/log/rabbitmq/</code>目录下。日志中给出了rabbitmq 启动的重要信息，如 node 名，➜home 目录，cookie hash 值，日志文件，数据存储目录等，但是默认情况下没有配置文件的相关信息，我们需要手动创建配置文件</p>
 <h3 id="准备-rabbitmq-配置文件">准备 RabbitMQ 配置文件</h3>
 <p>首先需要手动创建 <code>/etc/rabbitmq</code> 目录，然后把配置文件模板复制到此目录下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /etc/rabbitmq
-$ cp /usr/share/doc/rabbitmq-server-3.7.9/rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkdir /etc/rabbitmq
+➜ cp /usr/share/doc/rabbitmq-server-3.7.9/rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
 </code></pre></div><p>配置文件准备好后，就可以重启服务了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ systemctl restart rabbitmq-server.service
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ systemctl restart rabbitmq-server.service
 </code></pre></div><blockquote>
 <p>另外还可以建环境配置文件：<code>/etc/rabbitmq/rabbitmq-env.conf</code></p>
 </blockquote>
 <h3 id="安装-web-插件">安装 web 插件</h3>
 <p>management plugin 默认就在 RabbitMQ 的发布版本中，enable即可：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rabbitmq-plugins <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq_management
-$ chown -R rabbitmq:rabbitmq /var/lib/rabbitmq/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ rabbitmq-plugins <span style="color:#8be9fd;font-style:italic">enable</span> rabbitmq_management
+➜ chown -R rabbitmq:rabbitmq /var/lib/rabbitmq/
 </code></pre></div><p>安装完成后在浏览器访问 web ui：<a href="http://ip-address:15672/">http://ip-address:15672/</a></p>
 <blockquote>
 <p>默认登陆账号密码均为 <code>guest</code> ,当我们首次登陆的时候会报错，报错信息类似：<code>User can only log in via localhost</code></p>
 </blockquote>
 <p>在这里 我们需要创建一个新的管理员账号：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#6272a4"># “rabbitmqctl add_user”添加账号，并设置密码</span>
-$ rabbitmqctl add_user mqadmin mqadmin
+➜ rabbitmqctl add_user mqadmin mqadmin
 
 <span style="color:#6272a4"># ”rabbitmqctl set_user_tags”设置账号的状态</span>
-$ rabbitmqctl set_user_tags mqadmin administrator
+➜ rabbitmqctl set_user_tags mqadmin administrator
 
 <span style="color:#6272a4"># “rabbitmqctl set_permissions”设置账号的权限</span>
-$ rabbitmqctl set_permissions -p / mqadmin <span style="color:#f1fa8c">&#34;.*&#34;</span> <span style="color:#f1fa8c">&#34;.*&#34;</span> <span style="color:#f1fa8c">&#34;.*&#34;</span>
+➜ rabbitmqctl set_permissions -p / mqadmin <span style="color:#f1fa8c">&#34;.*&#34;</span> <span style="color:#f1fa8c">&#34;.*&#34;</span> <span style="color:#f1fa8c">&#34;.*&#34;</span>
 
 <span style="color:#6272a4"># “rabbitmqctl list_users”列出账号</span>
-$ rabbitmqctl list_users
+➜ rabbitmqctl list_users
 </code></pre></div><p>至此，就可以用新建的管理员账号登陆 WEB 页面了。</p>
 
 
@@ -547,7 +547,7 @@ $ rabbitmqctl list_users
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

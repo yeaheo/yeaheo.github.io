@@ -120,7 +120,7 @@
     </item>
     
     <item>
-      <title>Kubernetes集群安装Metrics Server</title>
+      <title>Kubernetes安装Metrics Server</title>
       <link>https://aeric.io/post/k8s-metrics-server-installation/</link>
       <pubDate>Fri, 04 Jan 2019 12:23:36 +0800</pubDate>
       
@@ -161,11 +161,11 @@
       <pubDate>Fri, 30 Nov 2018 16:35:14 +0800</pubDate>
       
       <guid>https://aeric.io/post/k8s-flannel-and-docker-config/</guid>
-      <description>检查 TLS 证书 [root@ceph-node1 ~]# ls /etc/kubernetes/ssl/ admin-key.pem admin.pem ca-key.pem ca.pem kube-proxy-key.pem kube-proxy.pem kubernetes-key.pem kubernetes.pem 配置 Flannel 服务 建议直接使用 yum 安装 flanneld，除非对版本有特殊需求，默认安装的是 v0.7.1 版本的 flannel。 安</description>
+      <description>检查 TLS 证书 ➜ ls /etc/kubernetes/ssl/ admin-key.pem admin.pem ca-key.pem ca.pem kube-proxy-key.pem kube-proxy.pem kubernetes-key.pem kubernetes.pem 配置 Flannel 服务 建议直接使用 yum 安装 flanneld，除非对版本有特殊需求，默认安装的是 v0.7.1 版本的 flannel。 安装</description>
     </item>
     
     <item>
-      <title>Kubernetes集群部署Master节点服务</title>
+      <title>Kubernetes安装Master节点服务</title>
       <link>https://aeric.io/post/k8s-master-installation/</link>
       <pubDate>Fri, 30 Nov 2018 15:35:14 +0800</pubDate>
       
@@ -192,7 +192,7 @@
     </item>
     
     <item>
-      <title>Kubernetes集群创建配置文件</title>
+      <title>Kubernetes-创建配置文件</title>
       <link>https://aeric.io/post/k8s-create-kubeconfig/</link>
       <pubDate>Fri, 30 Nov 2018 14:25:14 +0800</pubDate>
       

@@ -234,17 +234,17 @@
 </blockquote>
 <h2 id="安装-mkcert-工具">安装 mkcert 工具</h2>
 <p>安装 mkcert 需要根据我们自己的机器的实际情况选择适合我们的安装方式。例如，本次用来演示的机器是 MAC，所以这里我选择用 <a href="https://brew.sh/">homebrew</a> 工具进行安装，其他安装方式可以参考: <a href="https://github.com/FiloSottile/mkcert">mkcert installation</a>文档内容。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ brew install mkcert
-$ brew install nss   <span style="color:#6272a4"># if you use Firefox</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ brew install mkcert
+➜ brew install nss   <span style="color:#6272a4"># if you use Firefox</span>
 </code></pre></div><h2 id="生成证书">生成证书</h2>
 <p>Mkcert 安装完成后，就可以生成相关证书及密钥了，具体过程如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkcert -install
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkcert -install
 Created a new <span style="color:#8be9fd;font-style:italic">local</span> CA at <span style="color:#f1fa8c">&#34;/Users/filippo/Library/Application Support/mkcert&#34;</span> 💥
 The <span style="color:#8be9fd;font-style:italic">local</span> CA is now installed in the system trust store! ⚡️
 The <span style="color:#8be9fd;font-style:italic">local</span> CA is now installed in the Firefox trust store <span style="color:#ff79c6">(</span>requires restart<span style="color:#ff79c6">)</span>! 🦊
 </code></pre></div><p>为了便于管理，建议在单独目录下生成本地证书及密钥：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /opt/certs
-$ mkcert localhost 127.0.0.1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkdir /opt/certs
+➜ mkcert localhost 127.0.0.1
 Using the <span style="color:#8be9fd;font-style:italic">local</span> CA at <span style="color:#f1fa8c">&#34;/Users/qingclass/Library/Application Support/mkcert&#34;</span> ✨
 
 Created a new certificate valid <span style="color:#ff79c6">for</span> the following names 📜
@@ -255,42 +255,42 @@ The certificate is at <span style="color:#f1fa8c">&#34;./localhost+1.pem&#34;</s
 </code></pre></div><blockquote>
 <p>这里为了方便只生成针对 <code>localhost</code>及 <code>127.0.0.1</code>的证书，其他域名证书类似，可以参考下面的内容生成其他证书</p>
 </blockquote>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkcert example.com <span style="color:#f1fa8c">&#34;*.example.org&#34;</span> myapp.dev localhost 127.0.0.1 ::1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ mkcert example.com <span style="color:#f1fa8c">&#34;*.example.org&#34;</span> myapp.dev localhost 127.0.0.1 ::1
 </code></pre></div><h3 id="检查生成的证书">检查生成的证书</h3>
 <p>证书生成后，需要确认一下证书的生成情况：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/certs
-$ ls
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/certs
+➜ ls
 localhost+1-key.pem localhost+1.pem
 </code></pre></div><p>可以看到，生成了证书及密钥，现在我们只需要将生成的证书及密钥配置到我们的 web 应用中就可以实现本地受信的 https 了</p>
 <h2 id="测试证书可用性">测试证书可用性</h2>
 <p>为了方便测试，这里使用 docker 启动一个 nginx 的容器进行 https 配置。</p>
 <p>首先，需要准备一个 nginx 开启 https 的配置文件 <code>default.conf</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">server <span style="color:#ff79c6">{</span>
-    listen       80;
-    listen       <span style="color:#bd93f9">443</span> ssl;
-    ssl on;
-    server_name  localhost;
-    access_log  /var/log/nginx/host.access.log  main;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cfg" data-lang="cfg"><span style="color:#50fa7b">server {</span>
+    <span style="color:#50fa7b">listen       80;</span>
+    <span style="color:#50fa7b">listen       443 ssl;</span>
+    <span style="color:#50fa7b">ssl on;</span>
+    <span style="color:#50fa7b">server_name  localhost;</span>
+    <span style="color:#50fa7b">access_log  /var/log/nginx/host.access.log  main;</span>
 
-    location / <span style="color:#ff79c6">{</span>
-        root   /usr/share/nginx/html;
-        index  index.html index.htm;
-    <span style="color:#ff79c6">}</span>
+    <span style="color:#50fa7b">location / {</span>
+        <span style="color:#50fa7b">root   /usr/share/nginx/html;</span>
+        <span style="color:#50fa7b">index  index.html index.htm;</span>
+    <span style="color:#50fa7b">}</span>
 
-    ssl_certificate   /root/localhost+1.pem;
-    ssl_certificate_key /root/localhost+1-key.pem;
+    <span style="color:#50fa7b">ssl_certificate   /root/localhost+1.pem;</span>
+    <span style="color:#50fa7b">ssl_certificate_key /root/localhost+1-key.pem;</span>
 
-    error_page   <span style="color:#bd93f9">500</span> <span style="color:#bd93f9">502</span> <span style="color:#bd93f9">503</span> <span style="color:#bd93f9">504</span>  /50x.html;
-    <span style="color:#8be9fd;font-style:italic">location</span> <span style="color:#ff79c6">=</span> /50x.html <span style="color:#ff79c6">{</span>
-        root   /usr/share/nginx/html;
-    <span style="color:#ff79c6">}</span>
-<span style="color:#ff79c6">}</span>
+    <span style="color:#50fa7b">error_page   500 502 503 504  /50x.html;</span>
+    <span style="color:#50fa7b">location</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">/50x.html {
+</span><span style="color:#f1fa8c">        root   /usr/share/nginx/html;
+</span><span style="color:#f1fa8c">    }</span>
+<span style="color:#50fa7b">}</span>
 </code></pre></div><p>启动容器的时候将此配置文件挂载到容器的 <code>/etc/nginx/conf.d/default.conf</code>即可，上述的 <code>80</code>端口可能在访问时报错，可以忽略，我们这里只是讨论 https</p>
 <p>同时启动容器的时候还需要将上述生成的本地 https 证书及密钥挂载到容器的指定位置，我这里容器内配置的路径是:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ssl_certificate   /root/localhost+1.pem;
-ssl_certificate_key /root/localhost+1-key.pem;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cfg" data-lang="cfg"><span style="color:#50fa7b">ssl_certificate   /root/localhost+1.pem;</span>
+<span style="color:#50fa7b">ssl_certificate_key /root/localhost+1-key.pem;</span>
 </code></pre></div><p>梳理完成后就可以启动 nginx 容器了，具体命令如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -d -p 8080:80 -p 8443:443 <span style="color:#f1fa8c">\
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker run -d -p 8080:80 -p 8443:443 <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>-v ~/office/conf/default.conf:/etc/nginx/conf.d/default.conf <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>-v ~/office/mkcert/localhost+1-key.pem:/root/localhost+1-key.pem <span style="color:#f1fa8c">\
 </span><span style="color:#f1fa8c"></span>-v ~/office/mkcert/localhost+1.pem:/root/localhost+1.pem <span style="color:#f1fa8c">\
@@ -560,7 +560,7 @@ ssl_certificate_key /root/localhost+1-key.pem;
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>

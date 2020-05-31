@@ -271,15 +271,15 @@
 2、配置 <span style="color:#f1fa8c">`</span>harbor.cfg<span style="color:#f1fa8c">`</span> 文件;
 3、执行脚本文件 <span style="color:#f1fa8c">`</span>install.sh<span style="color:#f1fa8c">`</span> 进行安装;
 </code></pre></div><p>下载离线安装包如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mkdir /opt/soft
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
-$ wget https://storage.googleapis.com/harbor-releases/release-1.7.0/harbor-offline-installer-&lt;HARBOR_VERSION&gt;.tgz
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  mkdir /opt/soft
+➜  <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
+➜  wget https://storage.googleapis.com/harbor-releases/release-1.7.0/harbor-offline-installer-&lt;HARBOR_VERSION&gt;.tgz
 </code></pre></div><p>解压安装包至指定安装目录：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
-$ tar xvf harbor-offline-installer-&lt;HARBOR_VERSION&gt;.tgz -C /srv/
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  <span style="color:#8be9fd;font-style:italic">cd</span> /opt/soft
+➜  tar xvf harbor-offline-installer-&lt;HARBOR_VERSION&gt;.tgz -C /srv/
 <span style="color:#6272a4"># harbor 安装目录为 /srv/ 目录</span>
 
-$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/
+➜  <span style="color:#8be9fd;font-style:italic">cd</span> /srv/
 </code></pre></div><h2 id="准备-harbor-配置文件">准备 Harbor 配置文件</h2>
 <p>这里我们只是简单的安装 Harbor 如果需要更个性化的配置 harbor 可以参考 <a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md">Installation and Configuration Guide</a></p>
 <p>在这里，我们只需要修改以下参数：</p>
@@ -294,14 +294,14 @@ $ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/
 <p>Harbor 的配置文件还是比较简单的。如果需要配置 Harbor 支持 HTTPS 可以参考 <a href="https://github.com/goharbor/harbor/blob/master/docs/configure_https.md">Configuring Harbor with HTTPS Access</a></p>
 <h2 id="执行相关脚本安装-harbor">执行相关脚本安装 Harbor</h2>
 <p>配置文件修改完成后就可以执行安装脚本安装 Harbor 相关服务了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
-$ ./install.sh
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  <span style="color:#8be9fd;font-style:italic">cd</span> /srv/harbor
+➜  ./install.sh
 </code></pre></div><p>等待安装过程即可，因为是离线安装，速度还是不错的。如果需要自定义安装 Harbor 的其他功能可以参考 <a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md">Configuration Guide</a></p>
 <p>待脚本执行完成后使用 docke-compose ps 即可查看，常用命令包含以下几个：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker-compose up -d      <span style="color:#6272a4"># 后台启动，如果容器不存在根据镜像自动创建</span>
-docker-compose down -v    <span style="color:#6272a4"># 停止容器并删除容器</span>
-docker-compose start      <span style="color:#6272a4"># 启动容器，容器不存在就无法启动，不会自动创建镜像</span>
-docker-compose stop       <span style="color:#6272a4"># 停止容器</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜ docker-compose up -d      <span style="color:#6272a4"># 后台启动，如果容器不存在根据镜像自动创建</span>
+➜ docker-compose down -v    <span style="color:#6272a4"># 停止容器并删除容器</span>
+➜ docker-compose start      <span style="color:#6272a4"># 启动容器，容器不存在就无法启动，不会自动创建镜像</span>
+➜ docker-compose stop       <span style="color:#6272a4"># 停止容器</span>
 </code></pre></div><blockquote>
 <p>其实上面是停止 <code>docker-compose.yml</code> 中定义的所有容器，默认情况下 <code>docker-compose</code>就是操作同目录下的 <code>docker-compose.yml</code>文件，所以我们需要切换到 harbor 目录下才可以执行 docker-compose 相关命令，如果使用其他 <code>yml</code>文件，可以使用 <code>-f</code> 自己指定。</p>
 </blockquote>
@@ -314,7 +314,7 @@ docker-compose stop       <span style="color:#6272a4"># 停止容器</span>
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/post/k8s-metrics-server-installation/" data-toggle="tooltip" data-placement="top" title="Kubernetes集群安装Metrics Server">&larr;
+                        <a href="/post/k8s-metrics-server-installation/" data-toggle="tooltip" data-placement="top" title="Kubernetes安装Metrics Server">&larr;
                             Previous Post</a>
                     </li>
                     
@@ -564,7 +564,7 @@ docker-compose stop       <span style="color:#6272a4"># 停止容器</span>
                     <iframe
                         style="margin-left: 2px; margin-bottom:-5px;"
                         frameborder="0" scrolling="0" width="158px" height="20px"
-                        src="https://img.shields.io/badge/Last%20Modify-2020--05--30-green" >
+                        src="https://img.shields.io/badge/Last%20Modify-2020--05--31-green" >
                     </iframe>
                 </p>
             </div>
